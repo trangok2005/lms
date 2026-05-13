@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+from decouple import config
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -19,12 +20,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-cif0qw_w_qv(sxi3-67^g=b=!z^rfgyo!44oea&8((o5t3s=z*'
+SECRET_KEY = config("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config("DEBUG", cast=bool)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -34,25 +35,50 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
     'rest_framework',
-    ''
+    'ckeditor',
+    'ckeditor_uploader',
+    'django.contrib.staticfiles',
+    'drf_yasg',
+    'apps.users',
+    'apps.common',
+    'apps.courses',
+    'apps.materials',
+    'apps.payments',
+    'apps.quizzes',
+    'oauth2_provider',
+    'corsheaders'
 ]
-
-AUTH_USER_MODEL = 'users.User'
-
-import pymysql
-pymysql.install_as_MySQLdb()
+# ckeditor
+CKEDITOR_UPLOAD_PATH = "images/ckeditors/"
+CKEDITOR_CONFIGS = {
+    "default": {
+        "height": 300,
+        "width": "100%",
+        "toolbar": "full",
+    },
+}
 
 import cloudinary.api
 
 cloudinary.config(
-    cloud_name='dxxwcby8l',
-    api_key='792844686918347',
-    api_secret='0pyBk_hDXuZBTtvvE9lNebhhdRE'
+    cloud_name=config("api_secret"),
+    api_key=config("api_key"),
+    api_secret=config("api_secret")
 )
 
+
+OAUTH2_PROVIDER = { 'OAUTH2_BACKEND_CLASS': 'oauth2_provider.oauth2_backends.JSONOAuthLibCore' }
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
+    )
+}
+
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -83,14 +109,22 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": config("DB_NAME"),
+        "USER": config("DB_USER"),
+        "PASSWORD": config("DB_PASSWORD"),
+        "HOST": config("DB_HOST"),
+        "PORT": config("DB_PORT"),
     }
 }
 
+AUTH_USER_MODEL = 'users.User'
+
+import pymysql
+
+pymysql.install_as_MySQLdb()
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
