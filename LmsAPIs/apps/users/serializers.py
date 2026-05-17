@@ -4,7 +4,7 @@ from .models import User, StudentProfile
 class StudentProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudentProfile
-        fields = ['current_level', 'learning_goals']
+        fields = ['current_level', 'learning_goals', 'total_hours', 'average_score']
 
 class SimpleUserSerializer(serializers.ModelSerializer):
     class Meta:
