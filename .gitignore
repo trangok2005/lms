@@ -5,8 +5,21 @@ __pycache__/
 
 # C extensions
 *.so
+../.idea/
+.idea/
+
+LmsMobileApp/node_modules/
+
+LmsMobileApp/.expo/
+
+LmsMobileApp/android/.gradle/
+LmsMobileApp/android/app/build/
+
+LmsMobileApp/ios/Pods/
+LmsMobileApp/ios/build/
 
 # Distribution / packaging
+DATABASE_README.md
 .Python
 build/
 develop-eggs/
