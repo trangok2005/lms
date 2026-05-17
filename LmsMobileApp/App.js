@@ -1,25 +1,18 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, TextInput, Button } from 'react-native';
+import React, { useReducer } from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import { MyUserContext } from "./configs/MyContext";
+import { MyUserReducer } from "./reducers/reducers";
+import RootNavigator from "./navigators/RootNavigator";
 
-
-export default function App() {
+const App = () => {
+  const [user, dispatch] = useReducer(MyUserReducer, null);
   return (
-    <View style={styles.container}>
-      <Text>trang dep tai ok heeeee</Text>
-      <TextInput style={styles.input}>nhap gi di</TextInput>
-      <StatusBar style="auto" />
-    </View>
+    <MyUserContext.Provider value={[user, dispatch]}>
+      <NavigationContainer>
+        <RootNavigator />
+      </NavigationContainer>
+    </MyUserContext.Provider>
   );
-}
+};
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'WHILE',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  input: {
-    backgroundColor: 'red100',
-  }
-});
+export default App;

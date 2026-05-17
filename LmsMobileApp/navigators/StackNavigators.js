@@ -1,0 +1,167 @@
+/**
+ * StackNavigators.js
+ * Quản lý toàn bộ luồng màn hình Stack của app.
+ * Mỗi Stack export ra để TabNavigators và RootNavigator import dùng.
+ */
+import React from "react";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+
+// ── Auth ─────────────────────────────────────────────────
+import Login from "../screens/Auth/Login";
+import Register from "../screens/Auth/Register";
+
+// ── Student Home ─────────────────────────────────────────
+import HomeScreen from "../screens/Student/HomeScreen";
+
+// ── Courses ──────────────────────────────────────────────
+import CourseListScreen from "../screens/Courses/CourseListScreen";
+import CourseDetailScreen from "../screens/Courses/CourseDetailScreen";
+import CourseSearchScreen from "../screens/Courses/CourseSearchScreen";
+import MyCourseScreen from "../screens/Courses/MyCourseScreen";
+
+// ── Materials ────────────────────────────────────────────
+import MaterialListScreen from "../screens/Materials/MaterialListScreen";
+import MaterialDetailScreen from "../screens/Materials/MaterialDetailScreen";
+import MaterialSearchScreen from "../screens/Materials/MaterialSearchScreen";
+import CommentScreen from "../screens/Materials/CommentScreen";
+import NoteScreen from "../screens/Materials/NoteScreen";
+
+// ── Forum ────────────────────────────────────────────────
+import ForumListScreen from "../screens/Forum/ForumListScreen";
+import ForumDetailScreen from "../screens/Forum/ForumDetailScreen";
+import CreateTopicScreen from "../screens/Forum/CreateTopicScreen";
+
+// ── Quiz ─────────────────────────────────────────────────
+import QuizListScreen from "../screens/Quiz/QuizListScreen";
+import QuizTakeScreen from "../screens/Quiz/QuizTakeScreen";
+import QuizResultScreen from "../screens/Quiz/QuizResultScreen";
+
+// ── Progress ─────────────────────────────────────────────
+import LearningDashboardScreen from "../screens/Progress/LearningDashboardScreen";
+import LearningPathScreen from "../screens/Progress/LearningPathScreen";
+
+// ── Payment ──────────────────────────────────────────────
+import CheckoutScreen from "../screens/Payment/CheckoutScreen";
+import PaymentResultScreen from "../screens/Payment/PaymentResultScreen";
+import TransactionHistoryScreen from "../screens/Payment/TransactionHistoryScreen";
+
+// ── Profile ──────────────────────────────────────────────
+import ProfileScreen from "../screens/Profile/ProfileScreen";
+import EditProfileScreen from "../screens/Profile/EditProfileScreen";
+import ChangePasswordScreen from "../screens/Profile/ChangePasswordScreen";
+
+// ── Teacher ──────────────────────────────────────────────
+import TeacherDashboardScreen from "../screens/Teacher/TeacherDashboardScreen";
+import ManageCourseScreen from "../screens/Teacher/ManageCourseScreen";
+import ManageMaterialScreen from "../screens/Teacher/ManageMaterialScreen";
+import ManageQuizScreen from "../screens/Teacher/ManageQuizScreen";
+import StudentProgressScreen from "../screens/Teacher/StudentProgressScreen";
+
+// ── Admin ────────────────────────────────────────────────
+import AdminDashboardScreen from "../screens/Admin/AdminDashboardScreen";
+import ReportScreen from "../screens/Admin/ReportScreen";
+import TransactionManagementScreen from "../screens/Admin/TransactionManagementScreen";
+import UserManagementScreen from "../screens/Admin/UserManagementScreen";
+
+// ─────────────────────────────────────────────────────────
+const Stack = createNativeStackNavigator();
+const SO = { headerShown: false }; // screenOptions shorthand
+
+// ══════════════════════════════════════════════════════════
+// AUTH STACK — chưa đăng nhập
+// ══════════════════════════════════════════════════════════
+export const AuthStack = () => (
+  <Stack.Navigator screenOptions={SO}>
+    <Stack.Screen name="Login"    component={Login} />
+    <Stack.Screen name="Register" component={Register} />
+  </Stack.Navigator>
+);
+
+// ══════════════════════════════════════════════════════════
+// HOME STACK — tab Trang chủ (student)
+// Gộp Courses + Materials + Payment vì cùng flow từ Home
+// ══════════════════════════════════════════════════════════
+export const HomeStack = () => (
+  <Stack.Navigator screenOptions={SO}>
+    <Stack.Screen name="Home"           component={HomeScreen} />
+    <Stack.Screen name="CourseList"     component={CourseListScreen} />
+    <Stack.Screen name="CourseDetail"   component={CourseDetailScreen} />
+    <Stack.Screen name="CourseSearch"   component={CourseSearchScreen} />
+    <Stack.Screen name="MyCourse"       component={MyCourseScreen} />
+    <Stack.Screen name="MaterialList"   component={MaterialListScreen} />
+    <Stack.Screen name="MaterialDetail" component={MaterialDetailScreen} />
+    <Stack.Screen name="MaterialSearch" component={MaterialSearchScreen} />
+    <Stack.Screen name="Comment"        component={CommentScreen} />
+    <Stack.Screen name="Note"           component={NoteScreen} />
+    <Stack.Screen name="Checkout"       component={CheckoutScreen} />
+    <Stack.Screen name="PaymentResult"  component={PaymentResultScreen} />
+  </Stack.Navigator>
+);
+
+// ══════════════════════════════════════════════════════════
+// FORUM STACK
+// ══════════════════════════════════════════════════════════
+export const ForumStack = () => (
+  <Stack.Navigator screenOptions={SO}>
+    <Stack.Screen name="ForumList"   component={ForumListScreen} />
+    <Stack.Screen name="ForumDetail" component={ForumDetailScreen} />
+    <Stack.Screen name="CreateTopic" component={CreateTopicScreen} />
+  </Stack.Navigator>
+);
+
+// ══════════════════════════════════════════════════════════
+// QUIZ STACK
+// ══════════════════════════════════════════════════════════
+export const QuizStack = () => (
+  <Stack.Navigator screenOptions={SO}>
+    <Stack.Screen name="QuizList"   component={QuizListScreen} />
+    <Stack.Screen name="QuizTake"   component={QuizTakeScreen} />
+    <Stack.Screen name="QuizResult" component={QuizResultScreen} />
+  </Stack.Navigator>
+);
+
+// ══════════════════════════════════════════════════════════
+// PROGRESS STACK — Tiến độ & AI lộ trình
+// ══════════════════════════════════════════════════════════
+export const ProgressStack = () => (
+  <Stack.Navigator screenOptions={SO}>
+    <Stack.Screen name="LearningDashboard" component={LearningDashboardScreen} />
+    <Stack.Screen name="LearningPath"      component={LearningPathScreen} />
+  </Stack.Navigator>
+);
+
+// ══════════════════════════════════════════════════════════
+// PROFILE STACK — dùng chung cho mọi role
+// ══════════════════════════════════════════════════════════
+export const ProfileStack = () => (
+  <Stack.Navigator screenOptions={SO}>
+    <Stack.Screen name="Profile" component={ProfileScreen} />
+    <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+    <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
+  </Stack.Navigator>
+);
+
+// ══════════════════════════════════════════════════════════
+// TEACHER STACK
+// ══════════════════════════════════════════════════════════
+export const TeacherStack = () => (
+  <Stack.Navigator screenOptions={SO}>
+    <Stack.Screen name="TeacherDashboard" component={TeacherDashboardScreen} />
+    <Stack.Screen name="ManageCourse"     component={ManageCourseScreen} />
+    <Stack.Screen name="ManageMaterial"   component={ManageMaterialScreen} />
+    <Stack.Screen name="ManageQuiz"       component={ManageQuizScreen} />
+    <Stack.Screen name="StudentProgress"  component={StudentProgressScreen} />
+  </Stack.Navigator>
+);
+
+// ══════════════════════════════════════════════════════════
+// ADMIN STACK
+// ══════════════════════════════════════════════════════════
+export const AdminStack = () => (
+  <Stack.Navigator screenOptions={SO}>
+    <Stack.Screen name="AdminDashboard"        component={AdminDashboardScreen} />
+    <Stack.Screen name="Report"                component={ReportScreen} />
+    <Stack.Screen name="TransactionManagement" component={TransactionManagementScreen} />
+    <Stack.Screen name="UserManagement"        component={UserManagementScreen} />
+  </Stack.Navigator>
+);

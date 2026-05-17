@@ -1,3 +1,6 @@
 export { default as Header } from './Header'
 export { default as Loading } from './Loading'
 export { default as CustomButton } from './CustomButton'
+export {default as InfoRow} from './InfoRow'
+export {default as ActionRow} from './ActionRow'
+export {default as AvatarPicker} from './AvatarPicker'
