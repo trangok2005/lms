@@ -30,6 +30,8 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    'cloudinary_storage',
+    'cloudinary',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -37,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'rest_framework',
     'ckeditor',
-    'ckeditor_uploader',
+    'ckeditor_uploader', 
+    
     'django.contrib.staticfiles',
     'drf_yasg',
     'apps.users',
@@ -47,7 +50,8 @@ INSTALLED_APPS = [
     'apps.payments',
     'apps.quizzes',
     'oauth2_provider',
-    'corsheaders'
+    'corsheaders',
+   
 ]
 # ckeditor
 CKEDITOR_UPLOAD_PATH = "images/ckeditors/"
@@ -59,13 +63,25 @@ CKEDITOR_CONFIGS = {
     },
 }
 
-import cloudinary.api
+import cloudinary
 
+
+# 1. Tối ưu cho bộ lưu trữ Django Storage
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': str(config("cloud_name")).strip("'\", \n\r\t"),
+    'API_KEY': str(config("api_key")).strip("'\", \n\r\t"),
+    'API_SECRET': str(config("api_secret")).strip("'\", \n\r\t")
+}
+
+# 2. Tối ưu cho Cloudinary Core SDK
 cloudinary.config(
-    cloud_name=config("api_secret"),
-    api_key=config("api_key"),
-    api_secret=config("api_secret")
+    cloud_name=str(config("cloud_name")).strip("'\", \n\r\t"),
+    api_key=str(config("api_key")).strip("'\", \n\r\t"),
+    api_secret=str(config("api_secret")).strip("'\", \n\r\t"),
+    secure=True
 )
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 
 OAUTH2_PROVIDER = { 'OAUTH2_BACKEND_CLASS': 'oauth2_provider.oauth2_backends.JSONOAuthLibCore' }
@@ -74,6 +90,7 @@ OAUTH2_PROVIDER = { 'OAUTH2_BACKEND_CLASS': 'oauth2_provider.oauth2_backends.JSO
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
+
     )
 }
 
@@ -163,3 +180,5 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
