@@ -2,7 +2,7 @@
 
 > **Stack:** Django REST Framework · PostgreSQL · Cloudinary  
 > **Đồ án môn:** Phát triển Ứng dụng · Nhóm ___
-
+> **Tên thành viên:** Lê thanh nhẫn - Trần Văn Trạng
 ---
 
 ## Mục lục
