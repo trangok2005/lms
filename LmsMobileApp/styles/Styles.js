@@ -14,7 +14,7 @@ export const colors = {
 };
 
 export default StyleSheet.create({
-  // LAYOUT (
+  // LAYOUT TOÀN CỤC
   container: { flex: 1, backgroundColor: colors.bg, padding: 15 },
   row: { flexDirection: "row", alignItems: "center" },
   between: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
@@ -34,5 +34,56 @@ export default StyleSheet.create({
   },
 
   avatar: { width: 80, height: 80, borderRadius: 40, alignSelf: 'center' },
-  thumbnail: { width: "100%", height: 180, borderRadius: 10 }
+  thumbnail: { width: "100%", height: 180, borderRadius: 10 },
+
+  // ROW LIST
+  rowItem: {
+    paddingVertical: 12, 
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  rowLabel: { marginLeft: 8 },
+  rowValue: {
+    fontWeight: "500",
+    maxWidth: "55%",
+    textAlign: "right",
+  },
+
+  // header──
+  appbar: {
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+  },
+  headerTitle: {
+    color: colors.white,
+    fontSize: 18,
+    fontWeight: "700",
+    letterSpacing: 0.3,
+  },
+  headerSubtitle: {
+    color: "rgba(255,255,255,0.75)",
+    fontSize: 12,
+  },
+  notifWrapper: {
+    position: "relative",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  headerBadge: {
+    position: "absolute",
+    top: 6,
+    right: 4,
+    backgroundColor: "#FF4444",
+    color: colors.white,
+    fontSize: 10,
+  },
+  avatarHeaderBtn: {
+    marginRight: 8,
+    borderWidth: 2,
+    borderColor: "rgba(255,255,255,0.5)",
+    borderRadius: 20,
+  }
 })

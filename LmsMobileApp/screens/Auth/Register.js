@@ -5,6 +5,7 @@ import * as ImgPicker from 'expo-image-picker';
 import { useState } from "react";
 import Apis, { endpoints } from "../../configs/Apis";
 import { useNavigation } from "@react-navigation/native";
+import {AvatarPicker} from "../../components/common/index"
 
 const Register = () => {
     const userInfo = [{
@@ -35,23 +36,6 @@ const Register = () => {
     const [err, setErr] = useState();
     const [loading, setLoading] = useState(false);
     const nav = useNavigation();
-
-    const picker = async () => {
-        let { status } = await ImgPicker.requestMediaLibraryPermissionsAsync();
-        if (status !== 'granted') {
-            alert("Hệ thống cần quyền truy cập thư viện ảnh!");
-        } else {
-            const result = await ImgPicker.launchImageLibraryAsync({
-                mediaTypes: ImgPicker.MediaTypeOptions.Images,
-                allowsEditing: true,
-                aspect: [1, 1],
-                quality: 1,
-            });
-            if (!result.canceled) {
-                setUser({...user, 'avatar': result.assets[0]});
-            }
-        }
-    }
 
     const validate = () => {
         for (let i of userInfo)
@@ -127,9 +111,11 @@ const Register = () => {
                 />
             ))}
 
-            <TouchableOpacity onPress={picker} style={[Styles.row, Styles.mb10]}>
-                <Button icon="camera" mode="outlined">Chọn ảnh đại diện</Button>
-            </TouchableOpacity>
+            <AvatarPicker 
+                title="Chọn ảnh đại diện..."
+                avatarUri={user?.avatar?.uri} 
+                onImagePicked={(asset) => setUser({ ...user, 'avatar': asset })}
+            />
 
             {user.avatar && (
                 <View style={Styles.center}>
