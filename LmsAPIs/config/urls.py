@@ -21,10 +21,13 @@ from rest_framework.routers import DefaultRouter
 from apps.users.views import UserViewSet
 from apps.courses.views import CourseViewSet
 
+from apps.materials.views import MaterialViewSet
+
 # Router cho UserViewSet của chúng ta
 router = DefaultRouter()
 router.register('users', UserViewSet, basename='users')
 router.register('courses', CourseViewSet, basename='courses')
+router.register('materials', MaterialViewSet, basename='materials')
 
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view

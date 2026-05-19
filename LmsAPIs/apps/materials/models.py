@@ -1,3 +1,4 @@
+from ckeditor_uploader.fields import RichTextUploadingField
 from django.db import models
 from cloudinary.models import CloudinaryField
 from ckeditor.fields import RichTextField
@@ -17,9 +18,19 @@ class Material(BaseModel):
         HARD   = 'hard',   'Khó'
 
     title            = models.CharField(max_length=255)
-    content          = RichTextField(null=True, blank=True)
-    file             = CloudinaryField(null=True, blank=True)
-    thumbnail        = CloudinaryField(null=True, blank=True)
+    content = RichTextUploadingField(null=True, blank=True)
+   
+    file = CloudinaryField(
+        'file',
+        null=True,
+        blank=True,
+        resource_type='auto'
+    )
+    thumbnail = CloudinaryField(
+        'thumbnail',
+        null=True,
+        blank=True
+    )
     material_type    = models.CharField(max_length=20, choices=MaterialType.choices)
     difficulty       = models.CharField(max_length=20, choices=Difficulty.choices, default=Difficulty.MEDIUM)
     duration_minutes = models.IntegerField(default=0)
