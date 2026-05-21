@@ -1,12 +1,16 @@
-from rest_framework import viewsets,  permissions
-from apps.common import perms
+from rest_framework import viewsets, permissions
 
-#student vs admin and teacher
+
 class BaseViewSet(viewsets.ModelViewSet):
     class Meta:
         abstract = True
 
     def get_permissions(self):
-        if self.action in ['list']:
-            return [permissions.AllowAny()]
-        return [permissions.IsAuthenticated(), perms.IsTeacher | perms.IsAdmin]
+        if self.action in ['list', 'retrieve']:
+            permission_classes = [permissions.AllowAny]
+        elif self.action == 'create':
+            permission_classes = [permissions.IsAuthenticated]
+        else:
+            permission_classes = [perms.IsAdmin]
+        return [permission() for permission in permission_classes]
+        #return [permissions.AllowAny()]

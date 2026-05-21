@@ -16,18 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include, re_path
-from django.http import HttpResponse
 from rest_framework.routers import DefaultRouter
-from apps.users.views import UserViewSet
-from apps.courses.views import CourseViewSet
-
-from apps.materials.views import MaterialViewSet
-
-# Router cho UserViewSet của chúng ta
-router = DefaultRouter()
-router.register('users', UserViewSet, basename='users')
-router.register('courses', CourseViewSet, basename='courses')
-router.register('materials', MaterialViewSet, basename='materials')
 
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
@@ -44,9 +33,12 @@ schema_view = get_schema_view(
     public=True,
     permission_classes=(permissions.AllowAny,),
 )
-
+router = DefaultRouter()
 urlpatterns = [
-    path('', include(router.urls)),
+    path('', include('apps.users.urls')),
+    path('courses/', include('apps.courses.urls.CoursesUrls')),
+    path('forum/', include('apps.courses.urls.ForumUrls')),
+    path('', include('apps.materials.urls')),
     path("admin/", admin.site.urls),
     path("ckeditor/", include("ckeditor_uploader.urls")),
     re_path(r'^swagger(?P<format>\.json|\.yaml)$',
