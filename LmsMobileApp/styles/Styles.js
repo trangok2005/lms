@@ -11,6 +11,7 @@ export const colors = {
   gray: "#888780",
   bg: "#F5F5F5",
   border: "#E0DDD5",
+  focus: "#de3535"
 };
 
 export default StyleSheet.create({

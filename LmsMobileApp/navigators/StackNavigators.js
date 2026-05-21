@@ -1,75 +1,57 @@
-/**
- * StackNavigators.js
- * Quản lý toàn bộ luồng màn hình Stack của app.
- * Mỗi Stack export ra để TabNavigators và RootNavigator import dùng.
- */
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
-// ── Auth ─────────────────────────────────────────────────
-import Login from "../screens/Auth/Login";
-import Register from "../screens/Auth/Register";
-
+// ── Auth ──────────────────────────────────────────────────
+import Login                      from "../screens/Auth/Login";
+import Register                   from "../screens/Auth/Register";
 // ── Student Home ─────────────────────────────────────────
-import HomeScreen from "../screens/Student/HomeScreen";
-
+import HomeScreen                 from "../screens/Student/HomeScreen";
 // ── Courses ──────────────────────────────────────────────
-import CourseListScreen from "../screens/Courses/CourseListScreen";
-import CourseDetailScreen from "../screens/Courses/CourseDetailScreen";
-import CourseSearchScreen from "../screens/Courses/CourseSearchScreen";
-import MyCourseScreen from "../screens/Courses/MyCourseScreen";
-
+import CourseListScreen           from "../screens/Courses/CourseListScreen";
+import CourseDetailScreen         from "../screens/Courses/CourseDetailScreen";
+import CourseSearchScreen         from "../screens/Courses/CourseSearchScreen";
+import MyCourseScreen             from "../screens/Courses/MyCourseScreen";
 // ── Materials ────────────────────────────────────────────
-import MaterialListScreen from "../screens/Materials/MaterialListScreen";
-import MaterialDetailScreen from "../screens/Materials/MaterialDetailScreen";
-import MaterialSearchScreen from "../screens/Materials/MaterialSearchScreen";
-import CommentScreen from "../screens/Materials/CommentScreen";
-import NoteScreen from "../screens/Materials/NoteScreen";
-
-// ── Forum ────────────────────────────────────────────────
-import ForumListScreen from "../screens/Forum/ForumListScreen";
-import ForumDetailScreen from "../screens/Forum/ForumDetailScreen";
-import CreateTopicScreen from "../screens/Forum/CreateTopicScreen";
-
-// ── Quiz ─────────────────────────────────────────────────
-import QuizListScreen from "../screens/Quiz/QuizListScreen";
-import QuizTakeScreen from "../screens/Quiz/QuizTakeScreen";
-import QuizResultScreen from "../screens/Quiz/QuizResultScreen";
-
+import MaterialListScreen         from "../screens/Materials/MaterialListScreen";
+import MaterialDetailScreen       from "../screens/Materials/MaterialDetailScreen";
+import MaterialSearchScreen       from "../screens/Materials/MaterialSearchScreen";
+import CommentScreen              from "../screens/Materials/CommentScreen";
+import NoteScreen                 from "../screens/Materials/NoteScreen";
+// ── Forum  (nhúng vào HomeStack — mở từ MaterialActionBar) ──
+import ForumListScreen            from "../screens/Forum/ForumListScreen";
+import ForumDetailScreen          from "../screens/Forum/ForumDetailScreen";
+import CreateTopicScreen          from "../screens/Forum/CreateTopicScreen";
+// ── Quiz   (nhúng vào HomeStack — mở từ MaterialActionBar) ──
+import QuizListScreen             from "../screens/Quiz/QuizListScreen";
+import QuizTakeScreen             from "../screens/Quiz/QuizTakeScreen";
+import QuizResultScreen           from "../screens/Quiz/QuizResultScreen";
 // ── Progress ─────────────────────────────────────────────
-import LearningDashboardScreen from "../screens/Progress/LearningDashboardScreen";
-import LearningPathScreen from "../screens/Progress/LearningPathScreen";
-
+import LearningDashboardScreen    from "../screens/Progress/LearningDashboardScreen";
+import LearningPathScreen         from "../screens/Progress/LearningPathScreen";
 // ── Payment ──────────────────────────────────────────────
-import CheckoutScreen from "../screens/Payment/CheckoutScreen";
-import PaymentResultScreen from "../screens/Payment/PaymentResultScreen";
-import TransactionHistoryScreen from "../screens/Payment/TransactionHistoryScreen";
-
+import CheckoutScreen             from "../screens/Payment/CheckoutScreen";
+import PaymentResultScreen        from "../screens/Payment/PaymentResultScreen";
+import TransactionHistoryScreen   from "../screens/Payment/TransactionHistoryScreen";
 // ── Profile ──────────────────────────────────────────────
-import ProfileScreen from "../screens/Profile/ProfileScreen";
-import EditProfileScreen from "../screens/Profile/EditProfileScreen";
-import ChangePasswordScreen from "../screens/Profile/ChangePasswordScreen";
-
+import ProfileScreen              from "../screens/Profile/ProfileScreen";
+import EditProfileScreen          from "../screens/Profile/EditProfileScreen";
+import ChangePasswordScreen       from "../screens/Profile/ChangePasswordScreen";
 // ── Teacher ──────────────────────────────────────────────
-import TeacherDashboardScreen from "../screens/Teacher/TeacherDashboardScreen";
-import ManageCourseScreen from "../screens/Teacher/ManageCourseScreen";
-import ManageMaterialScreen from "../screens/Teacher/ManageMaterialScreen";
-import ManageQuizScreen from "../screens/Teacher/ManageQuizScreen";
-import StudentProgressScreen from "../screens/Teacher/StudentProgressScreen";
-
+import TeacherDashboardScreen     from "../screens/Teacher/TeacherDashboardScreen";
+import ManageCourseScreen         from "../screens/Teacher/ManageCourseScreen";
+import ManageMaterialScreen       from "../screens/Teacher/ManageMaterialScreen";
+import ManageQuizScreen           from "../screens/Teacher/ManageQuizScreen";
+import StudentProgressScreen      from "../screens/Teacher/StudentProgressScreen";
 // ── Admin ────────────────────────────────────────────────
-import AdminDashboardScreen from "../screens/Admin/AdminDashboardScreen";
-import ReportScreen from "../screens/Admin/ReportScreen";
+import AdminDashboardScreen       from "../screens/Admin/AdminDashboardScreen";
+import ReportScreen               from "../screens/Admin/ReportScreen";
 import TransactionManagementScreen from "../screens/Admin/TransactionManagementScreen";
-import UserManagementScreen from "../screens/Admin/UserManagementScreen";
+import UserManagementScreen       from "../screens/Admin/UserManagementScreen";
 
-// ─────────────────────────────────────────────────────────
 const Stack = createNativeStackNavigator();
-const SO = { headerShown: false }; // screenOptions shorthand
+const SO    = { headerShown: false };
 
-// ══════════════════════════════════════════════════════════
-// AUTH STACK — chưa đăng nhập
-// ══════════════════════════════════════════════════════════
+// ── AUTH ─────────────────────────────────────────────────
 export const AuthStack = () => (
   <Stack.Navigator screenOptions={SO}>
     <Stack.Screen name="Login"    component={Login} />
@@ -77,30 +59,34 @@ export const AuthStack = () => (
   </Stack.Navigator>
 );
 
-// ══════════════════════════════════════════════════════════
-// HOME STACK — tab Trang chủ (student)
-// Gộp Courses + Materials + Payment vì cùng flow từ Home
-// ══════════════════════════════════════════════════════════
+// ── HOME (Student) ────────────────────────────────────────
+// Forum & Quiz screens được nhúng trực tiếp vào đây.
+// MaterialDetailScreen dùng <MaterialActionBar> để navigate tới
+// ForumList / QuizList mà không cần rời HomeStack.
 export const HomeStack = () => (
   <Stack.Navigator screenOptions={SO}>
     <Stack.Screen name="Home"           component={HomeScreen} />
+    
     <Stack.Screen name="CourseList"     component={CourseListScreen} />
     <Stack.Screen name="CourseDetail"   component={CourseDetailScreen} />
     <Stack.Screen name="CourseSearch"   component={CourseSearchScreen} />
-    <Stack.Screen name="MyCourse"       component={MyCourseScreen} />
-    <Stack.Screen name="MaterialList"   component={MaterialListScreen} />
+
+     <Stack.Screen name="MaterialList"   component={MaterialListScreen} />
     <Stack.Screen name="MaterialDetail" component={MaterialDetailScreen} />
-    <Stack.Screen name="MaterialSearch" component={MaterialSearchScreen} />
     <Stack.Screen name="Comment"        component={CommentScreen} />
     <Stack.Screen name="Note"           component={NoteScreen} />
+    <Stack.Screen name="ForumList"      component={ForumListScreen} />
+    <Stack.Screen name="ForumDetail"    component={ForumDetailScreen} />
+    <Stack.Screen name="CreateTopic"    component={CreateTopicScreen} />
+    <Stack.Screen name="QuizList"       component={QuizListScreen} />
+
+    <Stack.Screen name="MyCourse"       component={MyCourseScreen} />
     <Stack.Screen name="Checkout"       component={CheckoutScreen} />
     <Stack.Screen name="PaymentResult"  component={PaymentResultScreen} />
   </Stack.Navigator>
 );
 
-// ══════════════════════════════════════════════════════════
-// FORUM STACK
-// ══════════════════════════════════════════════════════════
+// ── FORUM (dùng cho TeacherTabs — độc lập) ───────────────
 export const ForumStack = () => (
   <Stack.Navigator screenOptions={SO}>
     <Stack.Screen name="ForumList"   component={ForumListScreen} />
@@ -109,9 +95,7 @@ export const ForumStack = () => (
   </Stack.Navigator>
 );
 
-// ══════════════════════════════════════════════════════════
-// QUIZ STACK
-// ══════════════════════════════════════════════════════════
+// ── QUIZ (giữ lại nếu cần dùng độc lập ở chỗ khác) ──────
 export const QuizStack = () => (
   <Stack.Navigator screenOptions={SO}>
     <Stack.Screen name="QuizList"   component={QuizListScreen} />
@@ -120,9 +104,7 @@ export const QuizStack = () => (
   </Stack.Navigator>
 );
 
-// ══════════════════════════════════════════════════════════
-// PROGRESS STACK — Tiến độ & AI lộ trình
-// ══════════════════════════════════════════════════════════
+// ── PROGRESS ─────────────────────────────────────────────
 export const ProgressStack = () => (
   <Stack.Navigator screenOptions={SO}>
     <Stack.Screen name="LearningDashboard" component={LearningDashboardScreen} />
@@ -130,20 +112,16 @@ export const ProgressStack = () => (
   </Stack.Navigator>
 );
 
-// ══════════════════════════════════════════════════════════
-// PROFILE STACK — dùng chung cho mọi role
-// ══════════════════════════════════════════════════════════
+// ── PROFILE (dùng chung 3 role) ──────────────────────────
 export const ProfileStack = () => (
   <Stack.Navigator screenOptions={SO}>
-    <Stack.Screen name="Profile" component={ProfileScreen} />
-    <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+    <Stack.Screen name="Profile"        component={ProfileScreen} />
+    <Stack.Screen name="EditProfile"    component={EditProfileScreen} />
     <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
   </Stack.Navigator>
 );
 
-// ══════════════════════════════════════════════════════════
-// TEACHER STACK
-// ══════════════════════════════════════════════════════════
+// ── TEACHER ──────────────────────────────────────────────
 export const TeacherStack = () => (
   <Stack.Navigator screenOptions={SO}>
     <Stack.Screen name="TeacherDashboard" component={TeacherDashboardScreen} />
@@ -154,9 +132,7 @@ export const TeacherStack = () => (
   </Stack.Navigator>
 );
 
-// ══════════════════════════════════════════════════════════
-// ADMIN STACK
-// ══════════════════════════════════════════════════════════
+// ── ADMIN ────────────────────────────────────────────────
 export const AdminStack = () => (
   <Stack.Navigator screenOptions={SO}>
     <Stack.Screen name="AdminDashboard"        component={AdminDashboardScreen} />

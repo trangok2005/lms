@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from 'react'
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Icon } from "react-native-paper";
 import {
@@ -6,6 +6,7 @@ import {
   ProgressStack, ProfileStack,
   TeacherStack, AdminStack,
 } from "./StackNavigators";
+import { MyUserContext } from "../configs/MyContext";
 
 const Tab = createBottomTabNavigator();
 
@@ -21,25 +22,13 @@ const tabScreenOptions = (activeTintColor) => ({
   tabBarLabelStyle: { fontSize: 11 },
 });
 
-// ══════════════════════════════════════════════════════════
-// STUDENT TABS  (5 tab)
-// ══════════════════════════════════════════════════════════
+
 export const StudentTabs = () => (
   <Tab.Navigator screenOptions={tabScreenOptions("#6C63FF")}>
     <Tab.Screen
       name="HomeTab"
       component={HomeStack}
       options={{ title: "Trang chủ", tabBarIcon: icon("home") }}
-    />
-    <Tab.Screen
-      name="ForumTab"
-      component={ForumStack}
-      options={{ title: "Diễn đàn", tabBarIcon: icon("forum") }}
-    />
-    <Tab.Screen
-      name="QuizTab"
-      component={QuizStack}
-      options={{ title: "Kiểm tra", tabBarIcon: icon("clipboard-check") }}
     />
     <Tab.Screen
       name="ProgressTab"
@@ -49,10 +38,11 @@ export const StudentTabs = () => (
     <Tab.Screen
       name="ProfileTab"
       component={ProfileStack}
-      options={{title: "Hồ sơ",tabBarItemStyle: { display: "none" }}}
+      options={{ title: "Hồ sơ", tabBarIcon: icon("account") }}
     />
   </Tab.Navigator>
 );
+
 
 // ══════════════════════════════════════════════════════════
 // TEACHER TABS  (4 tab)
