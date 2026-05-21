@@ -2,7 +2,6 @@
 from rest_framework import viewsets, generics, filters, status, parsers, permissions, mixins
 from rest_framework.decorators import action
 from rest_framework.response import Response
-
 from apps.courses.models import Course, Enrollment, ForumTopic, ForumReply, Category, Tag
 from apps.courses import serializers, perms
 from apps.payments.models import Transaction
@@ -256,3 +255,15 @@ class ForumTopicViewSet(viewsets.ViewSet,
             serializers.ForumReplySerializer(replies, many=True).data,
             status=status.HTTP_200_OK
         )
+
+class ForumReplyViewSet(viewsets.GenericViewSet, mixins.DestroyModelMixin):
+    queryset = ForumReply.objects.filter(is_active=True)
+    serializer_class = serializers.ForumReplySerializer
+    permission_classes = [perms.IsTopicOwnerOrCourseTeacherOrAdmin]
+
+    def destroy(self, request, *args, **kwargs):
+        reply = self.get_object()
+        self.check_object_permissions(request, reply)
+        reply.is_active = False
+        reply.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)

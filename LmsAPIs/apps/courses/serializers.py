@@ -111,3 +111,4 @@ class ForumTopicDetailSerializer(ForumTopicSerializer):
     class Meta:
         model  = ForumTopicSerializer.Meta.model
         fields = ForumTopicSerializer.Meta.fields + ['replies']
+

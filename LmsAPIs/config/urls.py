@@ -36,8 +36,7 @@ schema_view = get_schema_view(
 router = DefaultRouter()
 urlpatterns = [
     path('', include('apps.users.urls')),
-    path('courses/', include('apps.courses.urls.CoursesUrls')),
-    path('forum/', include('apps.courses.urls.ForumUrls')),
+    path('', include('apps.courses.urls')),
     path('', include('apps.materials.urls')),
     path("admin/", admin.site.urls),
     path("ckeditor/", include("ckeditor_uploader.urls")),

@@ -66,14 +66,14 @@ CKEDITOR_CONFIGS = {
 import cloudinary
 
 
-# 1. Tối ưu cho bộ lưu trữ Django Storage
+DATA_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024  # 50MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': str(config("cloud_name")).strip("'\", \n\r\t"),
     'API_KEY': str(config("api_key")).strip("'\", \n\r\t"),
     'API_SECRET': str(config("api_secret")).strip("'\", \n\r\t")
 }
 
-# 2. Tối ưu cho Cloudinary Core SDK
 cloudinary.config(
     cloud_name=str(config("cloud_name")).strip("'\", \n\r\t"),
     api_key=str(config("api_key")).strip("'\", \n\r\t"),

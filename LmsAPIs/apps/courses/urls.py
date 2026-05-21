@@ -1,11 +1,12 @@
 from rest_framework.routers import DefaultRouter
-from apps.courses.views import CourseViewSet, ForumTopicViewSet, CategoryViewSet, TagViewSet
+from apps.courses.views import CourseViewSet, ForumTopicViewSet, CategoryViewSet, TagViewSet, ForumReplyViewSet
 
 router = DefaultRouter()
 router.register('courses', CourseViewSet, basename='course')
 router.register('forum', ForumTopicViewSet, basename='forum')
 router.register('categories', CategoryViewSet, basename='category')
 router.register('tags', TagViewSet, basename='tag')
+router.register('forum/reply', ForumReplyViewSet, basename='reply')
 urlpatterns = router.urls
 
 # ─────────────────────────────────────────────────────────────
@@ -23,4 +24,5 @@ urlpatterns = router.urls
 #  API 12 GET    /forum/{pk}/replies/          → replies (GET)
 #  API 12 POST   /forum/{pk}/replies/          → replies (POST)
 #  API 13 DELETE /forum/{pk}/                  → destroy
+#  API 14 DELETE /reply/{pk}/                  → destroy
 # ─────────────────────────────────────────────────────────────
