@@ -30,7 +30,7 @@ const ForumDetailScreen = () => {
           setLoading(true);
           const token = await AsyncStorage.getItem("token");
           if (!token) {
-            console.error("ForumDetailScreen: missing auth token");
+            console.debug("ForumDetailScreen: missing auth token");
             setLoading(false);
             return;
           }
@@ -42,7 +42,7 @@ const ForumDetailScreen = () => {
           const replies = repliesRes.data.results ?? repliesRes.data ?? [];
           setTopic((prev) => ({ ...(prev ?? {}), replies }));
         } catch (ex) {
-          console.error(ex);
+          console.debug(ex);
         } finally {
           setLoading(false);
         }
@@ -51,7 +51,7 @@ const ForumDetailScreen = () => {
       if (params.topicId) {
         fetchReplies();
       } else {
-        console.error("ForumDetailScreen: missing topicId");
+        console.debug("ForumDetailScreen: missing topicId");
       }
     }, [params.topicId])
   );
@@ -62,7 +62,7 @@ const ForumDetailScreen = () => {
       setSending(true);
       const token = await AsyncStorage.getItem("token");
       if (!token) {
-        console.error("ForumDetailScreen: missing auth token for sendReply");
+        console.debug("ForumDetailScreen: missing auth token for sendReply");
         return;
       }
       const res = await authApis(token).post(
@@ -76,7 +76,7 @@ const ForumDetailScreen = () => {
       setReply("");
       inputRef.current?.blur();
     } catch (ex) {
-      console.error(ex);
+      console.debug(ex);
     } finally {
       setSending(false);
     }
@@ -86,7 +86,7 @@ const ForumDetailScreen = () => {
     try {
       const token = await AsyncStorage.getItem("token");
       if (!token) {
-        console.error("ForumDetailScreen: missing auth token for deleteReply");
+        console.debug("ForumDetailScreen: missing auth token for deleteReply");
         return;
       }
       await authApis(token).delete(endpoints["reply-delete"](replyId));
@@ -95,7 +95,7 @@ const ForumDetailScreen = () => {
         replies: prev.replies.filter((r) => r.id !== replyId),
       }));
     } catch (ex) {
-      console.error(ex);
+      console.debug(ex);
     }
   };
 

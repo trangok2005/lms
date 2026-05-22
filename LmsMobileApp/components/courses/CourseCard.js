@@ -20,6 +20,7 @@ const CourseCard = ({ course, onPress }) => {
   const isFree = !course.price || parseFloat(course.price) === 0;
 
   return (
+    console.log("CourseCard data:", course),
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.85}>
       {/* Thumbnail */}
       {course.image ? (
@@ -37,17 +38,17 @@ const CourseCard = ({ course, onPress }) => {
         </Text>
 
         {/* Giảng viên */}
-        <View style={[Styles.row, Styles.mb10]}>
+        <View style={[Styles.row, Styles.mb10]}> 
           <Icon source="account-tie" size={14} color={colors.gray} />
-          <Text variant="bodySmall" style={styles.teacher}>
-            {course.teacher_name ?? "Giảng viên"}
+          <Text variant="bodySmall" style={styles.teacher} numberOfLines={1}>
+            {`${course.teacher.first_name} ${course.teacher.last_name}` ?? "Giảng viên"}
           </Text>
         </View>
 
         {/* Level + Giá */}
         <View style={Styles.between}>
           <Chip
-            compact
+            mode="outlined"
             style={[styles.chip, { borderColor: lv.color }]}
             textStyle={{ color: lv.color, fontSize: 11 }}
           >
@@ -81,9 +82,9 @@ const styles = StyleSheet.create({
   },
   body:    { padding: 12 },
   title:   { fontWeight: "700", color: colors.black, marginBottom: 6, lineHeight: 20 },
-  teacher: { marginLeft: 4, color: colors.gray },
-  chip:    { backgroundColor: "transparent", borderWidth: 1, height: 26 },
-  price:   { fontWeight: "700", fontSize: 14 },
+  teacher: { marginLeft: 4, color: colors.gray, flexShrink: 1 },
+  chip:    { backgroundColor: "transparent", borderWidth: 1, marginRight: 8, flexShrink: 1, paddingVertical: 0},
+  price:   { fontWeight: "700", fontSize: 14, flexShrink: 1, textAlign: "right" },
 });
 
 export default CourseCard;

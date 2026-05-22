@@ -7,7 +7,7 @@ from apps.courses import serializers, perms
 from apps.payments.models import Transaction
 
 
-class BaseViewSet(viewsets.GenericViewSet,mixins.ListModelMixin,
+class BaseViewSet(viewsets.ViewSet,mixins.ListModelMixin,
                     mixins.CreateModelMixin,mixins.DestroyModelMixin):
     class Meta:
         abstract = True
@@ -92,6 +92,7 @@ class CourseViewSet(viewsets.ViewSet,
     @action(methods=['get'], url_path='my-courses', detail=False)
     def my_courses(self, request):
         user = request.user
+        sta = request.query_params.get('status')
 
         if user.role == 'admin':
             courses = Course.objects.filter(is_active=True)
@@ -108,9 +109,11 @@ class CourseViewSet(viewsets.ViewSet,
             )
 
         # student — lấy từ Enrollment
-        enrollments = Enrollment.objects.filter(
-            user=user, status=Enrollment.Status.ACTIVE
-        ).select_related('course')
+        enrollments = Enrollment.objects.filter(user=user).select_related('course')
+
+        if sta:
+            enrollments =  enrollments.filter(status=sta)
+
         return Response(
             serializers.EnrollmentSerializer(enrollments, many=True).data,
             status=status.HTTP_200_OK

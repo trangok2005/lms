@@ -1,12 +1,12 @@
 import React from 'react'
 import { View, Text } from 'react-native'
 
-const CheckoutScreen = () => {
+const NoteItem = () => {
     return (
         <View>
-            <Text>CheckoutScreen</Text>
+            <Text>NoteItem</Text>
         </View>
     )
 }
 
-export default CheckoutScreen
+export default NoteItem

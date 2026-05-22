@@ -29,7 +29,6 @@ import QuizResultScreen           from "../screens/Quiz/QuizResultScreen";
 import LearningDashboardScreen    from "../screens/Progress/LearningDashboardScreen";
 import LearningPathScreen         from "../screens/Progress/LearningPathScreen";
 // ── Payment ──────────────────────────────────────────────
-import CheckoutScreen             from "../screens/Payment/CheckoutScreen";
 import PaymentResultScreen        from "../screens/Payment/PaymentResultScreen";
 import TransactionHistoryScreen   from "../screens/Payment/TransactionHistoryScreen";
 // ── Profile ──────────────────────────────────────────────
@@ -81,13 +80,15 @@ export const HomeStack = () => (
 {/* note */}
     <Stack.Screen name="Comment"   component={CommentScreen}  options={{ title: 'Lesson Comment' }} />
    <Stack.Screen name="Note" component={NoteScreen} options={{ title: 'Lesson Notes' }} />
+
+    <Stack.Screen name="Comment"        component={CommentScreen} />
+    <Stack.Screen name="Note"           component={NoteScreen} />
     <Stack.Screen name="ForumList"      component={ForumListScreen} />
     <Stack.Screen name="ForumDetail"    component={ForumDetailScreen} />
     <Stack.Screen name="CreateTopic"    component={CreateTopicScreen} />
     <Stack.Screen name="QuizList"       component={QuizListScreen} />
 
     <Stack.Screen name="MyCourse"       component={MyCourseScreen} />
-    <Stack.Screen name="Checkout"       component={CheckoutScreen} />
     <Stack.Screen name="PaymentResult"  component={PaymentResultScreen} />
   </Stack.Navigator>
 );

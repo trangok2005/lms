@@ -1,3 +1,4 @@
+
 from rest_framework import serializers
 from .models import Material, MaterialProgress, Comment, Note
 from ..users.models import User
@@ -82,3 +83,4 @@ class NoteSerializer(serializers.ModelSerializer):
             'user',
             'created_date'
         )
+

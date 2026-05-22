@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from "react";
 import { ScrollView, View, StyleSheet, Image, useWindowDimensions } from "react-native";
 import { Text, Card, Chip, Button, Divider, ProgressBar, Icon } from "react-native-paper";
@@ -108,6 +109,8 @@ const MaterialDetailScreen = ({ route, navigation }) => {
     const diffStyle = getDifficultyColor(material.difficulty);
     const currentProgress = progress?.progress_percent || 0;
 
+
+const MaterialDetailScreen = () => {
     return (
         <View style={styles.screen}>
             <Header title={material.course?.title || "Chi tiết bài học"} showBack />
@@ -273,4 +276,5 @@ const styles = StyleSheet.create({
     subBtn: { flex: 1, borderRadius: 12, borderColor: "#cbd5e1", borderWidth: 1 }
 });
 
-export default MaterialDetailScreen;
+
+export default MaterialDetailScreen

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { View, FlatList, StyleSheet } from "react-native";
 import { Text, Searchbar } from "react-native-paper";
@@ -63,16 +64,9 @@ const MaterialSearchScreen = () => {
                     }
                 />
             )}
+
         </View>
-    );
-};
+    )
+}
 
-const styles = StyleSheet.create({
-    screen: { flex: 1, backgroundColor: "#f8fafc" },
-    searchContainer: { padding: 16, backgroundColor: "white", elevation: 2 },
-    searchbar: { backgroundColor: "#f1f5f9", borderRadius: 12 },
-    list: { padding: 16 },
-    emptyText: { textAlign: "center", marginTop: 50, color: "gray" }
-});
-
-export default MaterialSearchScreen;
+export default MaterialSearchScreen
