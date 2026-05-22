@@ -46,6 +46,8 @@ import AdminDashboardScreen       from "../screens/Admin/AdminDashboardScreen";
 import ReportScreen               from "../screens/Admin/ReportScreen";
 import TransactionManagementScreen from "../screens/Admin/TransactionManagementScreen";
 import UserManagementScreen       from "../screens/Admin/UserManagementScreen";
+import VideoPlayerScreen from "../screens/Materials/VideoPlayerScreen";
+import DocumentViewerScreen from "../screens/Materials/DocumentViewerScreen";
 
 const Stack = createNativeStackNavigator();
 const SO    = { headerShown: false };
@@ -72,8 +74,12 @@ export const HomeStack = () => (
 
      <Stack.Screen name="MaterialList"   component={MaterialListScreen} />
     <Stack.Screen name="MaterialDetail" component={MaterialDetailScreen} />
-    <Stack.Screen name="Comment"        component={CommentScreen} />
-    <Stack.Screen name="Note"           component={NoteScreen} />
+    <Stack.Screen name="material-search" component={MaterialSearchScreen} />
+    <Stack.Screen name="VideoPlayer" component={VideoPlayerScreen} options={{ title: "Video Player" }} />
+    <Stack.Screen name="DocumentViewer" component={DocumentViewerScreen} options={{ title: "Document Viewer" }} />
+{/* note */}
+    <Stack.Screen name="Comment"   component={CommentScreen}  options={{ title: 'Lesson Comment' }} />
+   <Stack.Screen name="Note" component={NoteScreen} options={{ title: 'Lesson Notes' }} />
     <Stack.Screen name="ForumList"      component={ForumListScreen} />
     <Stack.Screen name="ForumDetail"    component={ForumDetailScreen} />
     <Stack.Screen name="CreateTopic"    component={CreateTopicScreen} />
