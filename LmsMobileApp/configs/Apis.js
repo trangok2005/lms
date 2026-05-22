@@ -15,6 +15,25 @@ export const endpoints = {
     "course-materials": (courseId) => `/Material/?course=${courseId}`,
     "material-detail":  (id)       => `/Material/${id}/`,
     "material-search": (q) => `/Material/?q=${q}`,
+    // Material Management
+    "material-list": () => `/Material/`,
+    "material-create": () => `/Material/`,
+    "material-detail": (id) => `/Material/${id}/`,
+    "material-update": (id) => `/Material/${id}/`,
+    "material-partial-update": (id) => `/Material/${id}/`,
+    "material-delete": (id) => `/Material/${id}/`,
+
+    // Material Interactions
+    "material-start": (id) => `/Material/${id}/start/`,
+    "material-complete": (id) => `/Material/${id}/complete/`,
+    "material-next": (id) => `/Material/${id}/next/`,
+    "material-previous": (id) => `/Material/${id}/previous/`,
+
+    // Progress & Notes
+    "comments": "/comments/",
+    "notes": "/notes/",
+    "progress-update": "/progress/update-status/",
+    "progress-summary": "/progress/summary/",
     /** */
     "forum-topics":       (courseId) => `/courses/${courseId}/forum/`,
     "forum-topic-detail": (id)      => `/forum/${id}/`,
