@@ -61,7 +61,7 @@ const ForumListScreen = () => {
       pageRef.current    = currentPage + 1;
 
     } catch (ex) {
-      console.error("ForumListScreen fetchTopics:", ex);
+      console.debug("ForumListScreen fetchTopics:", ex);
     } finally {
       fetchingRef.current = false;
       setLoading(false);
@@ -93,7 +93,7 @@ const ForumListScreen = () => {
       await authApis(token).delete(endpoints["forum-delete"](topicId));
       setTopics((prev) => prev.filter((t) => t.id !== topicId));
     } catch (ex) {
-      console.error("ForumListScreen deleteTopic:", ex);
+      console.debug("ForumListScreen deleteTopic:", ex);
     }
   };
 

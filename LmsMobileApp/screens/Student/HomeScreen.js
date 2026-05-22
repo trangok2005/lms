@@ -48,7 +48,7 @@ const HomeScreen = () => {
 
       setEnrolled((enrollRes.data.results ?? enrollRes.data).slice(0, 5));
     } catch (ex) {
-      console.error("Lỗi tải trang chủ:", ex);
+      console.debug("Lỗi tải trang chủ:", ex);
     } finally {
       setLoading(false);
     }

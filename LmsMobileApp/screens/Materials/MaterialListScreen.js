@@ -38,7 +38,6 @@ const MaterialListScreen = () => {
         }, [courseId])
     );
 
-    // Nút tìm kiếm trên Header
     const headerRight = (
         <IconButton
             icon="magnify"
@@ -47,6 +46,7 @@ const MaterialListScreen = () => {
             onPress={() => nav.navigate("material-search")}
         />
     );
+
 
     return (
         <View style={styles.screen}>
