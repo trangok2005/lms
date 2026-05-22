@@ -12,9 +12,8 @@ export const endpoints = {
     /** */
     "my-courses": "/courses/my-courses/",
     "enroll":  (id) => `/courses/${id}/enroll/`,
-    "course-materials": (courseId) => `/Material/?course=${courseId}`,
-    "material-detail":  (id)       => `/Material/${id}/`,
-    "material-search": (q) => `/Material/?q=${q}`,
+    "course-materials": `/Material/`,
+    "material-detail":  (id)       => `/materials/${id}/`,
     /** */
     "forum-topics":       (courseId) => `/courses/${courseId}/forum/`,
     "forum-topic-detail": (id)      => `/forum/${id}/`,
@@ -25,7 +24,7 @@ export const endpoints = {
 
 export const authApis = (token) => {
     return axios.create({
-        baseURL: "http://192.168.1.8:8000/",
+        baseURL: "http://192.168.1.18:8000/",
         headers: {
             'Authorization': `Bearer ${token}`
         }
@@ -33,5 +32,5 @@ export const authApis = (token) => {
 }
 
 export default axios.create({
-    baseURL: "http://192.168.1.8:8000/"
+    baseURL: "http://192.168.1.18:8000/"
 })

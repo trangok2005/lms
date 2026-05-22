@@ -1,12 +1,12 @@
 import React from 'react'
 import { View, Text } from 'react-native'
 
-const MaterialDetailScreen = () => {
+const NoteItem = () => {
     return (
         <View>
-            <Text>MaterialDetailScreen</Text>
+            <Text>NoteItem</Text>
         </View>
     )
 }
 
-export default MaterialDetailScreen
+export default NoteItem
