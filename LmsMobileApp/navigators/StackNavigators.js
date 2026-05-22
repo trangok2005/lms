@@ -72,6 +72,8 @@ export const HomeStack = () => (
 
      <Stack.Screen name="MaterialList"   component={MaterialListScreen} />
     <Stack.Screen name="MaterialDetail" component={MaterialDetailScreen} />
+    <Stack.Screen name="material-search" component={MaterialSearchScreen} />
+    
     <Stack.Screen name="Comment"        component={CommentScreen} />
     <Stack.Screen name="Note"           component={NoteScreen} />
     <Stack.Screen name="ForumList"      component={ForumListScreen} />

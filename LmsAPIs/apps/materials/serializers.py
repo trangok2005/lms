@@ -33,3 +33,46 @@ class MaterialProgressSerializer(serializers.ModelSerializer):
         model = MaterialProgress
         fields = '__all__'
         read_only_fields = ('created_at', 'updated_at', 'last_accessed')
+class CommentSerializer(
+    serializers.ModelSerializer
+):
+
+    class Meta:
+
+        model = Comment
+
+        fields = (
+            'id',
+            'content',
+            'material',
+            'user',
+
+        )
+
+        read_only_fields = (
+            'id',
+            'user',
+            'created_at'
+        )
+class NoteSerializer(
+    serializers.ModelSerializer
+):
+
+    class Meta:
+
+        model = Note
+
+        fields = (
+            'id',
+            'content',
+            'timestamp_sec',
+            'material',
+            'user',
+
+        )
+
+        read_only_fields = (
+            'id',
+            'user',
+            'created_at'
+        )
