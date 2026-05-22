@@ -29,7 +29,6 @@ import QuizResultScreen           from "../screens/Quiz/QuizResultScreen";
 import LearningDashboardScreen    from "../screens/Progress/LearningDashboardScreen";
 import LearningPathScreen         from "../screens/Progress/LearningPathScreen";
 // ── Payment ──────────────────────────────────────────────
-import CheckoutScreen             from "../screens/Payment/CheckoutScreen";
 import PaymentResultScreen        from "../screens/Payment/PaymentResultScreen";
 import TransactionHistoryScreen   from "../screens/Payment/TransactionHistoryScreen";
 // ── Profile ──────────────────────────────────────────────
@@ -81,7 +80,6 @@ export const HomeStack = () => (
     <Stack.Screen name="QuizList"       component={QuizListScreen} />
 
     <Stack.Screen name="MyCourse"       component={MyCourseScreen} />
-    <Stack.Screen name="Checkout"       component={CheckoutScreen} />
     <Stack.Screen name="PaymentResult"  component={PaymentResultScreen} />
   </Stack.Navigator>
 );

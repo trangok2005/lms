@@ -38,7 +38,7 @@ const MyCourseScreen = () => {
           });
           setEnrollments(res.data.results ?? res.data);
         } catch (ex) {
-          console.error(ex);
+          console.debug(ex);
         } finally {
           setLoading(false);
         }
@@ -87,10 +87,11 @@ const MyCourseScreen = () => {
             </View>
           }
           renderItem={({ item }) => (
+            console.log("Enrollment item:", item),
             <EnrollmentCard
               enrollment={item}
               onPress={() => {
-                const courseId = item.course_id ?? item.course?.id ?? item.course ?? item.id;
+                const courseId =  item.course?.id;
                 nav.navigate("MaterialList", { courseId });
               }}
             />
@@ -111,7 +112,7 @@ const EnrollmentCard = ({ enrollment, onPress }) => {
         <View style={Styles.row}>
           {/* Thumbnail nhỏ */}
           {enrollment.course_image ? (
-            <Image source={{ uri: enrollment.course_image }} style={styles.thumb} />
+            <Image source={{ uri: enrollment.course.image }} style={styles.thumb} />
           ) : (
             <View style={[styles.thumb, styles.thumbFallback]}>
               <Icon source="book" size={28} color={colors.white} />
@@ -122,15 +123,8 @@ const EnrollmentCard = ({ enrollment, onPress }) => {
           <View style={styles.content}>
             <View style={[Styles.between, Styles.mb10]}>
               <Text variant="titleSmall" style={styles.courseTitle} numberOfLines={2}>
-                {enrollment.course_name ?? "Khoá học"}
+                {enrollment.course.subject ?? "Khoá học"}
               </Text>
-              <Chip
-                compact
-                style={[styles.statusChip, { borderColor: st.color }]}
-                textStyle={{ color: st.color, fontSize: 10 }}
-              >
-                {st.label}
-              </Chip>
             </View>
 
             {/* Progress bar */}
@@ -141,7 +135,7 @@ const EnrollmentCard = ({ enrollment, onPress }) => {
               <View style={[Styles.row, { marginTop: 6 }]}>
                 <Icon source="clock-outline" size={13} color={colors.gray} />
                 <Text variant="bodySmall" style={{ marginLeft: 4, color: colors.gray }}>
-                  {new Date(enrollment.last_accessed).toLocaleDateString("vi-VN")}
+                   {new Date(enrollment.last_accessed).toLocaleDateString("vi-VN")}
                 </Text>
               </View>
             )}

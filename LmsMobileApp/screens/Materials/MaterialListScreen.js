@@ -40,7 +40,7 @@ const MaterialListScreen = () => {
       setMaterials(Array.isArray(list) ? list : []);
       setError("");
     } catch (ex) {
-      console.error(ex);
+      console.debug(ex);
       setError("Không thể tải tài liệu. Vui lòng thử lại.");
     } finally {
       setLoading(false);

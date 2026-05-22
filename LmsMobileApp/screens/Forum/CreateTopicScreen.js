@@ -41,7 +41,7 @@ const CreateTopicScreen = () => {
           value: item.course?.toString() ?? item.id?.toString() ?? "",
         })));
       } catch (ex) {
-        console.error(ex);
+        console.debug(ex);
       } finally {
         setFetching(false);
       }
@@ -74,7 +74,7 @@ const CreateTopicScreen = () => {
       nav.goBack();
     } catch (ex) {
       setErr("Tạo chủ đề thất bại, vui lòng thử lại!");
-      console.error(ex);
+      console.debug(ex);
     } finally {
       setLoading(false);
     }

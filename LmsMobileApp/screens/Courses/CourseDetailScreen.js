@@ -57,7 +57,7 @@ const CourseDetailScreen = () => {
 
         } catch (ex) {
 
-          console.error(ex.response?.data || ex);
+          console.debug(ex.response?.data || ex);
 
         } finally {
 
@@ -84,7 +84,7 @@ const CourseDetailScreen = () => {
       await authApis(token).post(endpoints["enroll"](course.id));
       setEnrolled(true);
     } catch (ex) {
-      console.error(ex);
+      console.debug(ex);
     } finally {
       setEnrolling(false);
     }

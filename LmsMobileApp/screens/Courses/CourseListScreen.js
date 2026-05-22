@@ -35,7 +35,7 @@ const CourseListScreen = () => {
       setHasMore(!!res.data.next);
       setPage(currentPage + 1);
     } catch (ex) {
-      console.error(ex);
+      console.debug(ex);
     } finally {
       setLoading(false);
     }
