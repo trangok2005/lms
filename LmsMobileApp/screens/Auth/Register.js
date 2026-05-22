@@ -83,7 +83,7 @@ const Register = () => {
                 }
             } catch (ex) {
                 setErr("Lỗi hệ thống hoặc tên đăng nhập đã tồn tại!");
-                console.error(ex);
+                console.debug(ex);
             } finally {
                 setLoading(false);
             }

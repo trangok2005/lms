@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from apps.courses.models import Category, Tag, Course, Enrollment, ForumTopic, ForumReply
-
+from apps.users.serializers import SimpleUserSerializer
 
 # ───────────────────────────── BASE ─────────────────────────────
 
@@ -17,7 +17,7 @@ class ItemSerializer(serializers.ModelSerializer):
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ['id', 'name', 'description']
+        fields = ['id', 'name']
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -26,25 +26,12 @@ class TagSerializer(serializers.ModelSerializer):
         fields = ['id', 'name']
 
 
-# ───────────────────────────── USER (nhúng vào response) ─────────────────────────────
-
-class UserInlineSerializer(serializers.Serializer):
-    id       = serializers.IntegerField()
-    username = serializers.CharField()
-    avatar   = serializers.SerializerMethodField()
-
-    def get_avatar(self, obj):
-        if obj.avatar:
-            return obj.avatar.url
-        return None
-
-
 # ───────────────────────────── COURSE ─────────────────────────────
 
 class CourseSerializer(ItemSerializer):
     tags     = TagSerializer(many=True, read_only=True)
     category = CategorySerializer(read_only=True)
-    teacher  = UserInlineSerializer(read_only=True)
+    teacher  = SimpleUserSerializer(read_only=True)
 
     class Meta:
         model  = Course
@@ -73,7 +60,7 @@ class EnrollmentSerializer(serializers.ModelSerializer):
 
 class StudentProgressSerializer(serializers.ModelSerializer):
     """Dùng cho API 8 — Teacher / Admin xem tiến độ học viên trong 1 khoá."""
-    user = UserInlineSerializer(read_only=True)
+    user = SimpleUserSerializer(read_only=True)
 
     class Meta:
         model  = Enrollment
@@ -83,7 +70,7 @@ class StudentProgressSerializer(serializers.ModelSerializer):
 # ───────────────────────────── FORUM ─────────────────────────────
 
 class ForumReplySerializer(serializers.ModelSerializer):
-    user = UserInlineSerializer(read_only=True)
+    user = SimpleUserSerializer(read_only=True)
 
     class Meta:
         model  = ForumReply
@@ -94,7 +81,7 @@ class ForumReplySerializer(serializers.ModelSerializer):
 
 
 class ForumTopicSerializer(serializers.ModelSerializer):
-    user         = UserInlineSerializer(read_only=True)
+    user         = SimpleUserSerializer(read_only=True)
     reply_count  = serializers.SerializerMethodField()
 
     class Meta:

@@ -51,8 +51,8 @@ const Login = () => {
       dispatch({ type: "LOGIN", payload: u.data });
 
     } catch (ex) {
-      setErr("Tên đăng nhập hoặc mật khẩu không chính xác!");
-      console.error(ex);
+      setErr("Tên đăng nhập hoặc mật khẩu không chính xác");
+      console.debug(ex);
     } finally {
       setLoading(false);
     }

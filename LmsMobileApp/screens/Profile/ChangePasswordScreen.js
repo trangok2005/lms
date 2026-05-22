@@ -56,7 +56,7 @@ const ChangePasswordScreen = () => {
                ?? ex.response?.data?.old_password?.[0]
                ?? "Mật khẩu hiện tại không đúng!";
       setErr(msg);
-      console.error(ex);
+      console.debug(ex);
     } finally {
       setLoading(false);
     }

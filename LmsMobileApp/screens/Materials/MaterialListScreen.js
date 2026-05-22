@@ -37,6 +37,7 @@ const MaterialListScreen = () => {
         }
     };
 
+
     useFocusEffect(
         useCallback(() => {
             fetchMaterials();
