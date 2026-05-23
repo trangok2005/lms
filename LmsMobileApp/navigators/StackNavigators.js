@@ -48,7 +48,8 @@ import TransactionManagementScreen from "../screens/Admin/TransactionManagementS
 import UserManagementScreen       from "../screens/Admin/UserManagementScreen";
 import VideoPlayerScreen from "../screens/Materials/VideoPlayerScreen";
 import DocumentViewerScreen from "../screens/Materials/DocumentViewerScreen";
-
+// ── Payment ──────────────────────────────────────────────
+import CheckoutScreen             from "../screens/Payment/CheckoutScreen";
 const Stack = createNativeStackNavigator();
 const SO    = { headerShown: false };
 
@@ -86,6 +87,7 @@ export const HomeStack = () => (
     <Stack.Screen name="QuizList"       component={QuizListScreen} />
 
     <Stack.Screen name="MyCourse"       component={MyCourseScreen} />
+    <Stack.Screen name="Checkout"       component={CheckoutScreen} />
     <Stack.Screen name="PaymentResult"  component={PaymentResultScreen} />
   </Stack.Navigator>
 );

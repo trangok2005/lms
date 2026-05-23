@@ -40,6 +40,10 @@ export const endpoints = {
     "forum-reply":        (topicId) => `/forum/${topicId}/replies/`,
     "forum-delete": (topicId) => `/forum/${topicId}/`,
     "reply-delete": (replyId) => `/forum/reply/${replyId}/`,
+
+    /**payments */
+    "pay": "/payments/pay/",
+    
 }
 
 export const authApis = (token) => {

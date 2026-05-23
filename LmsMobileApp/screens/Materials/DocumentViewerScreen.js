@@ -1,6 +1,7 @@
 // screens/materials/DocumentViewerScreen.js
 import React from "react";
-import { View, StyleSheet, Dimensions, Pdf} from "react-native";
+import { View, StyleSheet, Dimensions, pdf} from "react-native";
+
 
 
 const DocumentViewerScreen = ({ route }) => {

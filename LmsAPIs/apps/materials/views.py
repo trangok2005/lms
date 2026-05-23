@@ -44,6 +44,9 @@ class MaterialProgressViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'patch']
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return MaterialProgress.objects.none()
+
         return MaterialProgress.objects.filter(user=self.request.user).select_related('material')
 
     @action(detail=False, methods=['post'], url_path='update-status')
@@ -83,6 +86,8 @@ class NoteViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'patch', 'delete']
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Note.objects.none()
         queryset = Note.objects.filter(user=self.request.user).select_related('user', 'material')
         material_id = self.request.query_params.get('material')
         timestamp = self.request.query_params.get('timestamp')

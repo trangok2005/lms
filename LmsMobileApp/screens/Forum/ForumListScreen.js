@@ -18,18 +18,15 @@ const ForumListScreen = () => {
   const [topics,  setTopics]  = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // ── Dùng ref thay vì state cho pagination
-  // state update bất đồng bộ → closure trong fetchTopics
-  //        đọc page/hasMore cũ → trùng key / fetch sai trang.
-  const pageRef    = useRef(1);
+  // ── Dùng ref thay vì state cho pagination nhằm tránh trùng key ──
+  const pageRef     = useRef(1);
   const hasMoreRef = useRef(true);
-  const fetchingRef = useRef(false); // chặn gọi đồng thời
+  const fetchingRef = useRef(false); // Chặn gọi đồng thời khi lướt nhanh
 
-  // ── Core fetch ──────────────────────────────────────────
+  // ── Core fetch dữ liệu từ Server ──────────────────────────────────────────
   const fetchTopics = useCallback(async (reset = false) => {
     if (!courseId) return;
 
-    // Nếu đang fetch hoặc hết data (và không phải reset) → bỏ qua
     if (fetchingRef.current) return;
     if (!reset && !hasMoreRef.current) return;
 
@@ -44,11 +41,11 @@ const ForumListScreen = () => {
 
       const res     = await authApis(token).get(
         endpoints["forum-topics"](courseId),
-        { params: { page: currentPage } }   // gửi page lên server
+        { params: { page: currentPage } }
       );
       const results = res.data.results ?? res.data;
 
-      // Cập nhật list: reset → thay mới, load more → append (dedup theo id)
+      // Cập nhật mảng list bài đăng
       setTopics((prev) => {
         if (reset) return results;
         const existingIds = new Set(prev.map((t) => t.id));
@@ -56,7 +53,7 @@ const ForumListScreen = () => {
         return [...prev, ...fresh];
       });
 
-      // Cập nhật refs (đồng bộ, không gây re-render)
+      // Cập nhật thông số trang đồng bộ
       hasMoreRef.current = !!res.data.next;
       pageRef.current    = currentPage + 1;
 
@@ -68,47 +65,23 @@ const ForumListScreen = () => {
     }
   }, [courseId]);
 
-  // ── Reset & fetch mỗi khi màn hình được focus ──────────
+  // ── Tự động làm mới danh sách mỗi khi quay lại màn hình này ──────────
   useFocusEffect(
     useCallback(() => {
-      // Reset refs TRƯỚC khi gọi fetch — không phụ thuộc setState
       pageRef.current    = 1;
       hasMoreRef.current = true;
       fetchTopics(true);
     }, [fetchTopics])
   );
 
-  // ── Load more (infinite scroll) ─────────────────────────
+  // ── Kéo xuống dưới cùng để tải thêm bài (Infinite Scroll) ─────────────────
   const handleEndReached = useCallback(() => {
     if (!loading && hasMoreRef.current) {
       fetchTopics(false);
     }
   }, [loading, fetchTopics]);
 
-  // ── Delete ───────────────────────────────────────────────
-  const deleteTopic = async (topicId) => {
-    try {
-      const token = await AsyncStorage.getItem("token");
-      if (!token) return;
-      await authApis(token).delete(endpoints["forum-delete"](topicId));
-      setTopics((prev) => prev.filter((t) => t.id !== topicId));
-    } catch (ex) {
-      console.debug("ForumListScreen deleteTopic:", ex);
-    }
-  };
-
-  const confirmDelete = (topicId) => {
-    Alert.alert(
-      "Xóa chủ đề",
-      "Bạn có chắc muốn xóa chủ đề này?",
-      [
-        { text: "Huỷ",  style: "cancel" },
-        { text: "Xoá",  style: "destructive", onPress: () => deleteTopic(topicId) },
-      ]
-    );
-  };
-
-  // ── Render ───────────────────────────────────────────────
+  // ── Render Giao diện ───────────────────────────────────────────────
   const showInitialLoader = loading && topics.length === 0;
 
   return (
@@ -120,7 +93,6 @@ const ForumListScreen = () => {
       ) : (
         <FlatList
           data={topics}
-          // id là duy nhất — không còn trùng key khi dedup đúng
           keyExtractor={(item) => String(item.id)}
           contentContainerStyle={s.list}
           showsVerticalScrollIndicator={false}
@@ -136,8 +108,8 @@ const ForumListScreen = () => {
             <TopicItem
               topic={item}
               onPress={() => nav.navigate("ForumDetail", { topicId: item.id, topic: item })}
-              showDelete={user?.id === item.user?.id}
-              onDelete={() => confirmDelete(item.id)}
+              onDelete={undefined} // Ẩn hoàn toàn tính năng xóa tại chỗ ở danh sách
+              showDelete={false}   // Nút xóa đã được gom vào màn hình chi tiết an toàn
             />
           )}
         />

@@ -16,7 +16,6 @@ urlpatterns = router.urls
 #  API 4  PATCH  /courses/{id}/
 #  API 5  DELETE /courses/{id}/
 #  API 6  GET    /courses/my-courses/?status=
-#  API 7  POST   /courses/{id}/enroll/
 #  API 8  GET    /courses/{id}/students/
 #  API 9  GET    /courses/{id}/forum/
 #  API 10 POST   /courses/{id}/forum/
