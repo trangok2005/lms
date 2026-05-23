@@ -41,8 +41,8 @@ const Login = () => {
       const res = await Apis.post(endpoints["login"], {
         username:      form.username,
         password:      form.password,
-        client_id:     "YrX8lHstxtVpU8MBAElqx5d2wZ1Gz7Q9x033ILYV",
-        client_secret: "MjjRSJmnRyMqbH7KJIZRnY87PRHtGLmQP3fuIBzvzmPZstBGAh2fdkqnACnWwfLemHOVDf6xs7FJAe9NevageXmXINj0J1FpSaFtKhYoCDrJHM0ii3M6KfhqVZWpyHnQ",
+        client_id:     "bM6gS4oi8HkgeuY4AD4fh8EUpIeLtbPNbqShlBCB",
+        client_secret: "LpmARZAW5ZrCc95XBSx4vBawJjrbvjzKWZqZZVICaurBLrCid4C9fGe3iM1fOp9IL2H5vquqRcMExm5HZE02Z2ETZzStWwG27lgHnBUbZnz069vTI7AwCshtbgwFTiMa",
         grant_type:    "password",
       });
 

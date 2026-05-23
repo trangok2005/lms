@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from "react";
 import { View, FlatList, StyleSheet } from "react-native";
-import { Text } from "react-native-paper"; // Đã bỏ ActivityIndicator
+import { Text, Appbar } from "react-native-paper"; // Đã bỏ ActivityIndicator
 import { useNavigation, useRoute, useFocusEffect } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -51,6 +51,13 @@ const MaterialListScreen = () => {
                 showBack={true} 
                 showSearch={true}
                 onSearch={() => nav.navigate("material-search")}
+                rightComponent={
+                    <Appbar.Action
+                        icon="forum"
+                        color="#fff"
+                        onPress={() => nav.navigate("ForumList", { courseId })}
+                    />
+                }
             />
             
             {loading ? (

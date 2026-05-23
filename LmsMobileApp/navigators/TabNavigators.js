@@ -31,6 +31,11 @@ export const StudentTabs = () => (
       options={{ title: "Trang chủ", tabBarIcon: icon("home") }}
     />
     <Tab.Screen
+      name="QuizTab"
+      component={QuizStack}
+      options={{ title: "Bài kiểm tra", tabBarIcon: icon("pencil-box-outline") }}
+    />
+    <Tab.Screen
       name="ProgressTab"
       component={ProgressStack}
       options={{ title: "Tiến độ", tabBarIcon: icon("chart-line") }}
