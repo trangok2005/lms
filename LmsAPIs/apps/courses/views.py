@@ -1,14 +1,14 @@
-
+from pyasn1_modules.rfc3279 import tpBasis
 from rest_framework import viewsets, generics, filters, status, parsers, permissions, mixins
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from apps.courses.models import Course, Enrollment, ForumTopic, ForumReply, Category, Tag
 from apps.courses import serializers, perms
-from apps.payments.models import Transaction
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 
 
-class BaseViewSet(viewsets.ViewSet,mixins.ListModelMixin,
-                    mixins.CreateModelMixin,mixins.DestroyModelMixin):
+class BaseViewSet(viewsets.ViewSet,generics.ListCreateAPIView,generics.DestroyAPIView):
     class Meta:
         abstract = True
 
@@ -138,18 +138,13 @@ class CourseViewSet(viewsets.ViewSet,
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # khoá có phí → kiểm tra transaction
-        if course.price > 0:
-            paid = Transaction.objects.filter(
-                user=user,
-                course=course,
-                status=Transaction.Status.SUCCESS
-            ).exists()
-            if not paid:
-                return Response(
-                    {'detail': 'Vui lòng thanh toán trước khi đăng ký khoá học này.'},
-                    status=status.HTTP_402_PAYMENT_REQUIRED
-                )
+        # khoá có phí
+        if float(course.price) > 0:
+            return Response(
+                {'detail': 'Khoá học này có phí. Vui lòng dùng API thanh toán /payments/pay/'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
 
         enrollment = Enrollment.objects.create(user=user, course=course)
         return Response(
@@ -229,8 +224,20 @@ class ForumTopicViewSet(viewsets.ViewSet,
     def destroy(self, request, *args, **kwargs):
         topic = self.get_object()
         self.check_object_permissions(request, topic)
+
+
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f'forum_{topic.pk}',
+            {
+                'type': 'send_new_reply',
+                'reply': {'action': 'DELETE_TOPIC', 'topic_id': topic.pk}
+            }
+        )
+
         topic.is_active = False
         topic.save()
+
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     # ── API 12: /api/forum/{pk}/replies/ ──
@@ -248,6 +255,35 @@ class ForumTopicViewSet(viewsets.ViewSet,
             })
             s.is_valid(raise_exception=True)
             reply = s.save(user=request.user, topic=topic)
+
+            reply_data = serializers.ForumReplySerializer(reply).data
+
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                f'forum_{topic.pk}',
+                {
+                    'type': 'send_new_reply',  # Tên hàm xử lý trong ForumConsumer
+                    'reply': reply_data
+                }
+            )
+
+            # topic_owner_id = topic.user_id
+            #
+            # if request.user.id != topic_owner_id:
+            #     async_to_sync(channel_layer.group_send)(
+            #         f'user_{topic_owner_id}',
+            #         {
+            #             'type': 'send_notification',
+            #             'data': {
+            #                 'notification_type': 'NEW_REPLY',
+            #                 'title': 'Phản hồi mới trong Forum 💬',
+            #                 'message': f'{request.user.username} đã trả lời bài viết "{topic.title}" của bạn.',
+            #                 'forum_id': topic.pk,
+            #                 'badge_count': 1
+            #             }
+            #         }
+            #     )
+
             return Response(
                 serializers.ForumReplySerializer(reply).data,
                 status=status.HTTP_201_CREATED
@@ -269,4 +305,14 @@ class ForumReplyViewSet(viewsets.GenericViewSet, mixins.DestroyModelMixin):
         self.check_object_permissions(request, reply)
         reply.is_active = False
         reply.save()
+
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f'forum_{reply.topic_id}',  # Gửi vào đúng phòng thảo luận chứa bình luận này
+            {
+                'type': 'send_new_reply',
+                'reply': {'action': 'DELETE_REPLY', 'reply_id': reply.pk}
+            }
+        )
+
         return Response(status=status.HTTP_204_NO_CONTENT)

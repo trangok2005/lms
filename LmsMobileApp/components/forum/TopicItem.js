@@ -57,9 +57,7 @@ const TopicItem = ({ topic, onPress, onDelete, showDelete }) => {
       {/* Reply count */}
       <View style={[Styles.row, { marginTop: 8 }]}>
         <Icon source="comment-outline" size={14} color={colors.gray} />
-        <Text variant="bodySmall" style={{ color: colors.gray, marginLeft: 4 }}>
-          {topic.reply_count ?? 0} bình luận
-        </Text>
+
       </View>
     </TouchableOpacity>
   );

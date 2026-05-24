@@ -44,11 +44,15 @@ export const endpoints = {
     "forum-reply":        (topicId) => `/forum/${topicId}/replies/`,
     "forum-delete": (topicId) => `/forum/${topicId}/`,
     "reply-delete": (replyId) => `/forum/reply/${replyId}/`,
+
+    /**payments */
+    "pay": "/payments/pay/",
+    
 }
 
 export const authApis = (token) => {
     return axios.create({
-        baseURL: "http://192.168.1.8:8000/",
+        baseURL: "http://192.168.1.18:8000/",
         headers: {
             'Authorization': `Bearer ${token}`
         }
@@ -56,5 +60,5 @@ export const authApis = (token) => {
 }
 
 export default axios.create({
-    baseURL: "http://192.168.1.8:8000/"
+    baseURL: "http://192.168.1.18:8000/"
 })

@@ -30,6 +30,7 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'cloudinary_storage',
     'cloudinary',
     'django.contrib.admin',
@@ -48,6 +49,7 @@ INSTALLED_APPS = [
     'apps.courses',
     'apps.materials',
     'apps.payments',
+    'channels',
     'apps.quizzes',
     'oauth2_provider',
     'corsheaders',
@@ -93,6 +95,13 @@ REST_FRAMEWORK = {
 
     )
 }
+#real-time:0
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
+}
+ASGI_APPLICATION = 'config.asgi.application'
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
