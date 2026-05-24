@@ -1,312 +1,314 @@
 import React, { useState, useRef, useEffect } from "react";
-import { 
-    View, 
-    StyleSheet, 
-    Text, 
-    useWindowDimensions, 
+import {
+    View,
+    StyleSheet,
+    Text,
+    useWindowDimensions,
     TouchableWithoutFeedback,
     StatusBar,
     Animated,
     ActivityIndicator
 } from "react-native";
-import { useEvent } from 'expo';
-import { useVideoPlayer, VideoView } from 'expo-video';
+
+import { useEvent } from "expo";
+import { useVideoPlayer, VideoView } from "expo-video";
 import { IconButton } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import Slider from "@react-native-community/slider";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+import { authApis, endpoints } from "../../configs/Apis";
 
 const VideoPlayerScreen = ({ route }) => {
-    const { videoUrl } = route.params || {};
+    const { videoUrl, materialId, startAt = 0 } = route.params || {};
+
     const { width, height } = useWindowDimensions();
     const navigation = useNavigation();
-    
-    // --- Video Player Initialization (expo-video) ---
-    const player = useVideoPlayer(videoUrl, (p) => {
-        p.loop = false; // Disable loop for lessons
-        p.play();       // Auto-play on mount
-    });
 
-    // Listen to native events from expo-video
-    const { isPlaying } = useEvent(player, 'playingChange', { isPlaying: player.playing });
-    const { status } = useEvent(player, 'statusChange', { status: player.status });
-    
-    const isBuffering = status === 'loading';
+    const mountedRef = useRef(true);
+    const lastSavedRef = useRef(0);
+    const lastSaveTimeRef = useRef(0);
+    const intervalRef = useRef(null);
+    const hasStartedRef = useRef(false);
 
-    // --- UI and Playback States ---
-    const [isRotated, setIsRotated] = useState(false);
+    const fadeAnim = useRef(new Animated.Value(1)).current;
+
     const [controlsVisible, setControlsVisible] = useState(true);
-    
-    // Progress States (expo-video uses seconds instead of milliseconds)
+    const [isSliding, setIsSliding] = useState(false);
     const [positionSec, setPositionSec] = useState(0);
     const [durationSec, setDurationSec] = useState(0);
-    const [isSliding, setIsSliding] = useState(false);
 
-    // Animation Value for fading controls
-    const fadeAnim = useRef(new Animated.Value(1)).current;
-    const controlsTimer = useRef(null);
-
-    // Auto-hide controls after 3 seconds of inactivity
-    const startControlsTimer = () => {
-        if (controlsTimer.current) clearTimeout(controlsTimer.current);
-        controlsTimer.current = setTimeout(() => {
-            if (isPlaying && !isSliding) hideControls();
-        }, 3000);
-    };
-
-    const showControls = () => {
-        setControlsVisible(true);
-        Animated.timing(fadeAnim, {
-            toValue: 1,
-            duration: 300,
-            useNativeDriver: true,
-        }).start();
-        startControlsTimer();
-    };
-
-    const hideControls = () => {
-        Animated.timing(fadeAnim, {
-            toValue: 0,
-            duration: 300,
-            useNativeDriver: true,
-        }).start(() => setControlsVisible(false));
-    };
-
-    // Initialize timer on mount & Sync slider position
-    useEffect(() => {
-        startControlsTimer();
-        
-        // Poll the current time since expo-video doesn't have an intense onPlaybackStatusUpdate prop
-        let interval;
-        if (isPlaying && !isSliding) {
-            interval = setInterval(() => {
-                setPositionSec(player.currentTime);
-                setDurationSec(player.duration);
-            }, 500); // Update slider every 500ms
+    // ======================
+    // PLAYER
+    // ======================
+    const player = useVideoPlayer(
+        typeof videoUrl === "string" ? { uri: videoUrl } : videoUrl,
+        (p) => {
+            p.loop = false;
         }
+    );
+
+    const { isPlaying } = useEvent(player, "playingChange", {
+        isPlaying: player.playing
+    });
+
+    const { status } = useEvent(player, "statusChange", {
+        status: player.status
+    });
+
+    const isReady = status === "readyToPlay";
+    const isBuffering = status === "loading";
+
+    // ======================
+    // CLEANUP (CRITICAL)
+    // ======================
+    useEffect(() => {
+        return () => {
+            mountedRef.current = false;
+
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current);
+            }
+        };
+    }, []);
+
+    // ======================
+    // AUTO PLAY SAFE
+    // ======================
+    useEffect(() => {
+        if (!isReady || hasStartedRef.current || !player) return;
+
+        try {
+            if (startAt > 0) {
+                player.currentTime = Number(startAt);
+            }
+
+            player.play();
+            hasStartedRef.current = true;
+        } catch (e) {
+            console.log("AutoPlay error:", e);
+        }
+    }, [isReady]);
+
+    // ======================
+    // SAVE PROGRESS SAFE
+    // ======================
+    const saveProgress = async (force = false) => {
+        try {
+            if (!mountedRef.current || !player || !materialId) return;
+
+            const current = Number(player.currentTime ?? 0);
+            const duration = Number(player.duration ?? 0);
+
+            if (!duration) return;
+
+          const now = Date.now();
+            if (!force && now - lastSaveTimeRef.current < 15_000) return; // 15 giây mới save 1 lần
+        lastSaveTimeRef.current = now;
+
+            lastSavedRef.current = current;
+
+            const progressPercent = Math.min(
+                100,
+                Math.floor((current / duration) * 100)
+            );
+
+            const token = await AsyncStorage.getItem("token");
+
+            await authApis(token).post(
+                endpoints["material-progress"](materialId),
+                {
+                    last_position_sec: current,
+                    watched_minutes: Math.floor(current / 60),
+                    progress_percent: progressPercent
+                }
+            );
+        } catch (err) {
+            console.log("SAVE PROGRESS ERROR:", err?.response?.data || err.message);
+        }
+    };
+
+    // ======================
+    // INTERVAL SAFE
+    // ======================
+    useEffect(() => {
+        if (!isPlaying || isSliding) return;
+intervalRef.current = setInterval(() => {
+    if (!mountedRef.current || !player) return;
+
+    const current = Number(player.currentTime ?? 0);
+    const duration = Number(player.duration ?? 0);
+
+    // Update UI mỗi giây — không đổi
+    setPositionSec(current);
+    setDurationSec(duration);
+
+    // Save API mỗi 15 giây — throttle trong saveProgress tự xử lý
+    saveProgress();
+}, 1000);
 
         return () => {
-            if (controlsTimer.current) clearTimeout(controlsTimer.current);
-            if (interval) clearInterval(interval);
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current);
+            }
+            saveProgress(true);
         };
-    }, [isPlaying, isSliding, player]);
+    }, [isPlaying, isSliding]);
 
-    // Fallback UI
+    // ======================
+    // CONTROLS
+    // ======================
+    const handleScreenTap = () => {
+        if (!player) return;
+
+        if (controlsVisible) {
+            isPlaying ? player.pause() : player.play();
+        } else {
+            setControlsVisible(true);
+        }
+    };
+
+    // ======================
+    // SEEK SAFE (FIX CRASH)
+    // ======================
+    const handleSlidingComplete = (value) => {
+        const seekTime = Number(value);
+
+        setIsSliding(false);
+        setPositionSec(seekTime);
+
+        try {
+            requestAnimationFrame(() => {
+                if (player && mountedRef.current) {
+                    player.currentTime = seekTime;
+                }
+            });
+        } catch (e) {}
+
+        saveProgress(true);
+    };
+
+    const handleSlidingStart = () => {
+        setIsSliding(true);
+    };
+
+    const formatTime = (sec) => {
+        if (!sec || isNaN(sec)) return "00:00";
+        const m = Math.floor(sec / 60).toString().padStart(2, "0");
+        const s = Math.floor(sec % 60).toString().padStart(2, "0");
+        return `${m}:${s}`;
+    };
+
+    const dynamicStyle = {
+        width,
+        height: "100%"
+    };
+
     if (!videoUrl) {
         return (
-            <View style={styles.centerContainer}>
-                <Text style={styles.errorText}>Video source not found.</Text>
-                <IconButton 
-                    icon="arrow-left" 
-                    iconColor="#ffffff" 
-                    containerColor="rgba(255,255,255,0.15)"
-                    size={30} 
-                    onPress={() => navigation.goBack()} 
-                />
+            <View style={styles.center}>
+                <Text style={{ color: "#fff" }}>No video found</Text>
             </View>
         );
     }
 
-    // --- Interaction Handlers ---
-    const handleToggleRotate = () => {
-        setIsRotated(!isRotated);
-        showControls();
-    };
-
-    const handleScreenTap = () => {
-        if (controlsVisible) {
-            if (isPlaying) {
-                player.pause();
-            } else {
-                player.play();
-                startControlsTimer();
-            }
-        } else {
-            showControls();
-        }
-    };
-
-    // --- Slider Handlers ---
-    const handleSlidingStart = () => {
-        setIsSliding(true);
-        if (controlsTimer.current) clearTimeout(controlsTimer.current);
-    };
-
-    const handleSlidingComplete = (value) => {
-        player.currentTime = value; // Seek video to new position
-        setIsSliding(false);
-        setPositionSec(value);
-        startControlsTimer();
-    };
-
-    // Helper: Formats seconds to MM:SS
-    const formatTime = (seconds) => {
-        if (!seconds || isNaN(seconds)) return "00:00";
-        const mins = Math.floor(seconds / 60).toString().padStart(2, "0");
-        const secs = Math.floor(seconds % 60).toString().padStart(2, "0");
-        return `${mins}:${secs}`;
-    };
-
-    // Dynamic styles for screen rotation simulation
-    const dynamicVideoStyle = isRotated
-        ? {
-            width: height,
-            height: width,
-            transform: [{ rotate: "90deg" }],
-          }
-        : {
-            width: width,
-            height: "100%",
-          };
-
     return (
         <View style={styles.container}>
-            <StatusBar hidden={true} />
+            <StatusBar hidden />
 
             <TouchableWithoutFeedback onPress={handleScreenTap}>
                 <View style={styles.videoWrapper}>
                     <VideoView
-                        style={[styles.backgroundVideo, dynamicVideoStyle]}
+                        style={[styles.video, dynamicStyle]}
                         player={player}
-                        nativeControls={false} // Disable native UI to use our custom HUD
-                        contentFit="contain"   // Replaces resizeMode in expo-video
+                        nativeControls={false}
+                        contentFit="contain"
                     />
-                    
-                    {/* Buffering Indicator */}
+
                     {isBuffering && (
-                        <View style={styles.hudOverlay} pointerEvents="none">
-                            <ActivityIndicator size="large" color="#ffffff" />
+                        <View style={styles.overlay}>
+                            <ActivityIndicator size="large" color="#fff" />
                         </View>
                     )}
 
-                    {/* Minimalist Pause HUD */}
                     {!isPlaying && !isBuffering && (
-                        <View style={styles.hudOverlay} pointerEvents="none">
-                            <IconButton icon="play" iconColor="#ffffff" size={64} />
+                        <View style={styles.overlay}>
+                            <IconButton icon="play" iconColor="#fff" size={60} />
                         </View>
                     )}
                 </View>
             </TouchableWithoutFeedback>
 
-            {/* Animated Control Layer */}
-            <Animated.View 
-                style={[styles.controlsOverlay, { opacity: fadeAnim }]}
-                pointerEvents={controlsVisible ? "box-none" : "none"}
-            >
-                {/* Top Layer: Back Button */}
-                <View style={styles.topControlBar}>
-                    <IconButton
-                        icon="arrow-left"
-                        iconColor="#ffffff"
-                        containerColor="rgba(0, 0, 0, 0.4)"
-                        size={26}
-                        onPress={() => {
-                            player.pause(); // Ensure video stops when leaving
-                            navigation.goBack();
-                        }}
-                    />
-                </View>
+            <View style={styles.controls}>
+                <IconButton
+                    icon="arrow-left"
+                    iconColor="#fff"
+                    onPress={async () => {
+                        try {
+                            player.pause();
+                            await saveProgress(true);
+                        } catch (e) {}
 
-                {/* Bottom Layer: Progress Bar, Timers, and Rotate Button */}
-                <View style={styles.bottomControlBar}>
-                    <Text style={styles.timeText}>{formatTime(positionSec)}</Text>
-                    
+                        navigation.goBack();
+                    }}
+                />
+
+                <View style={styles.bottom}>
+                    <Text style={styles.time}>{formatTime(positionSec)}</Text>
+
                     <Slider
-                        style={styles.slider}
+                        style={{ flex: 1 }}
                         minimumValue={0}
-                        maximumValue={durationSec || 1} 
+                        maximumValue={durationSec || 1}
                         value={positionSec}
                         onSlidingStart={handleSlidingStart}
                         onSlidingComplete={handleSlidingComplete}
                         minimumTrackTintColor="#4f46e5"
-                        maximumTrackTintColor="rgba(255, 255, 255, 0.3)"
-                        thumbTintColor="#ffffff"
+                        maximumTrackTintColor="#555"
+                        thumbTintColor="#fff"
                     />
-                    
-                    <Text style={styles.timeText}>{formatTime(durationSec)}</Text>
 
-                    <IconButton
-                        icon={isRotated ? "screen-rotation-lock" : "screen-rotation"}
-                        iconColor="#ffffff"
-                        size={24}
-                        style={styles.rotateButton}
-                        onPress={handleToggleRotate}
-                    />
+                    <Text style={styles.time}>{formatTime(durationSec)}</Text>
                 </View>
-            </Animated.View>
+            </View>
         </View>
     );
 };
 
-const styles = StyleSheet.create({
-    container: { 
-        flex: 1, 
-        backgroundColor: "#000000",
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    videoWrapper: {
-        width: "100%",
-        height: "100%",
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    backgroundVideo: {
-        backgroundColor: "#000000",
-    },
-    controlsOverlay: {
-        ...StyleSheet.absoluteFillObject,
-        zIndex: 10,
-        justifyContent: "space-between", 
-    },
-    topControlBar: {
-        paddingTop: 20,
-        paddingHorizontal: 10,
-        flexDirection: "row",
-        alignItems: "center",
-    },
-    bottomControlBar: {
-        paddingBottom: 20,
-        paddingHorizontal: 20,
-        flexDirection: "row",
-        alignItems: "center",
-        backgroundColor: "rgba(0,0,0,0.4)", 
-    },
-    timeText: {
-        color: "#ffffff",
-        fontSize: 13,
-        fontWeight: "600",
-        fontVariant: ["tabular-nums"], 
-    },
-    slider: {
-        flex: 1,
-        marginHorizontal: 12,
-        height: 40,
-    },
-    rotateButton: {
-        margin: 0,
-        marginLeft: 8,
-    },
-    hudOverlay: {
-        position: "absolute",
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "rgba(0, 0, 0, 0.4)", 
-        borderRadius: 60,
-        width: 100,
-        height: 100,
-    },
-    centerContainer: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "#0f172a",
-    },
-    errorText: {
-        fontSize: 16,
-        color: "#ef4444",
-        fontWeight: "bold",
-        marginBottom: 24,
-    },
-});
-
 export default VideoPlayerScreen;
+
+const styles = StyleSheet.create({
+    container: { flex: 1, backgroundColor: "#000" },
+    videoWrapper: { flex: 1, justifyContent: "center" },
+    video: { backgroundColor: "#000" },
+
+    overlay: {
+        position: "absolute",
+        alignSelf: "center"
+    },
+
+    controls: {
+        position: "absolute",
+        bottom: 0,
+        width: "100%",
+        padding: 10
+    },
+
+    bottom: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 10
+    },
+
+    time: {
+        color: "#fff",
+        fontSize: 12
+    },
+
+    center: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#000"
+    }
+});

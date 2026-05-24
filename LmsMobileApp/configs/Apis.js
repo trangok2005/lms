@@ -28,12 +28,16 @@ export const endpoints = {
     "material-complete": (id) => `/Material/${id}/complete/`,
     "material-next": (id) => `/Material/${id}/next/`,
     "material-previous": (id) => `/Material/${id}/previous/`,
-
+    // quizz
+    "quiz-list":      "student/quizzes/",
+    "quiz-detail":    (id) => `student/quizzes/${id}/`,
+    "quiz-submit":    (id) => `student/quizzes/${id}/submit/`,
+    "test-results":   "student/quizzes/my-results/",
+    "result-detail":  (id) => `student/quizzes/results/${id}/`,
     // Progress & Notes
     "comments": "/comments/",
     "notes": "/notes/",
-    "progress-update": "/progress/update-status/",
-    "progress-summary": "/progress/summary/",
+   "material-progress": (id) => `/Material/${id}/progress/`,
     /** */
     "forum-topics":       (courseId) => `/courses/${courseId}/forum/`,
     "forum-topic-detail": (id)      => `/forum/${id}/`,

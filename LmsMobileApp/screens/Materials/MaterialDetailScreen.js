@@ -25,19 +25,18 @@ const MaterialDetailScreen = ({ route, navigation }) => {
             // 1. Fetch chi tiết Material
             const resMat = await authApis(token).get(endpoints["material-detail"](materialId));
             setMaterial(resMat.data);
-
-            // 2. Fetch tiến độ (Progress) của user cho bài học này
-            // Lưu ý: Đảm bảo bạn có endpoint này trong Apis.js (ví dụ: /material-progress/?material=ID)
             try {
-                const resProg = await authApis(token).get(endpoints["material-progress"], {
-                    params: { material: materialId }
-                });
-                // Lấy record đầu tiên nếu backend trả về list
+              const resProg = await authApis(token).get(
+    endpoints["material-progress"](materialId)
+);
                 if (resProg.data && resProg.data.length > 0) {
                     setProgress(resProg.data[0]);
                 }
             } catch (progErr) {
-                console.log("Chưa có tiến độ cho bài học này.");
+               console.log(
+        "GET PROGRESS ERROR:",
+        progErr?.response?.data || progErr.message
+    );
             }
 
         } catch (ex) {
@@ -65,11 +64,12 @@ const MaterialDetailScreen = ({ route, navigation }) => {
         const lastPosition = progress?.last_position_sec || 0; 
 
         if (material_type === 'video') {
-            navigation.navigate("VideoPlayer", { 
-                videoUrl: file, 
-                title: title,
-                startAt: lastPosition // Truyền vị trí xem dở qua VideoPlayer
-            });
+           navigation.navigate("VideoPlayer", { 
+    videoUrl: file,
+    materialId: material.id,
+    title: title,
+    startAt: lastPosition
+});
         } else if (['pdf', 'slide'].includes(material_type)) {
             navigation.navigate("DocumentViewer", { fileUrl: file, title: title });
         } else {
@@ -77,7 +77,6 @@ const MaterialDetailScreen = ({ route, navigation }) => {
         }
     };
 
-    // --- CÁC HÀM TIỆN ÍCH DỊCH THUẬT (Dựa theo models.py) ---
     const getStatusText = (status) => {
         const statuses = {
             'not_started': 'Chưa học',
@@ -139,7 +138,6 @@ const MaterialDetailScreen = ({ route, navigation }) => {
                         >
                             {material.difficulty === 'easy' ? 'Dễ' : material.difficulty === 'medium' ? 'Trung bình' : 'Khó'}
                         </Chip>
-
                         {material.duration_minutes > 0 && (
                             <Chip icon="clock-outline" style={styles.chip}>
                                 {material.duration_minutes} phút

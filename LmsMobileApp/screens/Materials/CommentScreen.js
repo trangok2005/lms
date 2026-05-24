@@ -12,24 +12,42 @@ const CommentScreen = () => {
     const route = useRoute();
     const { materialId } = route.params;
 
-    const [comments, setComments] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [newComment, setNewComment] = useState("");
+   const [comments, setComments] = useState([]);
+const [loading, setLoading] = useState(true);
+const [loadingMore, setLoadingMore] = useState(false);
+const [newComment, setNewComment] = useState("");
+const [nextPage, setNextPage] = useState(null); // 👈 lưu URL trang tiếp
+  const fetchComments = async () => {
+    try {
+        setLoading(true);
+        const token = await AsyncStorage.getItem("token");
+        const res = await authApis(token).get(endpoints["comments"], {
+            params: { material: materialId }
+        });
+        setComments(res.data.results ?? res.data);
+        setNextPage(res.data.next ?? null); // lưu link trang tiếp
+    } catch (ex) {
+        console.error("Fetch comments error:", ex);
+    } finally {
+        setLoading(false);
+    }
+};
 
-    const fetchComments = async () => {
-        try {
-            setLoading(true);
-            const token = await AsyncStorage.getItem("token");
-            const res = await authApis(token).get(endpoints["comments"], {
-                params: { material: materialId }
-            });
-            setComments(res.data);
-        } catch (ex) {
-            console.error("Fetch comments error:", ex);
-        } finally {
-            setLoading(false);
-        }
-    };
+
+const loadMoreComments = async () => {
+    if (!nextPage || loadingMore) return;
+    try {
+        setLoadingMore(true);
+        const token = await AsyncStorage.getItem("token");
+        const res = await authApis(token).get(nextPage);
+        setComments(prev => [...prev, ...(res.data.results ?? [])]);
+        setNextPage(res.data.next ?? null);
+    } catch (ex) {
+        console.error("Load more error:", ex);
+    } finally {
+        setLoadingMore(false);
+    }
+};
 
     const handleSendComment = async () => {
         if (!newComment.trim()) return;

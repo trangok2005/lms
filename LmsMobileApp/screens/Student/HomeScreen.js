@@ -117,7 +117,7 @@ const HomeScreen = () => {
           <View style={[styles.section, { marginTop: 6 }]}>
             <View style={[Styles.between, styles.sectionHeader]}>
               <Text variant="titleMedium" style={styles.sectionTitle}>Đang học</Text>
-              <TouchableOpacity onPress={() => nav.navigate("MyCourse")}>
+              <TouchableOpacity onPress={() => nav.navigate("LearningDashboard")}>
                 <Text variant="bodySmall" style={styles.seeAll}>Xem tất cả</Text>
               </TouchableOpacity>
             </View>

@@ -48,6 +48,7 @@ import TransactionManagementScreen from "../screens/Admin/TransactionManagementS
 import UserManagementScreen       from "../screens/Admin/UserManagementScreen";
 import VideoPlayerScreen from "../screens/Materials/VideoPlayerScreen";
 import DocumentViewerScreen from "../screens/Materials/DocumentViewerScreen";
+import QuizReviewScreen from "../screens/Quiz/QuizReviewScreen";
 
 const Stack = createNativeStackNavigator();
 const SO    = { headerShown: false };
@@ -83,7 +84,12 @@ export const HomeStack = () => (
     <Stack.Screen name="ForumList"      component={ForumListScreen} />
     <Stack.Screen name="ForumDetail"    component={ForumDetailScreen} />
     <Stack.Screen name="CreateTopic"    component={CreateTopicScreen} />
-    <Stack.Screen name="QuizList"       component={QuizListScreen} />
+    <Stack.Screen name="QuizList"          component={QuizListScreen} />
+    <Stack.Screen name="QuizTake"          component={QuizTakeScreen} />
+    <Stack.Screen name="QuizResult"        component={QuizResultScreen} />
+    <Stack.Screen name="QuizReview"        component={QuizReviewScreen} />
+    <Stack.Screen name="LearningDashboard" component={LearningDashboardScreen} />
+    <Stack.Screen name="LearningPath"      component={LearningPathScreen} />
 
     <Stack.Screen name="MyCourse"       component={MyCourseScreen} />
     <Stack.Screen name="PaymentResult"  component={PaymentResultScreen} />
@@ -109,10 +115,24 @@ export const QuizStack = () => (
 );
 
 // ── PROGRESS ─────────────────────────────────────────────
+// ── PROGRESS ─────────────────────────────────────────────
 export const ProgressStack = () => (
   <Stack.Navigator screenOptions={SO}>
     <Stack.Screen name="LearningDashboard" component={LearningDashboardScreen} />
     <Stack.Screen name="LearningPath"      component={LearningPathScreen} />
+    <Stack.Screen name="CourseDetail"   component={CourseDetailScreen} />
+
+    {/* Thêm các screen navigate từ LearningDashboard */}
+    <Stack.Screen name="MaterialList"      component={MaterialListScreen} />
+    <Stack.Screen name="MaterialDetail"    component={MaterialDetailScreen} />
+    <Stack.Screen name="VideoPlayer"       component={VideoPlayerScreen} />
+    <Stack.Screen name="DocumentViewer"    component={DocumentViewerScreen} />
+    <Stack.Screen name="Note"              component={NoteScreen} />
+    <Stack.Screen name="Comment"           component={CommentScreen} />
+    <Stack.Screen name="QuizList"          component={QuizListScreen} />
+    <Stack.Screen name="QuizTake"          component={QuizTakeScreen} />
+    <Stack.Screen name="QuizResult"        component={QuizResultScreen} />
+    <Stack.Screen name="QuizReview"        component={QuizReviewScreen} />
   </Stack.Navigator>
 );
 
@@ -145,3 +165,4 @@ export const AdminStack = () => (
     <Stack.Screen name="UserManagement"        component={UserManagementScreen} />
   </Stack.Navigator>
 );
+
