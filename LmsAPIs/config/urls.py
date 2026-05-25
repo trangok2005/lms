@@ -16,22 +16,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include, re_path
-from django.http import HttpResponse
 from rest_framework.routers import DefaultRouter
-from apps.users.views import UserViewSet
-from apps.courses.views import CourseViewSet
-
-from apps.materials.views import MaterialViewSet
-
-# Router cho UserViewSet của chúng ta
-router = DefaultRouter()
-router.register('users', UserViewSet, basename='users')
-router.register('courses', CourseViewSet, basename='courses')
-router.register('materials', MaterialViewSet, basename='materials')
 
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+
+from apps.common.admin import admin_site
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -44,10 +35,13 @@ schema_view = get_schema_view(
     public=True,
     permission_classes=(permissions.AllowAny,),
 )
-
+router = DefaultRouter()
 urlpatterns = [
-    path('', include(router.urls)),
-    path("admin/", admin.site.urls),
+    path('', include('apps.users.urls')),
+    path('', include('apps.courses.urls')),
+    path('', include('apps.materials.urls')),
+    path('', include('apps.payments.urls')),
+    path("admin/", admin_site.urls),
     path("ckeditor/", include("ckeditor_uploader.urls")),
     re_path(r'^swagger(?P<format>\.json|\.yaml)$',
             schema_view.without_ui(cache_timeout=0),

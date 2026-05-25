@@ -30,6 +30,7 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'cloudinary_storage',
     'cloudinary',
     'django.contrib.admin',
@@ -39,8 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'rest_framework',
     'ckeditor',
-    'ckeditor_uploader', 
-    
+    'ckeditor_uploader',
     'django.contrib.staticfiles',
     'drf_yasg',
     'apps.users',
@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'apps.courses',
     'apps.materials',
     'apps.payments',
+    'channels',
     'apps.quizzes',
     'oauth2_provider',
     'corsheaders',
@@ -66,14 +67,14 @@ CKEDITOR_CONFIGS = {
 import cloudinary
 
 
-# 1. Tối ưu cho bộ lưu trữ Django Storage
+DATA_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024  # 50MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': str(config("cloud_name")).strip("'\", \n\r\t"),
     'API_KEY': str(config("api_key")).strip("'\", \n\r\t"),
     'API_SECRET': str(config("api_secret")).strip("'\", \n\r\t")
 }
 
-# 2. Tối ưu cho Cloudinary Core SDK
 cloudinary.config(
     cloud_name=str(config("cloud_name")).strip("'\", \n\r\t"),
     api_key=str(config("api_key")).strip("'\", \n\r\t"),
@@ -90,9 +91,18 @@ OAUTH2_PROVIDER = { 'OAUTH2_BACKEND_CLASS': 'oauth2_provider.oauth2_backends.JSO
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
-
-    )
+    ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 5,
 }
+
+#real-time:0
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
+}
+ASGI_APPLICATION = 'config.asgi.application'
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',

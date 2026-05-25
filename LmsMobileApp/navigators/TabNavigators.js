@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from 'react'
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Icon } from "react-native-paper";
 import {
@@ -6,6 +6,7 @@ import {
   ProgressStack, ProfileStack,
   TeacherStack, AdminStack,
 } from "./StackNavigators";
+import { MyUserContext } from "../configs/MyContext";
 
 const Tab = createBottomTabNavigator();
 
@@ -21,9 +22,7 @@ const tabScreenOptions = (activeTintColor) => ({
   tabBarLabelStyle: { fontSize: 11 },
 });
 
-// ══════════════════════════════════════════════════════════
-// STUDENT TABS  (5 tab)
-// ══════════════════════════════════════════════════════════
+
 export const StudentTabs = () => (
   <Tab.Navigator screenOptions={tabScreenOptions("#6C63FF")}>
     <Tab.Screen
@@ -32,27 +31,23 @@ export const StudentTabs = () => (
       options={{ title: "Trang chủ", tabBarIcon: icon("home") }}
     />
     <Tab.Screen
-      name="ForumTab"
-      component={ForumStack}
-      options={{ title: "Diễn đàn", tabBarIcon: icon("forum") }}
+      name="ProgressTab"
+      component={ProgressStack}
+      options={{ title: "Học Tập", tabBarIcon: icon("chart-line") }}
     />
     <Tab.Screen
       name="QuizTab"
       component={QuizStack}
-      options={{ title: "Kiểm tra", tabBarIcon: icon("clipboard-check") }}
-    />
-    <Tab.Screen
-      name="ProgressTab"
-      component={ProgressStack}
-      options={{ title: "Tiến độ", tabBarIcon: icon("chart-line") }}
+      options={{ title: "Bài kiểm tra", tabBarIcon: icon("pencil-box-outline") }}
     />
     <Tab.Screen
       name="ProfileTab"
       component={ProfileStack}
-      options={{title: "Hồ sơ",tabBarItemStyle: { display: "none" }}}
+      options={{ title: "Hồ sơ", tabBarIcon: icon("account") }}
     />
   </Tab.Navigator>
 );
+
 
 // ══════════════════════════════════════════════════════════
 // TEACHER TABS  (4 tab)

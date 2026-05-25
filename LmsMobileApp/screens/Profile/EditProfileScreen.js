@@ -81,7 +81,7 @@ const EditProfileScreen = () => {
       
     } catch (ex) {
       setErr("Quá trình cập nhật thất bại. Vui lòng thử lại!");
-      console.error(ex);
+      console.debug(ex);
     } finally {
       setLoading(false);
     }
