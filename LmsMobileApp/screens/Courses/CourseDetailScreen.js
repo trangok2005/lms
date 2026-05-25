@@ -49,11 +49,17 @@ const CourseDetailScreen = () => {
 
           setCourse(courseRes.data);
 
-          const ids = (
-            enrollRes.data.results ?? enrollRes.data
-          ).map((e) => e.course);
+          const ids = (enrollRes.data.results ?? enrollRes.data)
+            .map((e) => {
+              const courseValue = e.course ?? e.course_id ?? e.id ?? e;
+              if (typeof courseValue === "object") {
+                return String(courseValue.id ?? courseValue._id ?? courseValue);
+              }
+              return String(courseValue);
+            })
+            .filter(Boolean);
 
-          setEnrolled(ids.includes(params.courseId));
+          setEnrolled(ids.includes(String(params.courseId)));
 
         } catch (ex) {
 

@@ -85,7 +85,10 @@ const ProfileScreen = () => {
         
         <ActionRow icon="account-edit" label="Chỉnh sửa thông tin" onPress={() => nav.navigate("EditProfile", { profile: user })} />
         <ActionRow icon="lock-reset" label="Đổi mật khẩu" onPress={() => nav.navigate("ChangePassword")} />
-        <ActionRow icon="history" label="Lịch sử thanh toán" onPress={() => nav.navigate("TransactionHistory")} />
+        {user?.role === "student" && user?.profile && (
+        <>
+          <ActionRow icon="history" label="Lịch sử thanh toán" onPress={() => nav.navigate("TransactionHistory")} />
+        </>)}
       </Surface>
 
       <LogoutButton />

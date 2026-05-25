@@ -2,7 +2,6 @@ import React, { useCallback, useContext, useState } from "react";
 import { View, ScrollView, StyleSheet, TouchableOpacity } from "react-native";
 import { Text, Icon } from "react-native-paper";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import Apis, { endpoints } from "../../configs/Apis";
 import { MyUserContext } from "../../configs/MyContext";
 import Styles, { colors } from "../../styles/Styles";
@@ -105,6 +104,19 @@ const HomeScreen = () => {
             ) : (
               <EmptyBox message="Chưa có khóa nổi bật. Hãy khám phá khoá học!" />
             )}
+          </View>
+
+          <View style={[styles.section, { marginTop: 6 }]}> 
+            <View style={styles.sectionHeader}>
+              <Text variant="titleMedium" style={styles.sectionTitle}>Lộ trình học bằng AI</Text>
+            </View>
+
+            <Text style={styles.descriptionText}>
+              Tạo ngay lộ trình học cá nhân hóa bằng AI để tiếp tục nâng cao kỹ năng.
+            </Text>
+            <TouchableOpacity style={styles.aiButton} onPress={() => nav.navigate("LearningDashboard") }>
+              <Text variant="bodyMedium" style={styles.aiButtonText}>Tạo lộ trình học AI</Text>
+            </TouchableOpacity>
           </View>
 
         </ScrollView>

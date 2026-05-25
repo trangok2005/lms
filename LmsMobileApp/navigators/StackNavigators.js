@@ -44,7 +44,7 @@ import StudentProgressScreen      from "../screens/Teacher/StudentProgressScreen
 import AdminDashboardScreen       from "../screens/Admin/AdminDashboardScreen";
 import ReportScreen               from "../screens/Admin/ReportScreen";
 import TransactionManagementScreen from "../screens/Admin/TransactionManagementScreen";
-import UserManagementScreen       from "../screens/Admin/UserManagementScreen";
+
 import VideoPlayerScreen from "../screens/Materials/VideoPlayerScreen";
 import DocumentViewerScreen from "../screens/Materials/DocumentViewerScreen";
 import QuizReviewScreen from "../screens/Quiz/QuizReviewScreen";
@@ -159,7 +159,6 @@ export const AdminStack = () => (
     <Stack.Screen name="AdminDashboard"        component={AdminDashboardScreen} />
     <Stack.Screen name="Report"                component={ReportScreen} />
     <Stack.Screen name="TransactionManagement" component={TransactionManagementScreen} />
-    <Stack.Screen name="UserManagement"        component={UserManagementScreen} />
   </Stack.Navigator>
 );
 

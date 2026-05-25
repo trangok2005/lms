@@ -48,7 +48,10 @@ export const endpoints = {
     /**payments */
     "pay": "/payments/pay/",
     "transactions": "/payments/",
-    
+    // Admin endpoints
+    "admin-transactions": "/admin/transactions/",
+    "admin-transactions-stats": "/admin/transactions/stats/",
+    "admin-transaction-detail": (id) => `/admin/transactions/${id}/`,
 }
 
 export const authApis = (token) => {

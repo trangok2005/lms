@@ -3,13 +3,16 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from .models import User
 from . import serializers
+from apps.common.perms import IsAdmin
 
-class UserViewSet(viewsets.ViewSet, generics.CreateAPIView):
+class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIView):
     queryset = User.objects.filter(is_active=True)
     serializer_class = serializers.UserSerializer
     parser_classes = [parsers.MultiPartParser, parsers.JSONParser]
 
     def get_permissions(self):
+        if self.action == 'list':
+            return [permissions.IsAuthenticated(), IsAdmin()]
         if self.action in ['current_user']:
             return [permissions.IsAuthenticated()]
         return [permissions.AllowAny()]
