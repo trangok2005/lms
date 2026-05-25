@@ -47,6 +47,7 @@ export const endpoints = {
 
     /**payments */
     "pay": "/payments/pay/",
+    "transactions": "/payments/",
     
 }
 

@@ -31,6 +31,7 @@ import LearningPathScreen         from "../screens/Progress/LearningPathScreen";
 // ── Payment ──────────────────────────────────────────────
 import PaymentResultScreen        from "../screens/Payment/PaymentResultScreen";
 import TransactionHistoryScreen   from "../screens/Payment/TransactionHistoryScreen";
+import CheckoutScreen             from "../screens/Payment/CheckoutScreen";
 // ── Profile ──────────────────────────────────────────────
 import ProfileScreen              from "../screens/Profile/ProfileScreen";
 import EditProfileScreen          from "../screens/Profile/EditProfileScreen";
@@ -93,6 +94,7 @@ export const HomeStack = () => (
 
     <Stack.Screen name="MyCourse"       component={MyCourseScreen} />
     <Stack.Screen name="PaymentResult"  component={PaymentResultScreen} />
+    <Stack.Screen name="Checkout" component={CheckoutScreen} />
   </Stack.Navigator>
 );
 
@@ -142,6 +144,7 @@ export const ProfileStack = () => (
     <Stack.Screen name="Profile"        component={ProfileScreen} />
     <Stack.Screen name="EditProfile"    component={EditProfileScreen} />
     <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
+    <Stack.Screen name="TransactionHistory" component={TransactionHistoryScreen} />
   </Stack.Navigator>
 );
 

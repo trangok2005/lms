@@ -17,10 +17,16 @@ class TransactionViewSet(viewsets.ViewSet, generics.ListAPIView):
     pagination_class = pagination.PageNumberPagination
 
     def get_queryset(self):
-        return (Transaction.objects
+        queryset = (Transaction.objects
                 .filter(user=self.request.user, is_active=True)
                 .select_related('course')
                 .order_by('-created_date'))
+
+        status_param = self.request.query_params.get('status')
+        if status_param:
+            queryset = queryset.filter(status=status_param)
+
+        return queryset
 
 
     @action(methods=['post'], url_path='pay', detail=False)
