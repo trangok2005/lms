@@ -15,7 +15,6 @@ export const endpoints = {
     "course-materials": (courseId) => `/Material/?course=${courseId}`,
     "material-detail":  (id)       => `/Material/${id}/`,
     "material-search": (q) => `/Material/?q=${q}`,
-    
     // Material Management
     "material-list": () => `/Material/`,
     "material-create": () => `/Material/`,
@@ -48,13 +47,12 @@ export const endpoints = {
 
     /**payments */
     "pay": "/payments/pay/",
-    "transactions": "/payments/",
     
 }
 
 export const authApis = (token) => {
     return axios.create({
-        baseURL: "http://192.168.1.8:8000/",
+        baseURL: "http://192.168.1.18:8000/",
         headers: {
             'Authorization': `Bearer ${token}`
         }
@@ -62,5 +60,5 @@ export const authApis = (token) => {
 }
 
 export default axios.create({
-    baseURL: "http://192.168.1.8:8000/"
+    baseURL: "http://192.168.1.18:8000/"
 })

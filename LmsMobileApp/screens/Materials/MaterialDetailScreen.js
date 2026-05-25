@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { ScrollView, View, StyleSheet, Image, useWindowDimensions ,Alert} from "react-native";
+import { ScrollView, View, StyleSheet, Image, useWindowDimensions } from "react-native";
 import { Text, Card, Chip, Button, Divider, ProgressBar, Icon } from "react-native-paper";
 import RenderHTML from "react-native-render-html";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -58,7 +58,7 @@ const MaterialDetailScreen = ({ route, navigation }) => {
             alert("Tài liệu này chưa có file đính kèm!");
             return; 
         }
-        
+
         const { material_type, file, title } = material;
         // Lấy vị trí đang xem dở (nếu có)
         const lastPosition = progress?.last_position_sec || 0; 
@@ -71,13 +71,7 @@ const MaterialDetailScreen = ({ route, navigation }) => {
     startAt: lastPosition
 });
         } else if (['pdf', 'slide'].includes(material_type)) {
-    navigation.navigate("DocumentViewer", {
-        fileUrl: file,
-        title: title,
-        materialId: material.id,
-        initialProgress: progress ?? { watched_minutes: 0, progress_percent: 0 },
-
-        });
+            navigation.navigate("DocumentViewer", { fileUrl: file, title: title });
         } else {
             alert("Định dạng file không được hỗ trợ.");
         }

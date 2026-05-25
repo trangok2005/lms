@@ -10,10 +10,10 @@ import { Header, Loading } from "../../components/common";
 const QuizListScreen = () => {
     const navigation = useNavigation();
     const route = useRoute();
-    const { courseId } = route.params ?? {};  // ← fix: không crash khi không có params
+    const { courseId } = route.params;
 
     const [quizzes, setQuizzes] = useState([]);
-    const [myResults, setMyResults] = useState({});
+    const [myResults, setMyResults] = useState({}); // { quizId: latestResult }
     const [loading, setLoading] = useState(true);
 
     const fetchData = async () => {
@@ -21,9 +21,10 @@ const QuizListScreen = () => {
             setLoading(true);
             const token = await AsyncStorage.getItem("token");
 
+            // Gọi song song 2 API cho nhanh
             const [quizRes, resultRes] = await Promise.all([
                 authApis(token).get(endpoints["quiz-list"], {
-                    params: courseId ? { course: courseId } : {}  // ← filter theo course nếu có
+                    params: { course: courseId }
                 }),
                 authApis(token).get(endpoints["test-results"])
             ]);
@@ -31,10 +32,12 @@ const QuizListScreen = () => {
             const quizList = quizRes.data.results ?? quizRes.data;
             setQuizzes(Array.isArray(quizList) ? quizList : []);
 
+        
             const resultMap = {};
             const results = resultRes.data.results ?? resultRes.data;
             if (Array.isArray(results)) {
                 results.forEach(r => {
+                  
                     if (!resultMap[r.quiz.id]) {
                         resultMap[r.quiz.id] = r;
                     }
@@ -52,7 +55,7 @@ const QuizListScreen = () => {
     useFocusEffect(
         useCallback(() => {
             fetchData();
-        }, [courseId ?? null])  // ← fix: tránh undefined trong dependency array
+        }, [courseId])
     );
 
     const getStatusChip = (quizId) => {
@@ -73,6 +76,7 @@ const QuizListScreen = () => {
                 onPress={() => navigation.navigate("QuizTake", { quizId: item.id, title: item.title })}
             >
                 <Card.Content>
+                    {/* Header row */}
                     <View style={styles.cardHeader}>
                         <View style={styles.iconCircle}>
                             <Icon source="pencil-box-outline" size={24} color="#4f46e5" />
@@ -95,6 +99,7 @@ const QuizListScreen = () => {
                             </View>
                         </View>
 
+                        {/* Status Chip */}
                         <Chip
                             icon={status.icon}
                             style={[styles.chip, { backgroundColor: status.color }]}
@@ -104,13 +109,18 @@ const QuizListScreen = () => {
                         </Chip>
                     </View>
 
+                    {/* Hiển thị điểm lần làm gần nhất nếu có */}
                     {lastResult && (
                         <View style={styles.lastResultRow}>
                             <Text style={styles.lastResultText}>
                                 Lần gần nhất: {lastResult.percentage}%
                                 ({lastResult.score} điểm)
                             </Text>
-                            <Icon source="chevron-right" size={16} color="#94a3b8" />
+                            <Icon
+                                source="chevron-right"
+                                size={16}
+                                color="#94a3b8"
+                            />
                         </View>
                     )}
                 </Card.Content>
