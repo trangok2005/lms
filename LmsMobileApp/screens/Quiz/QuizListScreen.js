@@ -32,12 +32,12 @@ const QuizListScreen = () => {
             const quizList = quizRes.data.results ?? quizRes.data;
             setQuizzes(Array.isArray(quizList) ? quizList : []);
 
-            // Map kết quả mới nhất theo quizId để tra cứu nhanh
+        
             const resultMap = {};
             const results = resultRes.data.results ?? resultRes.data;
             if (Array.isArray(results)) {
                 results.forEach(r => {
-                    // Vì API sort by -created_at nên kết quả đầu tiên là mới nhất
+                  
                     if (!resultMap[r.quiz.id]) {
                         resultMap[r.quiz.id] = r;
                     }
