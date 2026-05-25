@@ -1,5 +1,5 @@
 from pyasn1_modules.rfc3279 import tpBasis
-from rest_framework import viewsets, generics, filters, status, parsers, permissions, mixins
+from rest_framework import viewsets, generics, filters, status, parsers, permissions, mixins, pagination
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from apps.courses.models import Course, Enrollment, ForumTopic, ForumReply, Category, Tag
@@ -40,6 +40,7 @@ class CourseViewSet(viewsets.ViewSet,
 
     queryset          = Course.objects.filter(is_active=True).select_related('teacher', 'category')
     serializer_class  = serializers.CourseSerializer
+    pagination_class = pagination.PageNumberPagination
     filter_backends   = [filters.SearchFilter, filters.OrderingFilter]
     search_fields     = ['subject']
     ordering_fields   = ['id', 'price']

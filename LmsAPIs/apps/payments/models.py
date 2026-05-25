@@ -22,8 +22,8 @@ class Transaction(BaseModel):
 
     #còn tg làm momo
     # Mã đơn hàng gửi sang cổng thanh toán (VD: ORDER_12345)
-    transaction_code = models.CharField(max_length=100, unique=True)
-    # Lưu response thô từ cổng thanh toán gửi về — cực kỳ quan trọng để debug
+    transaction_code = models.CharField(max_length=100)
+    # Lưu response thô từ cổng thanh toán gửi về debug
     gateway_response = models.JSONField(null=True, blank=True)
 
     def __str__(self):

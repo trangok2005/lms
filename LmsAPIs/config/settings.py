@@ -40,8 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'rest_framework',
     'ckeditor',
-    'ckeditor_uploader', 
-    
+    'ckeditor_uploader',
     'django.contrib.staticfiles',
     'drf_yasg',
     'apps.users',
@@ -92,9 +91,11 @@ OAUTH2_PROVIDER = { 'OAUTH2_BACKEND_CLASS': 'oauth2_provider.oauth2_backends.JSO
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
-
-    )
+    ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 5,
 }
+
 #real-time:0
 CHANNEL_LAYERS = {
     "default": {
