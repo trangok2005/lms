@@ -44,6 +44,7 @@ urlpatterns = [
     path('', include('apps.quizzes.urls')),
     path("admin/", admin_site.urls),
     path("ckeditor/", include("ckeditor_uploader.urls")),
+
     re_path(r'^swagger(?P<format>\.json|\.yaml)$',
             schema_view.without_ui(cache_timeout=0),
             name='schema-json'),
