@@ -1,5 +1,5 @@
-import React, { useState, useCallback, useEffect } from "react";
-import { FlatList, View, ScrollView, StyleSheet, TouchableOpacity } from "react-native";
+import React, { useState, useEffect } from "react";
+import { ActivityIndicator, FlatList, View, ScrollView, StyleSheet } from "react-native";
 import { Searchbar, Text, Chip, Icon } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import Apis, { endpoints } from "../../configs/Apis";
@@ -8,38 +8,28 @@ import { Header, Loading } from "../../components/common";
 import { CourseCard } from "../../components/courses";
 
 const LEVELS = [
-  { label: "Tất cả", value: null },
-  { label: "Dễ",       value: "beginner" },
+  { label: "Tất cả",     value: null },
+  { label: "Dễ",         value: "beginner" },
   { label: "Trung bình", value: "intermediate" },
-  { label: "Nâng cao",  value: "advanced" },
+  { label: "Nâng cao",   value: "advanced" },
 ];
 
 const CourseSearchScreen = () => {
   const nav = useNavigation();
 
-  // ── Keyword ──
-  const [keyword, setKeyword] = useState("");
-
-  // ── Filter metadata (lấy từ BE) ──
-  const [categories, setCategories] = useState([]);
-  const [tags, setTags]             = useState([]);
-
-  // ── Filter state ──
+  const [keyword,       setKeyword]       = useState("");
+  const [categories,    setCategories]    = useState([]);
+  const [tags,          setTags]          = useState([]);
   const [selectedCate,  setSelectedCate]  = useState(null);
   const [selectedLevel, setSelectedLevel] = useState(null);
   const [selectedTag,   setSelectedTag]   = useState(null);
+  const [courses,       setCourses]       = useState([]);
+  const [loading,       setLoading]       = useState(false);
 
-  // ── Kết quả ──
-  const [courses,  setCourses]  = useState([]);
-  const [loading,  setLoading]  = useState(false);
-  const [searched, setSearched] = useState(false);
-  
-  // ── Pagination ──
+  // ── Pattern thầy ──────────────────────────────────────
   const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
 
-  // ── Load danh mục & nhãn 1 lần khi mount ──
+  // ── Load meta 1 lần ───────────────────────────────────
   useEffect(() => {
     const fetchMeta = async () => {
       try {
@@ -50,315 +40,180 @@ const CourseSearchScreen = () => {
         setCategories(cateRes.data.results ?? cateRes.data);
         setTags(tagRes.data.results ?? tagRes.data);
       } catch (ex) {
-        console.debug("Lỗi nạp metadata:", ex);
+        console.debug(ex);
       }
     };
     fetchMeta();
   }, []);
 
-  /**
-   * Thực hiện tìm kiếm.
-   * Gọi lại mỗi khi filter thay đổi (qua useEffect bên dưới)
-   * hoặc khi user submit keyword.
-   */
-  const search = useCallback(async (kw = keyword, pageNum = 1) => {
+  // ── Load courses — pattern thầy ───────────────────────
+  const loadCourses = async () => {
+    if (page === 0) return;
     try {
       setLoading(true);
-      setSearched(true);
 
-      const params = { page: pageNum, ordering: "-rating" };
-      if (kw.trim())                              params.keyword  = kw.trim();
-      if (selectedCate)                           params.category = selectedCate.id;
-      if (selectedLevel && selectedLevel.value)   params.level    = selectedLevel.value;
-      if (selectedTag)                            params.tag      = selectedTag.id;
+      let url = `${endpoints["courses"]}?page=${page}&ordering=-id`;
+      if (keyword.trim())          url += `&keyword=${keyword.trim()}`;
+      if (selectedCate)            url += `&category=${selectedCate.id}`;
+      if (selectedLevel?.value)    url += `&level=${selectedLevel.value}`;
+      if (selectedTag)             url += `&tag=${selectedTag.id}`;
 
-      const res = await Apis.get(endpoints["courses"], { params });
-      const newCourses = res.data.results ?? res.data;
-      
-      if (pageNum === 1) {
-        setCourses(newCourses);
-      } else {
-        setCourses(prev => [...prev, ...newCourses]);
-      }
-      
-      setPage(pageNum);
-      // Kiểm tra xem có trang tiếp theo không
-      setHasMore(res.data.next !== null && res.data.next !== undefined);
+      const res = await Apis.get(url);
+
+      // Hết trang → set page = 0
+      if (res.data.next === null) setPage(0);
+
+      if (page === 1)
+        setCourses(res.data.results ?? res.data);
+      else
+        setCourses(prev => [...prev, ...(res.data.results ?? res.data)]);
+
     } catch (ex) {
-      console.debug("Lỗi tìm kiếm:", ex);
+      console.debug(ex);
     } finally {
       setLoading(false);
     }
-  }, [keyword, selectedCate, selectedLevel, selectedTag]);
-
-  // Tự động tìm lại khi filter thay đổi (chỉ khi đã từng search hoặc có filter)
-  useEffect(() => {
-    if (searched || selectedCate || selectedLevel || selectedTag) {
-      search(keyword, 1);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCate, selectedLevel, selectedTag]);
-
-  // Load tất cả khoá học (sắp xếp theo rating) khi lần đầu vào
-  useEffect(() => {
-    search(keyword, 1);
-  }, []);
-
-  /**
-   * Load thêm trang tiếp theo
-   */
-  const loadMore = async () => {
-    if (!hasMore || loadingMore) return;
-    setLoadingMore(true);
-    try {
-      const nextPage = page + 1;
-      const params = { page: nextPage, ordering: "-rating" };
-      if (keyword.trim())                              params.keyword  = keyword.trim();
-      if (selectedCate)                           params.category = selectedCate.id;
-      if (selectedLevel && selectedLevel.value)   params.level    = selectedLevel.value;
-      if (selectedTag)                            params.tag      = selectedTag.id;
-
-      const res = await Apis.get(endpoints["courses"], { params });
-      const newCourses = res.data.results ?? res.data;
-      
-      setCourses(prev => [...prev, ...newCourses]);
-      setPage(nextPage);
-      setHasMore(res.data.next !== null && res.data.next !== undefined);
-    } catch (ex) {
-      console.debug("Lỗi nạp thêm:", ex);
-    } finally {
-      setLoadingMore(false);
-    }
   };
 
-  const activeFilterCount = [selectedCate, selectedLevel, selectedTag].filter(Boolean).length;
+  // Debounce — chạy khi page thay đổi
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (page > 0) loadCourses();
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [keyword, selectedCate, selectedLevel, selectedTag, page]);
+
+  // Reset page về 1 khi filter thay đổi
+  useEffect(() => {
+    setPage(1);
+  }, [keyword, selectedCate, selectedLevel, selectedTag]);
+
+  const loadMore = () => {
+    if (page > 0 && !loading) setPage(page + 1);
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <Header title="Tìm kiếm khoá học" showBack />
 
-      {/* ── Thanh tìm kiếm ── */}
+      {/* Search bar */}
       <View style={styles.searchWrap}>
         <Searchbar
-          placeholder="Nhập tên khoá học, giảng viên..."
+          placeholder="Nhập tên khoá học, hoặc từ khoá liên quan..."
           value={keyword}
           onChangeText={setKeyword}
-          onSubmitEditing={() => search()}
-          onIconPress={() => search()}
           style={styles.searchBar}
           inputStyle={{ color: colors.black }}
           autoFocus
         />
       </View>
 
-      {/* ── Bộ lọc ── */}
+      {/* Filter */}
       <View style={styles.filterSection}>
-
-        {/* Danh mục */}
         <Text variant="labelMedium" style={styles.filterLabel}>Danh mục</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
-          <Chip
-            selected={selectedCate === null}
-            onPress={() => setSelectedCate(null)}
-            style={styles.chip}
-            selectedColor={colors.white}
-            showSelectedOverlay
-            theme={{ colors: { primary: colors.primary } }}
-          >
+          <Chip selected={selectedCate === null} onPress={() => setSelectedCate(null)}
+            style={styles.chip} selectedColor={colors.white} showSelectedOverlay
+            theme={{ colors: { primary: colors.primary } }}>
             Tất cả
           </Chip>
           {categories.map((c) => (
-            <Chip
-              key={`cate-${c.id}`}
+            <Chip key={c.id}
               selected={selectedCate?.id === c.id}
               onPress={() => setSelectedCate(selectedCate?.id === c.id ? null : c)}
-              style={styles.chip}
-              selectedColor={colors.white}
-              showSelectedOverlay
-              theme={{ colors: { primary: colors.primary } }}
-            >
+              style={styles.chip} selectedColor={colors.white} showSelectedOverlay
+              theme={{ colors: { primary: colors.primary } }}>
               {c.name}
             </Chip>
           ))}
         </ScrollView>
 
-        {/* Trình độ */}
         <Text variant="labelMedium" style={[styles.filterLabel, { marginTop: 8 }]}>Trình độ</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
           {LEVELS.map((l) => (
-            <Chip
-              key={`level-${l.label}`}
-              selected={
-                l.value === null
-                  ? selectedLevel === null
-                  : selectedLevel?.value === l.value
-              }
+            <Chip key={l.label}
+              selected={l.value === null ? selectedLevel === null : selectedLevel?.value === l.value}
               onPress={() => setSelectedLevel(l.value === null ? null : l)}
-              style={styles.chip}
-              selectedColor={colors.white}
-              showSelectedOverlay
-              theme={{ colors: { primary: colors.primary } }}
-            >
+              style={styles.chip} selectedColor={colors.white} showSelectedOverlay
+              theme={{ colors: { primary: colors.primary } }}>
               {l.label}
             </Chip>
           ))}
         </ScrollView>
 
-        {/* Nhãn xu hướng */}
         <Text variant="labelMedium" style={[styles.filterLabel, { marginTop: 8 }]}>Nhãn</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
-          <Chip
-            selected={selectedTag === null}
-            onPress={() => setSelectedTag(null)}
-            style={styles.chip}
-            selectedColor={colors.white}
-            showSelectedOverlay
-            theme={{ colors: { primary: colors.primary } }}
-          >
+          <Chip selected={selectedTag === null} onPress={() => setSelectedTag(null)}
+            style={styles.chip} selectedColor={colors.white} showSelectedOverlay
+            theme={{ colors: { primary: colors.primary } }}>
             Tất cả
           </Chip>
           {tags.map((t) => (
-            <Chip
-              key={`tag-${t.id}`}
+            <Chip key={t.id}
               selected={selectedTag?.id === t.id}
               onPress={() => setSelectedTag(selectedTag?.id === t.id ? null : t)}
-              style={styles.chip}
-              selectedColor={colors.white}
-              showSelectedOverlay
-              theme={{ colors: { primary: colors.primary } }}
-            >
+              style={styles.chip} selectedColor={colors.white} showSelectedOverlay
+              theme={{ colors: { primary: colors.primary } }}>
               {t.name}
             </Chip>
           ))}
         </ScrollView>
       </View>
 
-      {/* ── Kết quả ── */}
-      {loading && page === 1 ? (
-        <Loading text="Đang tìm kiếm..." />
-      ) : (
-        <FlatList
-          data={courses}
-          keyExtractor={(item, index) => `${item.id}-${index}`}
-          contentContainerStyle={styles.list}
-          showsVerticalScrollIndicator={false}
-          ListHeaderComponent={
-            courses.length > 0 ? (
-              <Text variant="labelMedium" style={styles.resultCount}>
-                {courses.length} kết quả
-              </Text>
-            ) : null
-          }
-          ListEmptyComponent={
+      {/* Kết quả */}
+      <FlatList
+        data={courses}
+        keyExtractor={(item) => item.id.toString()}
+        contentContainerStyle={styles.list}
+        showsVerticalScrollIndicator={false}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.3}
+        // ✅ Pattern thầy: ActivityIndicator thay vì nút "Xem thêm"
+        ListFooterComponent={
+          loading
+            ? <ActivityIndicator color={colors.primary} style={{ marginVertical: 12 }} />
+            : page === 0 && courses.length > 0
+              ? <Text style={styles.endText}>Đã hiển thị tất cả</Text>
+              : null
+        }
+        ListHeaderComponent={
+          courses.length > 0
+            ? <Text variant="labelMedium" style={styles.resultCount}>{courses.length} kết quả</Text>
+            : null
+        }
+        ListEmptyComponent={
+          !loading && (
             <View style={[Styles.center, { marginTop: 60 }]}>
               <Icon source="magnify" size={40} color={colors.gray} />
               <Text variant="bodyMedium" style={{ color: colors.gray, marginTop: 8 }}>
-                Không có khoá học
+                {keyword || selectedCate || selectedLevel || selectedTag
+                  ? "Không tìm thấy khoá học phù hợp"
+                  : "Nhập từ khoá hoặc chọn bộ lọc để tìm kiếm"}
               </Text>
             </View>
-          }
-          ListFooterComponent={
-            hasMore ? (
-              <TouchableOpacity
-                style={styles.loadMoreBtn}
-                onPress={loadMore}
-                disabled={loadingMore}
-              >
-                <Text style={styles.loadMoreText}>
-                  {loadingMore ? "Đang tải..." : "Xem thêm"}
-                </Text>
-              </TouchableOpacity>
-            ) : courses.length > 0 ? (
-              <View style={styles.endMessage}>
-                <Text style={styles.endText}>Đã hiển thị tất cả</Text>
-              </View>
-            ) : null
-          }
-          renderItem={({ item }) => (
-            <CourseCard
-              course={item}
-              onPress={() => nav.navigate("CourseDetail", { courseId: item.id })}
-            />
-          )}
-        />
-      )}
+          )
+        }
+        renderItem={({ item }) => (
+          <CourseCard
+            course={item}
+            onPress={() => nav.navigate("CourseDetail", { courseId: item.id })}
+          />
+        )}
+      />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  searchWrap: {
-    padding: 15,
-    backgroundColor: colors.white,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  searchBar: {
-    backgroundColor: colors.bg,
-    borderRadius: 10,
-    elevation: 0,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-
-  filterSection: {
-    paddingHorizontal: 15,
-    paddingTop: 12,
-    paddingBottom: 8,
-    backgroundColor: colors.white,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  filterLabel: {
-    fontWeight: "700",
-    color: colors.black,
-    marginBottom: 5,
-  },
-  chipRow: {
-    gap: 8,
-    paddingVertical: 2,
-  },
-  chip: {
-    marginRight: 2,
-    borderRadius: 20,
-  },
-  resetBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    alignSelf: "flex-start",
-    marginTop: 8,
-    gap: 4,
-  },
-  resetText: {
-    color: colors.primary,
-    fontSize: 12,
-    fontWeight: "600",
-  },
-
-  list:        { padding: 15, paddingBottom: 30 },
-  resultCount: { color: colors.gray, marginBottom: 10 },
-  
-  loadMoreBtn: {
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    backgroundColor: colors.primary,
-    borderRadius: 8,
-    alignItems: "center",
-    marginTop: 15,
-  },
-  loadMoreText: {
-    color: colors.white,
-    fontWeight: "600",
-    fontSize: 14,
-  },
-  endMessage: {
-    paddingVertical: 15,
-    alignItems: "center",
-  },
-  endText: {
-    color: colors.gray,
-    fontSize: 12,
-  },
+  searchWrap:    { padding: 15, backgroundColor: colors.white, borderBottomWidth: 1, borderBottomColor: colors.border },
+  searchBar:     { backgroundColor: colors.bg, borderRadius: 10, elevation: 0, borderWidth: 1, borderColor: colors.border },
+  filterSection: { paddingHorizontal: 15, paddingTop: 12, paddingBottom: 8, backgroundColor: colors.white, borderBottomWidth: 1, borderBottomColor: colors.border },
+  filterLabel:   { fontWeight: "700", color: colors.black, marginBottom: 5 },
+  chipRow:       { gap: 8, paddingVertical: 2 },
+  chip:          { marginRight: 2, borderRadius: 20 },
+  list:          { padding: 15, paddingBottom: 30 },
+  resultCount:   { color: colors.gray, marginBottom: 10 },
+  endText:       { textAlign: "center", color: colors.gray, fontSize: 12, paddingVertical: 15 },
 });
 
 export default CourseSearchScreen;

@@ -33,6 +33,7 @@ class CourseSerializer(ItemSerializer):
     category = CategorySerializer(read_only=True)
     teacher  = SimpleUserSerializer(read_only=True)
 
+
     class Meta:
         model  = Course
         fields = ['id', 'subject', 'description', 'image',

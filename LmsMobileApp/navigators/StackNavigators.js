@@ -7,10 +7,8 @@ import Register                   from "../screens/Auth/Register";
 // ── Student Home ─────────────────────────────────────────
 import HomeScreen                 from "../screens/Student/HomeScreen";
 // ── Courses ──────────────────────────────────────────────
-import CourseListScreen           from "../screens/Courses/CourseListScreen";
 import CourseDetailScreen         from "../screens/Courses/CourseDetailScreen";
 import CourseSearchScreen         from "../screens/Courses/CourseSearchScreen";
-import MyCourseScreen             from "../screens/Courses/MyCourseScreen";
 // ── Materials ────────────────────────────────────────────
 import MaterialListScreen         from "../screens/Materials/MaterialListScreen";
 import MaterialDetailScreen       from "../screens/Materials/MaterialDetailScreen";
@@ -69,8 +67,6 @@ export const AuthStack = () => (
 export const HomeStack = () => (
   <Stack.Navigator screenOptions={SO}>
     <Stack.Screen name="Home"           component={HomeScreen} />
-    
-    <Stack.Screen name="CourseList"     component={CourseListScreen} />
     <Stack.Screen name="CourseDetail"   component={CourseDetailScreen} />
     <Stack.Screen name="CourseSearch"   component={CourseSearchScreen} />
 
@@ -92,7 +88,6 @@ export const HomeStack = () => (
     <Stack.Screen name="LearningDashboard" component={LearningDashboardScreen} />
     <Stack.Screen name="LearningPath"      component={LearningPathScreen} />
 
-    <Stack.Screen name="MyCourse"       component={MyCourseScreen} />
     <Stack.Screen name="PaymentResult"  component={PaymentResultScreen} />
     <Stack.Screen name="Checkout" component={CheckoutScreen} />
   </Stack.Navigator>
@@ -116,7 +111,6 @@ export const QuizStack = () => (
   </Stack.Navigator>
 );
 
-// ── PROGRESS ─────────────────────────────────────────────
 // ── PROGRESS ─────────────────────────────────────────────
 export const ProgressStack = () => (
   <Stack.Navigator screenOptions={SO}>
