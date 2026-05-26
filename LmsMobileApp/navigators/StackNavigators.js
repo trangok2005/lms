@@ -19,6 +19,7 @@ import NoteScreen                 from "../screens/Materials/NoteScreen";
 import ForumListScreen            from "../screens/Forum/ForumListScreen";
 import ForumDetailScreen          from "../screens/Forum/ForumDetailScreen";
 import CreateTopicScreen          from "../screens/Forum/CreateTopicScreen";
+import NotificationListScreen     from "../screens/Notification/NotificationList";
 // ── Quiz   (nhúng vào HomeStack — mở từ MaterialActionBar) ──
 import QuizListScreen             from "../screens/Quiz/QuizListScreen";
 import QuizTakeScreen             from "../screens/Quiz/QuizTakeScreen";
@@ -81,6 +82,7 @@ export const HomeStack = () => (
     <Stack.Screen name="ForumList"      component={ForumListScreen} />
     <Stack.Screen name="ForumDetail"    component={ForumDetailScreen} />
     <Stack.Screen name="CreateTopic"    component={CreateTopicScreen} />
+    <Stack.Screen name="NotificationList" component={NotificationListScreen} />
     <Stack.Screen name="QuizList"          component={QuizListScreen} />
     <Stack.Screen name="QuizTake"          component={QuizTakeScreen} />
     <Stack.Screen name="QuizResult"        component={QuizResultScreen} />
@@ -116,15 +118,22 @@ export const ProgressStack = () => (
   <Stack.Navigator screenOptions={SO}>
     <Stack.Screen name="LearningDashboard" component={LearningDashboardScreen} />
     <Stack.Screen name="LearningPath"      component={LearningPathScreen} />
-    <Stack.Screen name="CourseDetail"   component={CourseDetailScreen} />
+    <Stack.Screen name="CourseDetail"      component={CourseDetailScreen} />
+    
+    {/* 💬 KHU VỰC FORUM DIỄN ĐÀN (Bổ sung đầy đủ luồng chi tiết) */}
+    <Stack.Screen name="ForumList"         component={ForumListScreen} />
+    <Stack.Screen name="ForumDetail"       component={ForumDetailScreen} /> 
+    <Stack.Screen name="CreateTopic"       component={CreateTopicScreen} /> 
 
-    {/* Thêm các screen navigate từ LearningDashboard */}
+    {/* 📖 KHU VỰC HỌC TẬP VÀ TÀI LIỆU */}
     <Stack.Screen name="MaterialList"      component={MaterialListScreen} />
     <Stack.Screen name="MaterialDetail"    component={MaterialDetailScreen} />
     <Stack.Screen name="VideoPlayer"       component={VideoPlayerScreen} />
     <Stack.Screen name="DocumentViewer"    component={DocumentViewerScreen} />
     <Stack.Screen name="Note"              component={NoteScreen} />
     <Stack.Screen name="Comment"           component={CommentScreen} />
+    
+    {/* 📝 KHU VỰC BÀI KIỂM TRA (QUIZ) */}
     <Stack.Screen name="QuizList"          component={QuizListScreen} />
     <Stack.Screen name="QuizTake"          component={QuizTakeScreen} />
     <Stack.Screen name="QuizResult"        component={QuizResultScreen} />

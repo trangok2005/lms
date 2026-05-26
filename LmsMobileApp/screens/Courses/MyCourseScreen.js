@@ -90,10 +90,12 @@ const MyCourseScreen = () => {
             console.log("Enrollment item:", item),
             <EnrollmentCard
               enrollment={item}
-              onPress={() => {
-                const courseId =  item.course?.id;
-                nav.navigate("MaterialList", { courseId });
-              }}
+              onPress={() => 
+                nav.navigate("ProgressTab", { 
+                  screen: "MaterialList", 
+                  params: { courseId:  item.course?.id }
+                })
+              }
             />
           )}
         />

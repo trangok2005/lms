@@ -1,28 +1,9 @@
-import React, { useContext } from "react";
-import { View, TouchableOpacity } from "react-native";
+import React, { useContext, useState, useEffect } from "react";
+import { View, TouchableOpacity, DeviceEventEmitter } from "react-native";
 import { Appbar, Avatar, Badge, useTheme } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import { MyUserContext } from "../../configs/MyContext";
 import Styles, { colors } from "../../styles/Styles";
-
-/**
- * Header component tái sử dụng cho toàn app LMS.
- *
- * Props:
- *  - title      (string)   : Tiêu đề hiển thị giữa header
- *  - subtitle   (string)   : Dòng nhỏ bên dưới title (tuỳ chọn)
- *  - showBack   (bool)     : Hiện nút quay lại (mặc định false)
- *  - showSearch (bool)     : Hiện icon tìm kiếm (mặc định false)
- *  - showNotif  (bool)     : Hiện icon thông báo (mặc định false)
- *  - notifCount (number)   : Số badge thông báo (mặc định 0)
- *  - onSearch   (func)     : Callback khi bấm tìm kiếm
- *  - onNotif    (func)     : Callback khi bấm thông báo
- *  - rightComponent (node) : Render bất kỳ element nào bên phải
- *
- * Ví dụ dùng:
- *   <Header title="Khóa học" showBack showSearch onSearch={() => nav.navigate('CourseSearch')} />
- *   <Header title="Trang chủ" showNotif notifCount={3} />
- */
 
 const Header = ({
   title = "LMS",
@@ -30,7 +11,6 @@ const Header = ({
   showBack = false,
   showSearch = false,
   showNotif = false,
-  notifCount = 0,
   onSearch,
   onNotif,
   rightComponent,
@@ -38,6 +18,48 @@ const Header = ({
   const navigation = useNavigation();
   const theme = useTheme();
   const [user] = useContext(MyUserContext);
+  
+  // 🔔 Tạo state nội bộ để quản lý số badge thông báo hiển thị trên Header
+  const [badgeCount, setBadgeCount] = useState(0);
+
+  useEffect(() => {
+    if (!showNotif) return;
+
+    const badgeSub = DeviceEventEmitter.addListener("UPDATE_BADGE_COUNT", (count) => {
+      setBadgeCount(Number.isFinite(count) ? count : 0);
+    });
+
+    const incBadgeSub = DeviceEventEmitter.addListener("INCREMENT_BADGE_COUNT", () => {
+      setBadgeCount((prev) => prev + 1);
+    });
+
+    const navigateSub = DeviceEventEmitter.addListener("NAVIGATE_TO_FORUM", (forumId) => {
+      if (forumId) {
+        navigation.navigate("ForumDetail", { topicId: forumId });
+      }
+    });
+
+    const navNotificationsSub = DeviceEventEmitter.addListener("NAVIGATE_TO_NOTIFICATIONS", () => {
+      navigation.navigate("NotificationList");
+    });
+
+    return () => {
+      badgeSub.remove();
+      incBadgeSub.remove();
+      navigateSub.remove();
+      navNotificationsSub.remove();
+    };
+  }, [showNotif, navigation]);
+
+  // Xử lý mặc định khi click vào quả chuông nếu không truyền prop onNotif từ ngoài vào
+  const handleNotifPress = () => {
+    if (onNotif) {
+      onNotif();
+    } else {
+      // Mặc định dẫn sang màn hình Lịch sử thông báo tổng của app
+      navigation.navigate("NotificationList"); 
+    }
+  };
 
   return (
     <Appbar.Header style={[Styles.appbar, { backgroundColor: theme.colors.primary }]} elevated>
@@ -60,12 +82,12 @@ const Header = ({
       )}
 
       {/* Thông Báo */}
-      {showNotif && onNotif && (
+      {showNotif && (
         <View style={Styles.notifWrapper}>
-          <Appbar.Action icon="bell-outline" color={colors.white} onPress={onNotif} />
-          {notifCount > 0 && (
+          <Appbar.Action icon="bell-outline" color={colors.white} onPress={handleNotifPress} />
+          {badgeCount > 0 && (
             <Badge style={Styles.headerBadge} size={18}>
-              {notifCount > 99 ? "99+" : notifCount}
+              {badgeCount > 99 ? "99+" : badgeCount}
             </Badge>
           )}
         </View>
@@ -96,10 +118,11 @@ const Header = ({
   );
 };
 
-//các components cơ bảnr
-export const HomeHeader = ({ title, notifCount, onSearch, onNotif }) => (
-  <Header title={title} showSearch showNotif notifCount={notifCount} onSearch={onSearch} onNotif={onNotif} />
-);
-
+// Cập nhật lại component con cơ bản (Bỏ prop notifCount dư thừa đi)
+export const HomeHeader = ({ title, onSearch, onNotif }) => {
+  const navigation = useNavigation();
+  const handleSearch = onSearch ?? (() => navigation.navigate("CourseSearch"));
+  return <Header title={title} showSearch showNotif onSearch={handleSearch} onNotif={onNotif} />;
+};
 
 export default Header;

@@ -184,8 +184,9 @@ class AdminTransactionViewSet(viewsets.ViewSet, generics.ListAPIView):
 
 
 class AdminOverviewView(viewsets.ViewSet, generics.ListAPIView):
-    serializer_class = None
+    serializer_class = serializers.DummySerializer
     permission_classes = [permissions.IsAuthenticated, IsAdmin]
+
 
     def list(self, request, *args, **kwargs):
         return self._generate_overview_response()

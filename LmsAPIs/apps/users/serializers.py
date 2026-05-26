@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, StudentProfile
+from .models import User, StudentProfile, Notification
 
 class StudentProfileSerializer(serializers.ModelSerializer):
     class Meta:
@@ -65,3 +65,11 @@ class UserSerializer(SimpleUserSerializer):
         )
 
         return user
+
+
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = Notification
+        fields = ['id', 'notification_type', 'title', 'message', 'data',
+                  'is_read', 'forum_id', 'created_date']
+        read_only_fields = ['forum_id']

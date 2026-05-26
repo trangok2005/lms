@@ -42,7 +42,12 @@ const PaymentResultScreen = () => {
             icon="play-circle"
             style={styles.btn}
             contentStyle={{ paddingVertical: 4 }}
-            onPress={() => nav.navigate("MaterialList", { courseId })}
+            onPress={() => 
+              nav.navigate("ProgressTab", { 
+                screen: "MaterialList", 
+                params: { courseId: course?.id }
+              })
+            }
           >
             Vào học ngay
           </Button>

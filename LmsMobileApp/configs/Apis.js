@@ -40,10 +40,16 @@ export const endpoints = {
    "material-progress": (id) => `/Material/${id}/progress/`,
     /** */
     "forum-topics":       (courseId) => `/courses/${courseId}/forum/`,
-    "forum-topic-detail": (id)      => `/forum/${id}/`,
+    "forum-topic-detail": (id)       => `/forum/${id}/`,
     "forum-reply":        (topicId) => `/forum/${topicId}/replies/`,
-    "forum-delete": (topicId) => `/forum/${topicId}/`,
-    "reply-delete": (replyId) => `/forum/reply/${replyId}/`,
+    "forum-delete":       (topicId) => `/forum/${topicId}/`,
+    "reply-delete":       (replyId) => `/forum/reply/${replyId}/`,
+    
+    // Notifications
+    "notifications": "/notifications/",
+    "notification-detail": (id) => `/notifications/${id}/`,
+    "notification-read": (id) => `/notifications/${id}/read/`,
+    "notifications-read-all": "/notifications/read-all/",
 
     /**payments */
     "pay": "/payments/pay/",
@@ -52,6 +58,7 @@ export const endpoints = {
     "admin-transactions": "/admin/transactions/",
     "admin-transactions-stats": "/admin/transactions/stats/",
     "admin-transaction-detail": (id) => `/admin/transactions/${id}/`,
+
 }
 
 export const authApis = (token) => {

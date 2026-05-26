@@ -20,7 +20,7 @@ const CourseCard = ({ course, onPress }) => {
   const isFree = !course.price || parseFloat(course.price) === 0;
 
   return (
-    console.log("CourseCard data:", course),
+    // console.log("CourseCard data:", course),
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.85}>
       {/* Thumbnail */}
       {course.image ? (

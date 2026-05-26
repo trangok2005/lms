@@ -1,67 +1,74 @@
-import React, { useCallback, useContext, useState, useRef ,useEffect} from "react";
+import React, { useCallback, useContext, useState, useRef, useEffect } from "react";
 import {
   View, ScrollView, StyleSheet,
-  KeyboardAvoidingView, Platform, TextInput as RNTextInput, TouchableOpacity, Alert
+  KeyboardAvoidingView, Platform, TextInput as RNTextInput, Alert
 } from "react-native";
-import { Text, Avatar, Divider, IconButton, ActivityIndicator } from "react-native-paper";
+import { Text, IconButton, ActivityIndicator } from "react-native-paper";
 import { useNavigation, useRoute, useFocusEffect } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { authApis, endpoints } from "../../configs/Apis";
 import { MyUserContext } from "../../configs/MyContext";
 import Styles, { colors } from "../../styles/Styles";
-import { Header, Loading,  } from "../../components/common";
+import { Header, Loading } from "../../components/common";
 import { CommentSection, TopicItem } from "../../components/forum";
 
 const ForumDetailScreen = () => {
-  const nav          = useNavigation();
-  const { params }   = useRoute();
-  const [user]       = useContext(MyUserContext);
+  const nav = useNavigation();
+  const { topicId, topic: initialTopic } = useRoute().params;
+  const [user] = useContext(MyUserContext);
 
-  const [topic,    setTopic]    = useState(params.topic ?? null);
-  const [loading,  setLoading]  = useState(!params.topic);
-  const [reply,    setReply]    = useState("");
-  const [sending,  setSending]  = useState(false);
-  const inputRef                = useRef(null);
+  const [topic, setTopic] = useState(initialTopic ?? null);
+  const [loading, setLoading] = useState(true);
+  const [reply, setReply] = useState("");
+  const [sending, setSending] = useState(false);
+  const inputRef = useRef(null);
 
-  // ── Tải danh sách bình luận (Replies) ──────────────────────────
+  // ── GỘP CHUNG LUỒNG TẢI DỮ LIỆU VÀO 1 USEFOCUSEFFECT DUY NHẤT ──────────────────
   useFocusEffect(
     useCallback(() => {
-      const fetchReplies = async () => {
+      const fetchData = async () => {
+        if (!topicId) {
+          console.debug("ForumDetailScreen: Thiếu topicId");
+          setLoading(false);
+          return;
+        }
+
         try {
           setLoading(true);
           const token = await AsyncStorage.getItem("token");
-          if (!token) {
-            console.debug("ForumDetailScreen: missing auth token");
-            setLoading(false);
-            return;
+          let currentTopic = topic;
+
+          // 1. Nếu đi từ Notification (chưa có sẵn data bài viết) -> Tiến hành gọi API chi tiết bài viết
+          if (!currentTopic) {
+            const topicRes = await authApis(token).get(endpoints["forum-topic-detail"](topicId));
+            currentTopic = topicRes.data;
           }
 
+          // 2. Tiếp tục gọi API lấy danh sách bình luận (Replies) cho bài viết
           const repliesRes = await authApis(token)
-            .get(endpoints["forum-reply"](params.topicId))
+            .get(endpoints["forum-reply"](topicId))
             .catch(() => ({ data: [] }));
 
           const replies = repliesRes.data.results ?? repliesRes.data ?? [];
-          setTopic((prev) => ({ ...(prev ?? {}), replies }));
+          
+          // 3. Cập nhật gộp chung toàn bộ dữ liệu vào State
+          setTopic({ ...currentTopic, replies });
         } catch (ex) {
-          console.debug(ex);
+          console.debug("Lỗi khi tải dữ liệu diễn đàn:", ex);
         } finally {
           setLoading(false);
         }
       };
 
-      if (params.topicId) {
-        fetchReplies();
-      } else {
-        console.debug("ForumDetailScreen: missing topicId");
-      }
-    }, [params.topicId])
+      fetchData();
+    }, [topicId]) // Chạy lại khi ID thay đổi
   );
 
-  // ── Lắng nghe Real-time qua WebSocket ──────────────────────────
+  // ── LẮNG NGHE REAL-TIME QUA WEBSOCKET ──────────────────────────────────────────
   useEffect(() => {
-    if (!params.topicId) return;
+    if (!topicId) return;
 
-    const ws = new WebSocket(`ws://192.168.1.18:8000/ws/forum/${params.topicId}/`);
+    const ws = new WebSocket(`ws://192.168.1.18:8000/ws/forum/${topicId}/`);
 
     ws.onmessage = (e) => {
       try {
@@ -69,9 +76,8 @@ const ForumDetailScreen = () => {
         
         if (response.type === "new_reply") {
           const incomingData = response.data;
-          console.log("Dữ liệu từ WS:", incomingData);
+          console.log("Dữ liệu cập nhật từ WS:", incomingData);
           
-          // Hành động: XÓA BÌNH LUẬN
           if (incomingData.action === "DELETE_REPLY") {
             setTopic((prev) => {
               if (!prev) return prev;
@@ -81,13 +87,10 @@ const ForumDetailScreen = () => {
               };
             });
           } 
-          // Hành động: XÓA CHỦ ĐỀ (Bị đá ra ngoài danh sách)
           else if (incomingData.action === "DELETE_TOPIC") {
-            console.log("=== Đã nhận được lệnh XÓA TOPIC từ WebSocket ===");
             Alert.alert("Thông báo", "Chủ đề này đã bị xóa bởi ban quản trị.");
             nav.goBack();
           } 
-          // Hành động: THÊM BÌNH LUẬN MỚI
           else {
             setTopic((prev) => {
               if (!prev) return prev;
@@ -105,20 +108,13 @@ const ForumDetailScreen = () => {
       }
     };
 
-    ws.onerror = (e) => {
-      console.debug("Lỗi kết nối WebSocket:", e.message);
-    };
+    ws.onerror = (e) => console.debug("Lỗi kết nối WebSocket:", e.message);
+    ws.onclose = (e) => console.debug("WebSocket Forum đã đóng:", e.reason);
 
-    ws.onclose = (e) => {
-      console.debug("WebSocket Forum đã đóng:", e.reason);
-    };
+    return () => ws.close();
+  }, [topicId, nav]);
 
-    return () => {
-      ws.close();
-    };
-  }, [params.topicId, nav]); // ✨ Đã sửa cấu trúc đưa nav vào mảng phụ thuộc chuẩn xác
-
-  // ── Gửi bình luận mới ──────────────────────────────────────────
+  // ── GỬI BÌNH LUẬN MỚI ──────────────────────────────────────────
   const sendReply = async () => {
     if (!reply.trim()) return;
     try {
@@ -127,41 +123,37 @@ const ForumDetailScreen = () => {
       if (!token) return;
       
       await authApis(token).post(
-        endpoints["forum-reply"](params.topicId),
+        endpoints["forum-reply"](topicId),
         { content: reply.trim() }
       );
       setReply("");
       inputRef.current?.blur();
     } catch (ex) {
-      console.debug(ex);
+      console.debug("Gửi phản hồi thất bại:", ex);
     } finally {
       setSending(false);
     }
   };
 
-  // ── Xóa bình luận ──────────────────────────────────────────────
+  // ── XÓA BÌNH LUẬN ──────────────────────────────────────────────
   const deleteReply = async (replyId) => {
     try {
       const token = await AsyncStorage.getItem("token");
       if (!token) return;
       await authApis(token).delete(endpoints["reply-delete"](replyId));
     } catch (ex) {
-      console.debug(ex);
+      console.debug("Xóa phản hồi thất bại:", ex);
     }
   };
 
-  // ── Xóa chủ đề (Topic) ──────────────────────────────────────────
-  const deleteTopic = async (topicId) => {
+  // ── XÓA CHỦ ĐỀ (TOPIC) ──────────────────────────────────────────
+  const deleteTopic = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
       if (!token) return;
-      
-      // Gửi lệnh xóa lên server
       await authApis(token).delete(endpoints["forum-delete"](topicId));
-      
-      // ✨ Đã loại bỏ dòng setTopics lỗi ở đây. WebSocket tự động xử lý điều hướng đá ra ngoài.
     } catch (ex) {
-      console.debug("ForumDetailScreen deleteTopic:", ex);
+      console.debug("Xóa chủ đề thất bại:", ex);
     }
   };
 
@@ -171,12 +163,13 @@ const ForumDetailScreen = () => {
       "Bạn có chắc chắn muốn xóa chủ đề này không? Tất cả bình luận sẽ bị mất.",
       [
         { text: "Hủy", style: "cancel" },
-        { text: "Xóa", style: "destructive", onPress: () => deleteTopic(params.topicId) },
+        { text: "Xóa", style: "destructive", onPress: deleteTopic },
       ]
     );
   };
 
-  if (loading) return <Loading text="Đang tải chủ đề..." />;
+  // Các câu lệnh kiểm tra giao diện đưa xuống cuối cùng hợp lệ theo quy tắc React Hook
+  if (loading) return <Loading text="Đang tải dữ liệu..." />;
   if (!topic)  return <Loading text="Không tìm thấy chủ đề." />;
 
   return (
@@ -189,24 +182,20 @@ const ForumDetailScreen = () => {
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
 
-        {/* Card hiển thị thông tin bài viết tái sử dụng */}
+        {/* Thông tin chi tiết bài viết gốc */}
         <TopicItem
-          topic={{
-            ...topic,
-            title: topic.title, 
-            content: topic.content,
-          }}
+          topic={topic}
           onPress={undefined} 
           showDelete={user?.id === topic.user?.id} 
           onDelete={confirmDeleteTopic} 
         />
 
-        {/* Số lượng bình luận */}
+        {/* Thống kê đếm số lượng phản hồi */}
         <Text variant="titleSmall" style={styles.replyHeader}>
           {topic.replies?.length ?? 0} bình luận
         </Text>
 
-        {/* Danh sách các bình luận */}
+        {/* Vòng lặp kết xuất danh sách bình luận */}
         {(topic.replies ?? []).map((r, idx) => (
           <CommentSection
             key={`reply-${r.id ?? "unknown"}-${idx}`}
@@ -219,7 +208,7 @@ const ForumDetailScreen = () => {
         <View style={{ height: 24 }} />
       </ScrollView>
 
-      {/* Ô nhập nội dung phản hồi */}
+      {/* Thanh nhập liệu bình luận */}
       {user && (
         <View style={styles.inputWrap}>
           <RNTextInput

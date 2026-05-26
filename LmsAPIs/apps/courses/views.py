@@ -6,6 +6,7 @@ from apps.courses.models import Course, Enrollment, ForumTopic, ForumReply, Cate
 from apps.courses import serializers, perms
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
+from apps.users.models import Notification, User
 
 
 class BaseViewSet(viewsets.ViewSet,generics.ListCreateAPIView,generics.DestroyAPIView):
@@ -197,8 +198,7 @@ class CourseViewSet(viewsets.ViewSet,
 #  FORUM VIEWSET  — API 11 → 13
 # ════════════════════════════════════════════════════════════════
 
-class ForumTopicViewSet(viewsets.ViewSet,
-                        generics.RetrieveDestroyAPIView):
+class ForumTopicViewSet(viewsets.ViewSet,generics.RetrieveDestroyAPIView):
     """
     Router:
         /api/forum/{pk}/          → retrieve (API 11), destroy (API 13)
@@ -268,27 +268,34 @@ class ForumTopicViewSet(viewsets.ViewSet,
                 }
             )
 
-            # topic_owner_id = topic.user_id
-            #
-            # if request.user.id != topic_owner_id:
-            #     async_to_sync(channel_layer.group_send)(
-            #         f'user_{topic_owner_id}',
-            #         {
-            #             'type': 'send_notification',
-            #             'data': {
-            #                 'notification_type': 'NEW_REPLY',
-            #                 'title': 'Phản hồi mới trong Forum 💬',
-            #                 'message': f'{request.user.username} đã trả lời bài viết "{topic.title}" của bạn.',
-            #                 'forum_id': topic.pk,
-            #                 'badge_count': 1
-            #             }
-            #         }
-            #     )
+            topic_owner_id = topic.user_id
 
-            return Response(
-                serializers.ForumReplySerializer(reply).data,
-                status=status.HTTP_201_CREATED
-            )
+            if request.user.id != topic_owner_id:
+                noti = Notification.objects.create(
+                    user=topic.user,
+                    notification_type=Notification.NotificationType.NEW_REPLY,
+                    title='Có phản hồi mới',
+                    message=f'{request.user.username} đã trả lời bài viết "{topic.title}" của bạn',
+                    data={'forum_id': topic.id}
+                )
+                unread_badge = Notification.get_unread_count(topic_owner_id)
+
+                async_to_sync(channel_layer.group_send)(
+                    f'user_{topic_owner_id}',
+                    {
+                        'type': 'send_notification',
+                        'data': {
+                            'id': noti.pk,
+                            'notification_type': 'NEW_REPLY',
+                            'title': 'Phản hồi mới trong Topic của bạn',
+                            'message': f'{request.user.username} đã trả lời bài viết "{topic.title}" của bạn.',
+                            'forum_id': topic.id,
+                            'badge_count': unread_badge,
+                        }
+                    }
+                )
+
+            return Response(serializers.ForumReplySerializer(reply).data, status=status.HTTP_201_CREATED)
 
         replies = topic.replies.filter(is_active=True).select_related('user')
         return Response(
@@ -296,10 +303,10 @@ class ForumTopicViewSet(viewsets.ViewSet,
             status=status.HTTP_200_OK
         )
 
-class ForumReplyViewSet(viewsets.GenericViewSet, mixins.DestroyModelMixin):
+class ForumReplyViewSet(viewsets.ViewSet, generics.DestroyAPIView):
     queryset = ForumReply.objects.filter(is_active=True)
     serializer_class = serializers.ForumReplySerializer
-    permission_classes = [perms.IsTopicOwnerOrCourseTeacherOrAdmin]
+
 
     def destroy(self, request, *args, **kwargs):
         reply = self.get_object()

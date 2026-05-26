@@ -32,3 +32,37 @@ class StudentProfile(BaseModel):
 
     def __str__(self):
         return f"{self.user.username} - Profile"
+
+class Notification(BaseModel):
+
+    class NotificationType(models.TextChoices):
+        NEW_REPLY = 'NEW_REPLY', 'Có người reply bài thảo luận'
+        NEW_QUIZ  = 'NEW_QUIZ',  'Bài kiểm tra mới'
+
+    user = models.ForeignKey('users.User', on_delete=models.CASCADE,related_name='notifications')
+
+    notification_type = models.CharField(max_length=20, choices=NotificationType.choices,default=NotificationType.NEW_REPLY)
+    title = models.CharField(max_length=255)
+    message = models.TextField(blank=True)
+
+    data = models.JSONField(null=True, blank=True, default=dict)
+    is_read = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['-created_date']
+        indexes = [models.Index(fields=['user', 'is_read'])]
+
+    def __str__(self):
+        return f"[{self.notification_type}] {self.user.username} — {self.title}"
+
+    #PROPERTY HELPER: Tạo đường tắt lấy nhanh forum_id từ cục JSON data ra ngoài
+    @property
+    def forum_id(self):
+        if self.data and isinstance(self.data, dict):
+            return self.data.get('forum_id') or self.data.get('topic_id')
+        return None
+
+    #CLASSMETHOD HELPER: Tính tổng số badge chưa đọc của user bất kỳ lúc nào
+    @classmethod
+    def get_unread_count(cls, user_id):
+        return cls.objects.filter(user_id=user_id, is_read=False).count()

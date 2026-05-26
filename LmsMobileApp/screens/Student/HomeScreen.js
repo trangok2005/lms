@@ -7,6 +7,7 @@ import { MyUserContext } from "../../configs/MyContext";
 import Styles, { colors } from "../../styles/Styles";
 import { Header, Loading } from "../../components/common";
 import { CourseCard } from "../../components/courses";
+import { HomeHeader } from "../../components/common/Header";
 
 const HomeScreen = () => {
   const nav = useNavigation();
@@ -51,13 +52,7 @@ const HomeScreen = () => {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
-      <Header
-        title="LMS"
-        subtitle={`${greeting()}, ${user?.first_name ?? "bạn"} 👋`}
-        showSearch
-        showNotif
-        onSearch={() => nav.navigate("CourseSearch")}
-      />
+      <HomeHeader/>
 
          <View style={[styles.section, { marginTop: 6 }]}> 
             <View style={styles.sectionHeader}>
@@ -102,21 +97,8 @@ const HomeScreen = () => {
                 );
               })
             ) : (
-              <EmptyBox message="Chưa có khóa nổi bật. Hãy khám phá khoá học!" />
+              <EmptyBox message="Chưa có khóa nổi bật. Hãy khám phá khoá học" />
             )}
-          </View>
-
-          <View style={[styles.section, { marginTop: 6 }]}> 
-            <View style={styles.sectionHeader}>
-              <Text variant="titleMedium" style={styles.sectionTitle}>Lộ trình học bằng AI</Text>
-            </View>
-
-            <Text style={styles.descriptionText}>
-              Tạo ngay lộ trình học cá nhân hóa bằng AI để tiếp tục nâng cao kỹ năng.
-            </Text>
-            <TouchableOpacity style={styles.aiButton} onPress={() => nav.navigate("LearningDashboard") }>
-              <Text variant="bodyMedium" style={styles.aiButtonText}>Tạo lộ trình học AI</Text>
-            </TouchableOpacity>
           </View>
 
         </ScrollView>

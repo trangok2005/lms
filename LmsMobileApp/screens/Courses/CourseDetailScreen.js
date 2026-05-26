@@ -45,7 +45,7 @@ const CourseDetailScreen = () => {
               : Promise.resolve({ data: [] }),
           ]);
 
-          console.log(courseRes.data);
+          //console.log(courseRes.data);
 
           setCourse(courseRes.data);
 
@@ -166,7 +166,12 @@ const CourseDetailScreen = () => {
               icon="play-circle"
               style={[styles.btn, { backgroundColor: colors.primary }]}
               contentStyle={styles.btnContent}
-              onPress={() => nav.navigate("MaterialList", { courseId: course.id })}
+              onPress={() => 
+                nav.navigate("ProgressTab", { 
+                  screen: "MaterialList", 
+                  params: { courseId: course?.id }
+                })
+              }
             >
               Vào học ngay
             </Button>
