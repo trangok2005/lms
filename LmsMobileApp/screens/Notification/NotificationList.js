@@ -36,16 +36,24 @@ const NotificationListScreen = () => {
   const [localNotifications, setLocalNotifications] = useState([]);
 
   useEffect(() => {
+  if (notifications.length === 0) return;
+
+  setLocalNotifications((prev) => {
     const nextNotifications = notifications.map((item) => {
-      const previous = localNotifications.find((n) => n.id === item.id);
+      const previous = prev.find((n) => n.id === item.id);
       return previous ? { ...item, is_read: previous.is_read } : item;
     });
-    setLocalNotifications(nextNotifications);
-    DeviceEventEmitter.emit(
-      "UPDATE_BADGE_COUNT",
-      nextNotifications.filter((n) => !n.is_read).length
-    );
-  }, [notifications]);
+    return nextNotifications;
+  });
+}, [notifications]);
+
+// Tách emit badge ra useEffect riêng
+useEffect(() => {
+  DeviceEventEmitter.emit(
+    "UPDATE_BADGE_COUNT",
+    localNotifications.filter((n) => !n.is_read).length
+  );
+}, [localNotifications]);
 
   const unreadCount = localNotifications.filter((n) => !n.is_read).length;
 

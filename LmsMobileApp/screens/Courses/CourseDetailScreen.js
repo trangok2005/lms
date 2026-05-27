@@ -141,8 +141,8 @@ const CourseDetailScreen = () => {
           <Surface style={styles.card} elevation={1}>
             <Text variant="titleSmall" style={styles.sectionTitle}>Thông tin khoá học</Text>
             <Divider style={Styles.mb10} />
-            <InfoRow icon="account-tie"    label="Giảng viên"  value={course.teacher_name ?? "—"} />
-            <InfoRow icon="shape"          label="Danh mục"    value={course.category_name ?? "—"} />
+            <InfoRow icon="account-tie"    label="Giảng viên"  value=  {`${course.teacher.first_name} ${course.teacher.last_name}` ?? "Giảng viên"} />
+            <InfoRow icon="shape"          label="Danh mục"    value={course.category.name ?? "—"} />
             <InfoRow icon="signal"         label="Cấp độ"      value={LEVEL_LABEL[course.level] ?? "—"} />
             <InfoRow icon="book-multiple"  label="Học liệu"    value={`${course.material_count ?? 0} bài`} />
             <InfoRow icon="account-group" label="Học viên"    value={`${course.student_count ?? 0} người`} />

@@ -45,7 +45,7 @@ const PaymentResultScreen = () => {
             onPress={() => 
               nav.navigate("ProgressTab", { 
                 screen: "MaterialList", 
-                params: { courseId: course?.id }
+                params: { courseId: courseId }
               })
             }
           >
