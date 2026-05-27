@@ -32,12 +32,15 @@ class CourseSerializer(ItemSerializer):
     tags     = TagSerializer(many=True, read_only=True)
     category = CategorySerializer(read_only=True)
     teacher  = SimpleUserSerializer(read_only=True)
-
+    students_count = serializers.SerializerMethodField()
     class Meta:
         model  = Course
         fields = ['id', 'subject', 'description', 'image',
-                  'price', 'level', 'category', 'teacher', 'tags', 'is_active']
+                  'price', 'level', 'category', 'teacher', 'tags', 'is_active','students_count']
 
+    def get_students_count(self, obj):
+
+        return obj.enrollments.filter(is_active=True).count()
 
 class CourseWriteSerializer(ItemSerializer):
     """Dùng riêng cho POST / PUT / PATCH — nhận id thay vì nested object."""
