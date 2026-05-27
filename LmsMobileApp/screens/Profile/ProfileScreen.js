@@ -6,6 +6,7 @@ import { MyUserContext } from "../../configs/MyContext";
 import Styles, { colors } from "../../styles/Styles";
 import { InfoRow, ActionRow, Header} from "../../components/common/index";
 import LogoutButton from "../../components/common/CustomButton";
+import TransactionHistoryScreen from "../Payment/TransactionHistoryScreen";
 
 
 const ROLE_CONFIG = {
@@ -84,6 +85,10 @@ const ProfileScreen = () => {
         
         <ActionRow icon="account-edit" label="Chỉnh sửa thông tin" onPress={() => nav.navigate("EditProfile", { profile: user })} />
         <ActionRow icon="lock-reset" label="Đổi mật khẩu" onPress={() => nav.navigate("ChangePassword")} />
+        {user?.role === "student" && user?.profile && (
+        <>
+          <ActionRow icon="history" label="Lịch sử thanh toán" onPress={() => nav.navigate("TransactionHistory")} />
+        </>)}
       </Surface>
 
       <LogoutButton />

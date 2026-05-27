@@ -45,15 +45,21 @@ const CourseDetailScreen = () => {
               : Promise.resolve({ data: [] }),
           ]);
 
-          console.log(courseRes.data);
+          //console.log(courseRes.data);
 
           setCourse(courseRes.data);
 
-          const ids = (
-            enrollRes.data.results ?? enrollRes.data
-          ).map((e) => e.course);
+          const ids = (enrollRes.data.results ?? enrollRes.data)
+            .map((e) => {
+              const courseValue = e.course ?? e.course_id ?? e.id ?? e;
+              if (typeof courseValue === "object") {
+                return String(courseValue.id ?? courseValue._id ?? courseValue);
+              }
+              return String(courseValue);
+            })
+            .filter(Boolean);
 
-          setEnrolled(ids.includes(params.courseId));
+          setEnrolled(ids.includes(String(params.courseId)));
 
         } catch (ex) {
 
@@ -160,7 +166,12 @@ const CourseDetailScreen = () => {
               icon="play-circle"
               style={[styles.btn, { backgroundColor: colors.primary }]}
               contentStyle={styles.btnContent}
-              onPress={() => nav.navigate("MaterialList", { courseId: course.id })}
+              onPress={() => 
+                nav.navigate("ProgressTab", { 
+                  screen: "MaterialList", 
+                  params: { courseId: course?.id }
+                })
+              }
             >
               Vào học ngay
             </Button>

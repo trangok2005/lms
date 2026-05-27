@@ -39,15 +39,30 @@ class IsForumParticipant(IsTeacherOrAdmin):
 
 #xem
 class IsTopicParticipant(IsTeacherOrAdmin):
+    """
+    Quy định quyền tham gia vào một Topic (Chủ đề diễn đàn cụ thể).
+    Áp dụng cho các API chi tiết có ID như: /api/forum/{pk}/ hoặc /api/forum/{pk}/replies/
+    """
+
+    def has_permission(self, request, view):
+        # VÒNG 1 (Toàn cục): Cho phép tất cả User đã đăng nhập thành công đi qua cửa này.
+        # (Không phân biệt Student, Teacher hay Admin ở vòng này để tránh bị chặn nhầm Student).
+        return bool(request.user and request.user.is_authenticated)
+
     def has_object_permission(self, request, view, obj):
-        # obj = ForumTopic
+        # VÒNG 2 (Chi tiết đối tượng): Tiến hành bóc tách thực thể bài viết (obj = ForumTopic)
+
+        # Trường hợp 1: Nếu là Admin -> Toàn quyền truy cập
         if IsAdmin().has_permission(request, view):
             return True
 
         course = obj.course
+
+        # Trường hợp 2: Nếu là Giảng viên -> Phải là người phụ trách chính của Khóa học này
         if IsTeacher().has_permission(request, view):
             return is_teacher_of(request.user, course)
 
+        # Trường hợp 3: Nếu là Học sinh -> Bản ghi đăng ký học (Enrollment) bắt buộc phải ACTIVE
         return is_enrolled(request.user, course.pk)
 
 #xóa

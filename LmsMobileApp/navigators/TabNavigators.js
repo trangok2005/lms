@@ -7,6 +7,7 @@ import {
   TeacherStack, AdminStack,
 } from "./StackNavigators";
 import { MyUserContext } from "../configs/MyContext";
+import { CommonActions } from "@react-navigation/native";
 
 const Tab = createBottomTabNavigator();
 
@@ -28,17 +29,24 @@ export const StudentTabs = () => (
     <Tab.Screen
       name="HomeTab"
       component={HomeStack}
-      options={{ title: "Trang chủ", tabBarIcon: icon("home") }}
+      options={({ navigation }) => ({
+        title: "Trang chủ",
+        tabBarIcon: icon("home"),
+      })}
+    />
+    <Tab.Screen
+      name="ProgressTab"
+      component={ProgressStack}
+      options={{
+        title: "Học Tập",
+        tabBarIcon: icon("chart-line"),
+        unmountOnBlur: true,
+      }}
     />
     <Tab.Screen
       name="QuizTab"
       component={QuizStack}
       options={{ title: "Bài kiểm tra", tabBarIcon: icon("pencil-box-outline") }}
-    />
-    <Tab.Screen
-      name="ProgressTab"
-      component={ProgressStack}
-      options={{ title: "Tiến độ", tabBarIcon: icon("chart-line") }}
     />
     <Tab.Screen
       name="ProfileTab"

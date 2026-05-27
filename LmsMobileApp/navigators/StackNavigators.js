@@ -7,10 +7,8 @@ import Register                   from "../screens/Auth/Register";
 // ── Student Home ─────────────────────────────────────────
 import HomeScreen                 from "../screens/Student/HomeScreen";
 // ── Courses ──────────────────────────────────────────────
-import CourseListScreen           from "../screens/Courses/CourseListScreen";
 import CourseDetailScreen         from "../screens/Courses/CourseDetailScreen";
 import CourseSearchScreen         from "../screens/Courses/CourseSearchScreen";
-import MyCourseScreen             from "../screens/Courses/MyCourseScreen";
 // ── Materials ────────────────────────────────────────────
 import MaterialListScreen         from "../screens/Materials/MaterialListScreen";
 import MaterialDetailScreen       from "../screens/Materials/MaterialDetailScreen";
@@ -21,6 +19,7 @@ import NoteScreen                 from "../screens/Materials/NoteScreen";
 import ForumListScreen            from "../screens/Forum/ForumListScreen";
 import ForumDetailScreen          from "../screens/Forum/ForumDetailScreen";
 import CreateTopicScreen          from "../screens/Forum/CreateTopicScreen";
+import NotificationListScreen     from "../screens/Notification/NotificationList";
 // ── Quiz   (nhúng vào HomeStack — mở từ MaterialActionBar) ──
 import QuizListScreen             from "../screens/Quiz/QuizListScreen";
 import QuizTakeScreen             from "../screens/Quiz/QuizTakeScreen";
@@ -31,6 +30,7 @@ import LearningPathScreen         from "../screens/Progress/LearningPathScreen";
 // ── Payment ──────────────────────────────────────────────
 import PaymentResultScreen        from "../screens/Payment/PaymentResultScreen";
 import TransactionHistoryScreen   from "../screens/Payment/TransactionHistoryScreen";
+import CheckoutScreen             from "../screens/Payment/CheckoutScreen";
 // ── Profile ──────────────────────────────────────────────
 import ProfileScreen              from "../screens/Profile/ProfileScreen";
 import EditProfileScreen          from "../screens/Profile/EditProfileScreen";
@@ -45,7 +45,7 @@ import StudentProgressScreen      from "../screens/Teacher/StudentProgressScreen
 import AdminDashboardScreen       from "../screens/Admin/AdminDashboardScreen";
 import ReportScreen               from "../screens/Admin/ReportScreen";
 import TransactionManagementScreen from "../screens/Admin/TransactionManagementScreen";
-import UserManagementScreen       from "../screens/Admin/UserManagementScreen";
+
 import VideoPlayerScreen from "../screens/Materials/VideoPlayerScreen";
 import DocumentViewerScreen from "../screens/Materials/DocumentViewerScreen";
 import QuizReviewScreen from "../screens/Quiz/QuizReviewScreen";
@@ -69,8 +69,6 @@ export const AuthStack = () => (
 export const HomeStack = () => (
   <Stack.Navigator screenOptions={SO}>
     <Stack.Screen name="Home"           component={HomeScreen} />
-    
-    <Stack.Screen name="CourseList"     component={CourseListScreen} />
     <Stack.Screen name="CourseDetail"   component={CourseDetailScreen} />
     <Stack.Screen name="CourseSearch"   component={CourseSearchScreen} />
 
@@ -85,6 +83,7 @@ export const HomeStack = () => (
     <Stack.Screen name="ForumList"      component={ForumListScreen} />
     <Stack.Screen name="ForumDetail"    component={ForumDetailScreen} />
     <Stack.Screen name="CreateTopic"    component={CreateTopicScreen} />
+    <Stack.Screen name="NotificationList" component={NotificationListScreen} />
     <Stack.Screen name="QuizList"          component={QuizListScreen} />
     <Stack.Screen name="QuizTake"          component={QuizTakeScreen} />
     <Stack.Screen name="QuizResult"        component={QuizResultScreen} />
@@ -92,8 +91,8 @@ export const HomeStack = () => (
     <Stack.Screen name="LearningDashboard" component={LearningDashboardScreen} />
     <Stack.Screen name="LearningPath"      component={LearningPathScreen} />
 
-    <Stack.Screen name="MyCourse"       component={MyCourseScreen} />
     <Stack.Screen name="PaymentResult"  component={PaymentResultScreen} />
+    <Stack.Screen name="Checkout" component={CheckoutScreen} />
   </Stack.Navigator>
 );
 
@@ -126,12 +125,22 @@ export const ProgressStack = () => (
   <Stack.Navigator screenOptions={SO}>
     <Stack.Screen name="LearningDashboard" component={LearningDashboardScreen} />
     <Stack.Screen name="LearningPath"      component={LearningPathScreen} />
+    <Stack.Screen name="CourseDetail"      component={CourseDetailScreen} />
+    
+    {/* 💬 KHU VỰC FORUM DIỄN ĐÀN (Bổ sung đầy đủ luồng chi tiết) */}
+    <Stack.Screen name="ForumList"         component={ForumListScreen} />
+    <Stack.Screen name="ForumDetail"       component={ForumDetailScreen} /> 
+    <Stack.Screen name="CreateTopic"       component={CreateTopicScreen} /> 
+
+    {/* 📖 KHU VỰC HỌC TẬP VÀ TÀI LIỆU */}
     <Stack.Screen name="MaterialList"      component={MaterialListScreen} />
     <Stack.Screen name="MaterialDetail"    component={MaterialDetailScreen} />
     <Stack.Screen name="VideoPlayer"       component={VideoPlayerScreen} />
     <Stack.Screen name="DocumentViewer"    component={DocumentViewerScreen} />
     <Stack.Screen name="Note"              component={NoteScreen} />
     <Stack.Screen name="Comment"           component={CommentScreen} />
+    
+    {/* 📝 KHU VỰC BÀI KIỂM TRA (QUIZ) */}
     <Stack.Screen name="QuizList"          component={QuizListScreen} />
     <Stack.Screen name="QuizTake"          component={QuizTakeScreen} />
     <Stack.Screen name="QuizResult"        component={QuizResultScreen} />
@@ -145,6 +154,7 @@ export const ProfileStack = () => (
     <Stack.Screen name="Profile"        component={ProfileScreen} />
     <Stack.Screen name="EditProfile"    component={EditProfileScreen} />
     <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
+    <Stack.Screen name="TransactionHistory" component={TransactionHistoryScreen} />
   </Stack.Navigator>
 );
 
@@ -166,7 +176,6 @@ export const AdminStack = () => (
     <Stack.Screen name="AdminDashboard"        component={AdminDashboardScreen} />
     <Stack.Screen name="Report"                component={ReportScreen} />
     <Stack.Screen name="TransactionManagement" component={TransactionManagementScreen} />
-    <Stack.Screen name="UserManagement"        component={UserManagementScreen} />
   </Stack.Navigator>
 );
 

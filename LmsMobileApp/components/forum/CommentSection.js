@@ -30,7 +30,7 @@ const CommentSection = ({ reply, onDelete, isOwner = false }) => {
               {reply.user?.first_name} {reply.user?.last_name}
             </Text>
             <Text variant="bodySmall" style={{ color: colors.gray }}>
-              {new Date(reply.created_date).toLocaleDateString("vi-VN")}
+              {new Date(reply.created_date).toLocaleString("vi-VN")}
             </Text>
           </View>
         </View>

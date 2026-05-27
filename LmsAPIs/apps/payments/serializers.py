@@ -18,3 +18,12 @@ class TransactionSerializer(serializers.ModelSerializer):
         if obj.course.image and hasattr(obj.course.image, 'url'):
             return obj.course.image.url
         return None
+
+class DummySerializer(serializers.Serializer):
+    total_users = serializers.IntegerField()
+    total_teachers = serializers.IntegerField()
+    total_students = serializers.IntegerField()
+    total_courses = serializers.IntegerField()
+    total_enrollments = serializers.IntegerField()
+    total_revenue = serializers.DecimalField(max_digits=15, decimal_places=2)
+    total_transactions = serializers.IntegerField()
