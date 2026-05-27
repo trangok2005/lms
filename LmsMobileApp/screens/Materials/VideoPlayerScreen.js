@@ -10,7 +10,6 @@ import {
     ActivityIndicator
 } from "react-native";
 
-import { useEvent } from "expo";
 import { useVideoPlayer, VideoView } from "expo-video";
 import { IconButton } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
@@ -22,7 +21,7 @@ import { authApis, endpoints } from "../../configs/Apis";
 const VideoPlayerScreen = ({ route }) => {
     const { videoUrl, materialId, startAt = 0 } = route.params || {};
 
-    const { width, height } = useWindowDimensions();
+    const { width } = useWindowDimensions();
     const navigation = useNavigation();
 
     const mountedRef = useRef(true);
@@ -48,13 +47,28 @@ const VideoPlayerScreen = ({ route }) => {
         }
     );
 
-    const { isPlaying } = useEvent(player, "playingChange", {
-        isPlaying: player.playing
-    });
+    // ======================
+    // FIX: Thay useEvent bằng addListener (tương thích expo mới)
+    // ======================
+    const [isPlaying, setIsPlaying] = useState(player?.playing ?? false);
+    const [status, setStatus] = useState(player?.status ?? "idle");
 
-    const { status } = useEvent(player, "statusChange", {
-        status: player.status
-    });
+    useEffect(() => {
+        if (!player) return;
+
+        const playingSub = player.addListener("playingChange", (e) => {
+            if (mountedRef.current) setIsPlaying(e.isPlaying);
+        });
+
+        const statusSub = player.addListener("statusChange", (e) => {
+            if (mountedRef.current) setStatus(e.status);
+        });
+
+        return () => {
+            playingSub.remove();
+            statusSub.remove();
+        };
+    }, [player]);
 
     const isReady = status === "readyToPlay";
     const isBuffering = status === "loading";
@@ -91,7 +105,7 @@ const VideoPlayerScreen = ({ route }) => {
     }, [isReady]);
 
     // ======================
-    // SAVE PROGRESS SAFE
+    // SAVE PROGRESS SAFE (throttle 15 giây)
     // ======================
     const saveProgress = async (force = false) => {
         try {
@@ -102,9 +116,9 @@ const VideoPlayerScreen = ({ route }) => {
 
             if (!duration) return;
 
-          const now = Date.now();
-            if (!force && now - lastSaveTimeRef.current < 15_000) return; // 15 giây mới save 1 lần
-        lastSaveTimeRef.current = now;
+            const now = Date.now();
+            if (!force && now - lastSaveTimeRef.current < 15_000) return;
+            lastSaveTimeRef.current = now;
 
             lastSavedRef.current = current;
 
@@ -133,19 +147,20 @@ const VideoPlayerScreen = ({ route }) => {
     // ======================
     useEffect(() => {
         if (!isPlaying || isSliding) return;
-intervalRef.current = setInterval(() => {
-    if (!mountedRef.current || !player) return;
 
-    const current = Number(player.currentTime ?? 0);
-    const duration = Number(player.duration ?? 0);
+        intervalRef.current = setInterval(() => {
+            if (!mountedRef.current || !player) return;
 
-    // Update UI mỗi giây — không đổi
-    setPositionSec(current);
-    setDurationSec(duration);
+            const current = Number(player.currentTime ?? 0);
+            const duration = Number(player.duration ?? 0);
 
-    // Save API mỗi 15 giây — throttle trong saveProgress tự xử lý
-    saveProgress();
-}, 1000);
+            // Cập nhật UI mỗi giây
+            setPositionSec(current);
+            setDurationSec(duration);
+
+            // Save API — throttle 15 giây trong saveProgress tự xử lý
+            saveProgress();
+        }, 1000);
 
         return () => {
             if (intervalRef.current) {

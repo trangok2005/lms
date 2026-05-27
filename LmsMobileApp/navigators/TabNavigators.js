@@ -68,16 +68,6 @@ export const TeacherTabs = () => (
       options={{ title: "Quản lý", tabBarIcon: icon("teach") }}
     />
     <Tab.Screen
-      name="ForumTab"
-      component={ForumStack}
-      options={{ title: "Diễn đàn", tabBarIcon: icon("forum") }}
-    />
-    <Tab.Screen
-      name="ProgressTab"
-      component={ProgressStack}
-      options={{ title: "Tiến độ lớp", tabBarIcon: icon("chart-bar") }}
-    />
-    <Tab.Screen
       name="ProfileTab"
       component={ProfileStack}
       options={{ title: "Hồ sơ", tabBarIcon: icon("account") }}
