@@ -5,7 +5,7 @@ import { useNavigation, useRoute, useFocusEffect } from "@react-navigation/nativ
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { authApis, endpoints } from "../../configs/Apis";
-import { Header, Loading } from "../../components/common"; // Import thêm Loading từ index của common
+import { Header, Loading } from "../../components/common"; 
 import MaterialCard from "../../components/materials/MaterialCard";
 
 const MaterialListScreen = () => {

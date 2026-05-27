@@ -1,6 +1,9 @@
 from rest_framework import serializers
 from apps.courses.models import Category, Tag, Course, Enrollment, ForumTopic, ForumReply
 from apps.users.serializers import SimpleUserSerializer
+from django.db.models import Sum
+from apps.materials.models import MaterialProgress,Material
+
 
 # ───────────────────────────── BASE ─────────────────────────────
 
@@ -56,12 +59,45 @@ class CourseWriteSerializer(ItemSerializer):
 class EnrollmentSerializer(serializers.ModelSerializer):
     course = CourseSerializer(read_only=True)
 
+    study_minutes = serializers.SerializerMethodField()
+    viewed_materials = serializers.SerializerMethodField()
+    total_materials = serializers.SerializerMethodField()
     class Meta:
-        model  = Enrollment
-        fields = ['id', 'course', 'status', 'progress_percent',
-                  'completed_at', 'last_accessed']
+        model = Enrollment
+        fields = [
+            'id',
+            'course',
+            'status',
+            'progress_percent',
+            'completed_at',
+            'last_accessed',
 
+            'study_minutes',
+            'viewed_materials',
+            'total_materials',
+        ]
 
+    def get_study_minutes(self, obj):
+        total = MaterialProgress.objects.filter(
+            user=obj.user,
+            material__course=obj.course
+        ).aggregate(
+            total=Sum('watched_minutes')
+        )['total'] or 0
+
+        return round(total)
+
+    def get_viewed_materials(self, obj):
+        return MaterialProgress.objects.filter(
+            user=obj.user,
+            material__course=obj.course
+        ).exclude(
+            status=MaterialProgress.Status.NOT_STARTED
+        ).values('material').distinct().count()
+    def get_total_materials(self, obj):
+        return Material.objects.filter(
+            course=obj.course
+        ).count()
 class StudentProgressSerializer(serializers.ModelSerializer):
     """Dùng cho API 8 — Teacher / Admin xem tiến độ học viên trong 1 khoá."""
     user = SimpleUserSerializer(read_only=True)

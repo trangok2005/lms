@@ -50,6 +50,7 @@ import TransactionManagementScreen from "../screens/Admin/TransactionManagementS
 import VideoPlayerScreen from "../screens/Materials/VideoPlayerScreen";
 import DocumentViewerScreen from "../screens/Materials/DocumentViewerScreen";
 import QuizReviewScreen from "../screens/Quiz/QuizReviewScreen";
+import QuizCourseScreen from "../screens/Quiz/QuizCourseScreen";
 
 const Stack = createNativeStackNavigator();
 const SO    = { headerShown: false };
@@ -90,7 +91,6 @@ export const HomeStack = () => (
     <Stack.Screen name="QuizReview"        component={QuizReviewScreen} />
     <Stack.Screen name="LearningDashboard" component={LearningDashboardScreen} />
     <Stack.Screen name="LearningPath"      component={LearningPathScreen} />
-
     <Stack.Screen name="PaymentResult"  component={PaymentResultScreen} />
     <Stack.Screen name="Checkout" component={CheckoutScreen} />
   </Stack.Navigator>
@@ -108,10 +108,11 @@ export const ForumStack = () => (
 // ── QUIZ (giữ lại nếu cần dùng độc lập ở chỗ khác) ──────
 export const QuizStack = () => (
   <Stack.Navigator screenOptions={SO}>
+    <Stack.Screen name="QuizCourse" component={QuizCourseScreen} />
     <Stack.Screen name="QuizList"   component={QuizListScreen} />
     <Stack.Screen name="QuizTake"   component={QuizTakeScreen} />
     <Stack.Screen name="QuizResult" component={QuizResultScreen} />
-    <Stack.Screen name="QuizReview"        component={QuizReviewScreen} />
+    <Stack.Screen name="QuizReview" component={QuizReviewScreen} />
   </Stack.Navigator>
 );
 
