@@ -1,69 +1,61 @@
-import React, { useState, useCallback } from "react";
-import {
-    View, StyleSheet, ScrollView, TouchableOpacity, RefreshControl, Image
-} from "react-native";
+import React, { useState, useCallback, useContext } from "react";
+import { View, StyleSheet, ScrollView, RefreshControl } from "react-native";
 import { Text, Icon, ActivityIndicator, Divider } from "react-native-paper";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// Assuming you have these in your config
-// import { authApis, endpoints } from "../../configs/Apis";
+import { authApis, endpoints } from "../../configs/Apis";
+import { MyUserContext } from "../../configs/MyContext";
+import { Header, ActionRow } from "../../components/common"; 
 
-// ── Main Component ───────────────────────────────────────
 const TeacherDashboardScreen = () => {
     const navigation = useNavigation();
+    
+    // Extract user from context
+    const [user] = useContext(MyUserContext);
+
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
-    
-    // Initial state without TypeScript interfaces
     const [stats, setStats] = useState({
         totalCourses: 0,
         totalStudents: 0,
-        totalRevenue: 0,
-      
     });
 
-    // ── Fetch Dashboard Data ───────────────────────────────
-    const fetchDashboardStats = async () => {
+    // Fetch Dashboard Data
+    const fetchDashboardStats = async (isRefresh = false) => {
         try {
-            // const token = await AsyncStorage.getItem("token");
-            // const res = await authApis(token).get(endpoints["teacher-stats"]());
-            // setStats(res.data);
+            if (isRefresh) setRefreshing(true);
+            else setLoading(true);
 
-            // Mocking API delay and response for demonstration
-            setTimeout(() => {
-                setStats({
-                    totalCourses: 12,
-                    totalStudents: 345,
-                    totalRevenue: 15500000,
-                    unreadForum: 5,
-                });
-                setLoading(false);
-                setRefreshing(false);
-            }, 800);
+            const token = await AsyncStorage.getItem("token");
+            const res = await authApis(token).get(endpoints["my-courses"]);
+            const raw = res.data.results ?? res.data;
+            const list = Array.isArray(raw) ? raw : [];
+
+            setStats({
+                totalCourses: list.length,
+                totalStudents: list.reduce((sum, course) => sum + (course.students_count ?? 0), 0)
+            });
         } catch (error) {
             console.error("Fetch dashboard error:", error);
+        } finally {
             setLoading(false);
             setRefreshing(false);
         }
     };
 
     useFocusEffect(
-        useCallback(() => {
-            fetchDashboardStats();
-        }, [])
+        useCallback(() => { fetchDashboardStats(); }, [])
     );
 
-    const onRefresh = () => {
-        setRefreshing(true);
-        fetchDashboardStats();
+    // Format user display name based on Django AbstractUser fields
+    const getDisplayName = () => {
+        if (!user) return "Giảng viên";
+        const fullName = `${user.last_name || ""} ${user.first_name || ""}`.trim();
+        return fullName || user.username || "Giảng viên";
     };
 
-    // ── Render Helpers ─────────────────────────────────────
-    const formatCurrency = (amount) => {
-        return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " ₫";
-    };
-
+    // Render Helpers
     const renderStatCard = (title, value, icon, bgColor, iconColor) => (
         <View style={styles.statCard}>
             <View style={[styles.statIconWrapper, { backgroundColor: bgColor }]}>
@@ -74,29 +66,7 @@ const TeacherDashboardScreen = () => {
         </View>
     );
 
-    const renderMenuItem = (title, subtitle, icon, routeName, badge) => (
-        <TouchableOpacity 
-            style={styles.menuItem} 
-            activeOpacity={0.7}
-            onPress={() => navigation.navigate(routeName)}
-        >
-            <View style={styles.menuIconWrapper}>
-                <Icon source={icon} size={24} color="#4f46e5" />
-            </View>
-            <View style={styles.menuTextContent}>
-                <Text style={styles.menuTitle}>{title}</Text>
-                <Text style={styles.menuSubtitle}>{subtitle}</Text>
-            </View>
-            {badge && badge > 0 ? (
-                <View style={styles.badge}>
-                    <Text style={styles.badgeText}>{badge}</Text>
-                </View>
-            ) : null}
-            <Icon source="chevron-right" size={24} color="#cbd5e1" />
-        </TouchableOpacity>
-    );
-
-    // ── Main Render ─────────────────────────────────────────
+    // Main Render
     if (loading && !refreshing) {
         return (
             <View style={styles.centerContainer}>
@@ -108,132 +78,55 @@ const TeacherDashboardScreen = () => {
 
     return (
         <View style={styles.screen}>
-            {/* Header Section */}
-            <View style={styles.header}>
-                <View style={styles.headerRow}>
-                    <View>
-                        <Text style={styles.greeting}>Xin chào, Giảng viên 👋</Text>
-                        <Text style={styles.subGreeting}>Chào mừng bạn quay trở lại!</Text>
-                    </View>
-                    <Image 
-                        source={{ uri: "https://via.placeholder.com/100" }} 
-                        style={styles.avatar} 
-                    />
-                </View>
-            </View>
+            {/* Header dynamically greets the teacher */}
+            <Header 
+                title={`Xin chào, ${getDisplayName()} 👋`} 
+                subtitle="Chào mừng bạn quay trở lại!" 
+            />
 
-            <ScrollView 
+            <ScrollView
                 contentContainerStyle={styles.scrollContent}
                 showsVerticalScrollIndicator={false}
                 refreshControl={
-                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#4f46e5" />
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={() => fetchDashboardStats(true)}
+                        tintColor="#4f46e5"
+                    />
                 }
             >
-                {/* Stats Grid */}
                 <Text style={styles.sectionTitle}>Tổng quan</Text>
                 <View style={styles.statsGrid}>
                     {renderStatCard("Khóa học", stats.totalCourses, "bookshelf", "#ede9fe", "#4f46e5")}
                     {renderStatCard("Học viên", stats.totalStudents, "account-group-outline", "#dcfce7", "#16a34a")}
-                    {renderStatCard("Doanh thu", formatCurrency(stats.totalRevenue), "cash-multiple", "#fef9c3", "#ca8a04")}
-                   
                 </View>
 
                 <Divider style={styles.divider} />
 
-                {/* Quick Actions / Navigation Menu */}
                 <Text style={styles.sectionTitle}>Quản lý hệ thống</Text>
                 <View style={styles.menuContainer}>
-                    {renderMenuItem(
-                        "Quản lý khóa học", 
-                        "Thêm, sửa, xóa khóa học và tài liệu", 
-                        "book-open-variant", 
-                        "ManageCourse"
-                    )}
-                    
-                  
-                    
-                   
-                    
-                 
+                    <ActionRow
+                        icon="book-open-variant"
+                        label="Quản lý khóa học"
+                        onPress={() => navigation.navigate("ManageCourse")}
+                    />
                 </View>
             </ScrollView>
         </View>
     );
 };
 
-// ── Styles ────────────────────────────────────────────────
+// Styles
 const styles = StyleSheet.create({
-    screen: {
-        flex: 1,
-        backgroundColor: "#f8fafc",
-    },
-    centerContainer: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "#f8fafc",
-    },
-    loadingText: {
-        marginTop: 12,
-        color: "#64748b",
-        fontSize: 14,
-    },
-    // Header
-    header: {
-        backgroundColor: "#4f46e5",
-        paddingTop: 60, 
-        paddingBottom: 24,
-        paddingHorizontal: 20,
-        borderBottomLeftRadius: 24,
-        borderBottomRightRadius: 24,
-        elevation: 4,
-        shadowColor: "#4f46e5",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
-        shadowRadius: 8,
-    },
-    headerRow: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-    },
-    greeting: {
-        color: "#fff",
-        fontSize: 22,
-        fontWeight: "bold",
-        marginBottom: 4,
-    },
-    subGreeting: {
-        color: "#c7d2fe",
-        fontSize: 14,
-    },
-    avatar: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-        borderWidth: 2,
-        borderColor: "#fff",
-    },
-    // Content
-    scrollContent: {
-        padding: 20,
-        paddingBottom: 40,
-    },
-    sectionTitle: {
-        fontSize: 18,
-        fontWeight: "700",
-        color: "#0f172a",
-        marginBottom: 16,
-    },
-    // Stats Grid
-    statsGrid: {
-        flexDirection: "row",
-        flexWrap: "wrap",
-        justifyContent: "space-between",
-        gap: 12,
-    },
+    screen:          { flex: 1, backgroundColor: "#f8fafc" },
+    centerContainer: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#f8fafc" },
+    loadingText:     { marginTop: 12, color: "#64748b", fontSize: 14 },
+    scrollContent:   { padding: 20, paddingBottom: 40 },
+    sectionTitle:    { fontSize: 18, fontWeight: "700", color: "#0f172a", marginBottom: 16 },
+
+    statsGrid:       { flexDirection: "row", gap: 12 },
     statCard: {
-        width: "48%", 
+        flex: 1,
         backgroundColor: "#fff",
         padding: 16,
         borderRadius: 16,
@@ -242,32 +135,18 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.05,
         shadowRadius: 4,
-        marginBottom: 4,
     },
     statIconWrapper: {
-        width: 44,
-        height: 44,
+        width: 44, height: 44,
         borderRadius: 12,
         justifyContent: "center",
         alignItems: "center",
         marginBottom: 12,
     },
-    statTitle: {
-        fontSize: 13,
-        color: "#64748b",
-        fontWeight: "600",
-        marginBottom: 4,
-    },
-    statValue: {
-        fontSize: 18,
-        fontWeight: "bold",
-        color: "#0f172a",
-    },
-    divider: {
-        marginVertical: 24,
-        backgroundColor: "#e2e8f0",
-    },
-    // Menu Container
+    statTitle: { fontSize: 13, color: "#64748b", fontWeight: "600", marginBottom: 4 },
+    statValue: { fontSize: 22, fontWeight: "bold", color: "#0f172a" },
+
+    divider: { marginVertical: 24, backgroundColor: "#e2e8f0" },
     menuContainer: {
         backgroundColor: "#fff",
         borderRadius: 16,
@@ -277,47 +156,6 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.05,
         shadowRadius: 4,
-    },
-    menuItem: {
-        flexDirection: "row",
-        alignItems: "center",
-        padding: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: "#f1f5f9",
-    },
-    menuIconWrapper: {
-        width: 48,
-        height: 48,
-        borderRadius: 14,
-        backgroundColor: "#f8fafc",
-        justifyContent: "center",
-        alignItems: "center",
-        marginRight: 16,
-    },
-    menuTextContent: {
-        flex: 1,
-    },
-    menuTitle: {
-        fontSize: 16,
-        fontWeight: "600",
-        color: "#0f172a",
-        marginBottom: 4,
-    },
-    menuSubtitle: {
-        fontSize: 13,
-        color: "#64748b",
-    },
-    badge: {
-        backgroundColor: "#ef4444",
-        paddingHorizontal: 8,
-        paddingVertical: 2,
-        borderRadius: 12,
-        marginRight: 8,
-    },
-    badgeText: {
-        color: "#fff",
-        fontSize: 12,
-        fontWeight: "bold",
     },
 });
 

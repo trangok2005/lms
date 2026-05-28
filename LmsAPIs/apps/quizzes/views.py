@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 
+from .ai_service import analyze_quiz_result
 from .filters import QuizFilter
 from .models import Quiz, Question, Answer, TestResult
 from .serializers import (
@@ -52,6 +53,7 @@ class StudentQuizViewSet(viewsets.ReadOnlyModelViewSet):
         is_passed = percentage >= quiz.passing_score
 
         test_result = TestResult.objects.create(
+
             user=request.user,
             quiz=quiz,
             score=actual_score,
@@ -59,6 +61,18 @@ class StudentQuizViewSet(viewsets.ReadOnlyModelViewSet):
             is_passed=is_passed,
             submitted_answers=submitted_answers,
         )
+        try:
+            analyze_quiz_result(test_result)
+
+        except Exception as e:
+            print("AI ERROR:", e)
+
+            test_result.ai_summary = (
+                "AI hiện chưa khả dụng. "
+                "Vui lòng thử lại sau."
+            )
+
+            test_result.save()
 
         return Response({
             "message": "Nộp bài thành công",
@@ -66,6 +80,10 @@ class StudentQuizViewSet(viewsets.ReadOnlyModelViewSet):
             "score": actual_score,
             "percentage": round(percentage, 2),
             "is_passed": is_passed,
+            "strength_analysis": test_result.strength_analysis,
+            "weakness_analysis": test_result.weakness_analysis,
+            "ai_summary": test_result.ai_summary,
+
         }, status=status.HTTP_201_CREATED)
 
     @action(detail=False, methods=['get'], url_path='my-results')

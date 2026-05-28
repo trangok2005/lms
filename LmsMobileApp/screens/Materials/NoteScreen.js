@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState,useEffect } from "react";
 import { View, StyleSheet } from "react-native";
 import { Text, Avatar, Icon } from "react-native-paper";
 import { useRoute } from "@react-navigation/native";
@@ -53,7 +53,8 @@ const NoteScreen = () => {
             const res = await authApis(token).get(endpoints["notes"], {
                 params: { material: materialId }
             });
-            setNotes(res.data);
+           const list = res.data.results ?? res.data;
+    setNotes(Array.isArray(list) ? list : []);
         } catch (ex) {
             console.error("Fetch notes error:", ex);
         } finally {
@@ -118,7 +119,7 @@ const NoteScreen = () => {
                                 </Text>
                                 
                                 {/* Hiển thị mốc thời gian video nếu có */}
-                                {item.timestamp_sec !== null && (
+                              {item.timestamp_sec !== null && item.timestamp_sec !== undefined && (
                                     <View style={styles.timestampBadge}>
                                         <Icon source="timer-outline" size={12} color="#2563eb" />
                                         <Text style={styles.timestampText}>
@@ -139,7 +140,7 @@ const NoteScreen = () => {
             )}
             ListEmptyComponent={
                 <View style={styles.emptyContainer}>
-                    <Icon source="pencil-note-outline" size={50} color="#cbd5e1" />
+                    <Icon source="note-edit-outline" size={50} color="#cbd5e1" />
                     <Text style={styles.emptyText}>Bạn chưa có ghi chú nào cho bài học này.</Text>
                 </View>
             }

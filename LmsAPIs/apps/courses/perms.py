@@ -1,6 +1,6 @@
 from apps.courses.models import Course, Enrollment
 from apps.common.perms import IsOwner, IsAdmin, IsTeacher, IsTeacherOrAdmin
-
+from rest_framework import permissions
 def is_enrolled(user, course_id):
     return Enrollment.objects.filter(
         user=user,
@@ -13,9 +13,14 @@ def is_teacher_of(user, course):
     return course.teacher_id == user.pk
 
 
-class IsCourseOwnerOrAdmin(IsAdmin):
+class IsCourseOwnerOrAdmin(permissions.BasePermission):
+
+    def has_permission(self, request, view):
+
+        return bool(request.user and request.user.is_authenticated)
+
     def has_object_permission(self, request, view, obj):
-        if super().has_permission(request, view):
+        if IsAdmin().has_permission(request, view):
             return True
         return is_teacher_of(request.user, obj)
 

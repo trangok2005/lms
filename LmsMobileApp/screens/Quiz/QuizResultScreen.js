@@ -1,5 +1,5 @@
 import React from "react";
-import { View, StyleSheet, ScrollView } from "react-native";
+import { View, StyleSheet, ScrollView, Alert } from "react-native";
 import { Text, Card, Icon } from "react-native-paper";
 import { useRoute, useNavigation } from "@react-navigation/native";
 
@@ -12,7 +12,7 @@ const QuizResultScreen = () => {
 
     // Lấy dữ liệu trả về từ API submit_quiz ở màn hình trước
     const { resultData ,courseId} = route.params || {};
-
+  
     // Fallback UI nếu không có dữ liệu
     if (!resultData) {
         return (
@@ -82,7 +82,90 @@ const QuizResultScreen = () => {
                         </View>
                     </Card.Content>
                 </Card>
+                  <Card.Content>
+        <View style={styles.aiHeader}>
+            <View style={styles.aiIconWrap}>
+                <Icon
+                    source="robot-outline"
+                    size={24}
+                    color="#7c3aed"
+                />
+            </View>
 
+            <View style={{ flex: 1 }}>
+                <Text style={styles.aiTitle}>
+                    Phân tích AI
+                </Text>
+
+                <Text style={styles.aiSubtitle}>
+                    Đánh giá chi tiết năng lực học tập
+                </Text>
+            </View>
+        </View>
+
+        {/* Điểm mạnh */}
+        {resultData.strength_analysis?.length > 0 && (
+            <View style={styles.analysisSection}>
+                <View style={styles.analysisHeader}>
+                    <Icon
+                        source="check-circle"
+                        size={18}
+                        color="#16a34a"
+                    />
+                    <Text style={styles.analysisTitle}>
+                        Điểm mạnh
+                    </Text>
+                </View>
+
+                {resultData.strength_analysis.map((item, index) => (
+                    <View key={index} style={styles.bulletRow}>
+                        <View style={styles.greenDot} />
+                        <Text style={styles.analysisText}>
+                            {item}
+                        </Text>
+                    </View>
+                ))}
+            </View>
+        )}
+
+        {/* Điểm yếu */}
+        {resultData.weakness_analysis?.length > 0 && (
+            <View style={styles.analysisSection}>
+                <View style={styles.analysisHeader}>
+                    <Icon
+                        source="alert-circle"
+                        size={18}
+                        color="#dc2626"
+                    />
+                    <Text style={styles.analysisTitle}>
+                        Điểm cần cải thiện
+                    </Text>
+                </View>
+
+                {resultData.weakness_analysis.map((item, index) => (
+                    <View key={index} style={styles.bulletRow}>
+                        <View style={styles.redDot} />
+                        <Text style={styles.analysisText}>
+                            {item}
+                        </Text>
+                    </View>
+                ))}
+            </View>
+        )}
+
+        {/* AI Summary */}
+        {resultData.ai_summary && (
+            <View style={styles.summaryBox}>
+                <Text style={styles.summaryTitle}>
+                    Nhận xét tổng quan
+                </Text>
+
+                <Text style={styles.summaryText}>
+                    {resultData.ai_summary}
+                </Text>
+            </View>
+        )}
+    </Card.Content>
                 {/* Phần Điều hướng: Tận dụng ActionRow component */}
                 <Card style={styles.card} mode="outlined">
                     <View style={styles.actionContainer}>
@@ -91,6 +174,9 @@ const QuizResultScreen = () => {
                             label="Xem lại bài làm & Giải thích" 
                             onPress={() => navigation.navigate("QuizReview", { resultId: resultData.result_id })} 
                         />
+                        <Card style={styles.card} mode="outlined">
+  
+</Card>
                         
     
                     
@@ -106,6 +192,101 @@ const styles = StyleSheet.create({
     screen: { flex: 1, backgroundColor: "#f8fafc" },
     center: { flex: 1, justifyContent: "center", alignItems: "center" },
     content: { padding: 20 },
+    aiHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 20,
+    gap: 12,
+},
+
+aiIconWrap: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: "#ede9fe",
+    justifyContent: "center",
+    alignItems: "center",
+},
+
+aiTitle: {
+    fontSize: 18,
+    fontWeight: "800",
+    color: "#0f172a",
+},
+
+aiSubtitle: {
+    fontSize: 13,
+    color: "#64748b",
+    marginTop: 2,
+},
+
+analysisSection: {
+    marginBottom: 20,
+},
+
+analysisHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 12,
+},
+
+analysisTitle: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#0f172a",
+},
+
+bulletRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 10,
+    gap: 10,
+},
+
+greenDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#16a34a",
+    marginTop: 7,
+},
+
+redDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#dc2626",
+    marginTop: 7,
+},
+
+analysisText: {
+    flex: 1,
+    fontSize: 14,
+    lineHeight: 22,
+    color: "#334155",
+},
+
+summaryBox: {
+    backgroundColor: "#f8fafc",
+    borderRadius: 14,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+},
+
+summaryTitle: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#0f172a",
+    marginBottom: 10,
+},
+
+summaryText: {
+    fontSize: 14,
+    lineHeight: 24,
+    color: "#475569",
+},
     heroSection: {
         alignItems: "center",
         paddingVertical: 32,

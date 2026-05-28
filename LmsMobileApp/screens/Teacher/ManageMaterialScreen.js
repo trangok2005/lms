@@ -6,7 +6,7 @@ import {
 } from "react-native";
 import {
     Text, Icon, Modal, Portal, TextInput,
-    Button, Chip, Divider, Searchbar, Avatar
+    Button, Chip, Divider, Searchbar
 } from "react-native-paper";
 import { useNavigation, useRoute, useFocusEffect } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -24,21 +24,21 @@ const MATERIAL_TYPES = [
 ];
 
 const DIFFICULTIES = [
-    { value: "easy",   label: "Dễ",          color: "#16a34a", bg: "#dcfce7" },
-    { value: "medium", label: "Trung bình",  color: "#ca8a04", bg: "#fef9c3" },
-    { value: "hard",   label: "Khó",         color: "#dc2626", bg: "#fee2e2" },
+    { value: "easy",   label: "Dễ",         color: "#16a34a", bg: "#dcfce7" },
+    { value: "medium", label: "Trung bình", color: "#ca8a04", bg: "#fef9c3" },
+    { value: "hard",   label: "Khó",        color: "#dc2626", bg: "#fee2e2" },
 ];
 
 const EMPTY_FORM = {
-    title: "", 
+    title: "",
     content: "",
-    material_type: "video", 
+    material_type: "video",
     difficulty: "medium",
-    duration_minutes: "", 
-    order_index: "", 
-    file: null,       // Document file
-    thumbnail: null,  // Image thumbnail
-    existingThumb: null // For previewing old thumbnail in edit mode
+    duration_minutes: "",
+    order_index: "",
+    file: null,
+    thumbnail: null,
+    existingThumb: null
 };
 
 // ── Helpers ───────────────────────────────────────────────
@@ -49,8 +49,7 @@ const getDiffInfo = (v) => DIFFICULTIES.find((d) => d.value === v) ?? DIFFICULTI
 const ManageMaterialScreen = () => {
     const navigation = useNavigation();
     const route = useRoute();
-    
-    // Safely extract parameters in case the course object was passed instead of flat IDs
+
     const params = route.params ?? {};
     const courseId = params.courseId ?? params.course?.id;
     const courseTitle = params.courseTitle ?? params.course?.subject ?? params.course?.title ?? "Tài liệu";
@@ -58,25 +57,20 @@ const ManageMaterialScreen = () => {
     const [materials, setMaterials] = useState([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-    
-    // Modal & Form State
     const [modalVisible, setModal] = useState(false);
-    const [editTarget, setEditTarget] = useState(null); 
+    const [editTarget, setEditTarget] = useState(null);
     const [form, setForm] = useState(EMPTY_FORM);
-    
-    // Search state
     const [searchQuery, setSearchQuery] = useState("");
     const [isSearching, setIsSearching] = useState(false);
 
     // ── Fetch Data ─────────────────────────────────────────
-   const fetchMaterials = async (query = "") => {
+    const fetchMaterials = async (query = "") => {
         try {
             const token = await AsyncStorage.getItem("token");
-            // Đổi lại thành material-list()
             const res = await authApis(token).get(endpoints["material-list"](), {
-                params: { 
+                params: {
                     course: courseId,
-                    q: query.trim() || undefined 
+                    q: query.trim() || undefined
                 },
             });
             const list = res.data.results ?? res.data;
@@ -88,9 +82,10 @@ const ManageMaterialScreen = () => {
             setIsSearching(false);
         }
     };
-    useFocusEffect(useCallback(() => { 
+
+    useFocusEffect(useCallback(() => {
         setLoading(true);
-        fetchMaterials(searchQuery); 
+        fetchMaterials(searchQuery);
     }, [courseId]));
 
     const handleSearchSubmit = () => {
@@ -120,16 +115,16 @@ const ManageMaterialScreen = () => {
             difficulty:       item.difficulty ?? "medium",
             duration_minutes: String(item.duration_minutes ?? ""),
             order_index:      String(item.order_index ?? ""),
-            file:             null, // Require selecting a new file if updating
-            thumbnail:        null, // Require selecting a new thumbnail if updating
-            existingThumb:    item.thumbnail ?? null // Preview existing thumbnail
+            file:             null,
+            thumbnail:        null,
+            existingThumb:    item.thumbnail ?? null
         });
         setModal(true);
     };
 
-    const closeModal = () => { 
-        setModal(false); 
-        setEditTarget(null); 
+    const closeModal = () => {
+        setModal(false);
+        setEditTarget(null);
     };
 
     // ── File & Image Pickers ───────────────────────────────
@@ -142,7 +137,7 @@ const ManageMaterialScreen = () => {
             if (!result.canceled && result.assets?.length) {
                 setForm((prev) => ({ ...prev, file: result.assets[0] }));
             }
-        } catch (ex) {
+        } catch {
             Alert.alert("Error", "Could not pick the document file.");
         }
     };
@@ -163,13 +158,13 @@ const ManageMaterialScreen = () => {
             if (!result.canceled) {
                 setForm((prev) => ({ ...prev, thumbnail: result.assets[0], existingThumb: null }));
             }
-        } catch (ex) {
+        } catch {
             Alert.alert("Error", "Could not pick thumbnail image.");
         }
     };
 
-    // ── Save (Create / Update) ─────────────────────────────
- const handleSave = async () => {
+    // ── Save ───────────────────────────────────────────────
+    const handleSave = async () => {
         if (!form.title.trim()) {
             Alert.alert("Required", "Vui lòng nhập tiêu đề tài liệu.");
             return;
@@ -188,18 +183,18 @@ const ManageMaterialScreen = () => {
             data.append("title", form.title.trim());
             data.append("material_type", form.material_type);
             data.append("difficulty", form.difficulty);
-            // Prevent sending an invalid or undefined PK value string to Django
+
             if (!courseId || isNaN(Number(courseId))) {
-                Alert.alert("Lỗi dữ liệu", "Không tìm thấy ID khóa học hợp lệ. Vui lòng quay lại danh sách và thử lại.");
+                Alert.alert("Lỗi dữ liệu", "Không tìm thấy ID khóa học hợp lệ.");
                 setSaving(false);
                 return;
             }
-            data.append("course", courseId); 
-            
+            data.append("course", courseId);
+
             if (form.content) data.append("content", form.content.trim());
             if (form.duration_minutes) data.append("duration_minutes", form.duration_minutes);
             if (form.order_index) data.append("order_index", form.order_index);
-            
+
             if (form.file) {
                 data.append("file", {
                     uri: form.file.uri,
@@ -210,23 +205,20 @@ const ManageMaterialScreen = () => {
 
             if (form.thumbnail) {
                 const filename = form.thumbnail.uri.split("/").pop();
-                const extension = filename.split(".").pop()?.toLowerCase() ?? "jpg";
-                const mimeType = extension === "png" ? "image/png" : "image/jpeg";
+                const ext = filename.split(".").pop()?.toLowerCase() ?? "jpg";
                 data.append("thumbnail", {
                     uri: form.thumbnail.uri,
                     name: filename,
-                    type: mimeType,
+                    type: ext === "png" ? "image/png" : "image/jpeg",
                 });
             }
 
             if (editTarget) {
-                // SỬ DỤNG ENDPOINT CŨ CỦA BẠN: material-partial-update
                 await api.patch(endpoints["material-partial-update"](editTarget.id), data, {
                     headers: { "Content-Type": "multipart/form-data" },
                 });
                 Alert.alert("Thành công", "Đã cập nhật tài liệu.");
             } else {
-                // SỬ DỤNG ENDPOINT CŨ CỦA BẠN: material-create
                 await api.post(endpoints["material-create"](), data, {
                     headers: { "Content-Type": "multipart/form-data" },
                 });
@@ -242,8 +234,9 @@ const ManageMaterialScreen = () => {
             setSaving(false);
         }
     };
+
     // ── Delete ─────────────────────────────────────────────
-   const handleDelete = (item) => {
+    const handleDelete = (item) => {
         Alert.alert(
             "Xóa tài liệu",
             `Bạn có chắc muốn xóa "${item.title}"?`,
@@ -254,10 +247,9 @@ const ManageMaterialScreen = () => {
                     onPress: async () => {
                         try {
                             const token = await AsyncStorage.getItem("token");
-                            // SỬ DỤNG ENDPOINT CŨ CỦA BẠN: material-delete
                             await authApis(token).delete(endpoints["material-delete"](item.id));
                             fetchMaterials(searchQuery);
-                        } catch (ex) {
+                        } catch {
                             Alert.alert("Lỗi", "Không thể xóa tài liệu này.");
                         }
                     },
@@ -274,11 +266,12 @@ const ManageMaterialScreen = () => {
 
         return (
             <View style={styles.card}>
+                {/* Order badge */}
                 <View style={styles.orderBadge}>
                     <Text style={styles.orderText}>{item.order_index ?? index + 1}</Text>
                 </View>
 
-                {/* Display Thumbnail if exists, otherwise fallback to Type Icon */}
+                {/* Thumbnail hoặc icon loại */}
                 <View style={styles.typeIcon}>
                     {item.thumbnail ? (
                         <Image source={{ uri: item.thumbnail }} style={styles.thumbnailImg} />
@@ -287,27 +280,28 @@ const ManageMaterialScreen = () => {
                     )}
                 </View>
 
+                {/* Info */}
                 <View style={styles.cardBody}>
                     <Text style={styles.materialTitle} numberOfLines={2}>
                         {item.title}
                     </Text>
-                    
+
+                    {/* FIX: bỏ height cứng, dùng alignItems thay thế */}
                     <View style={styles.chipRow}>
                         <Chip
                             style={[styles.chip, { backgroundColor: diff.bg }]}
-                            textStyle={{ color: diff.color, fontSize: 10, fontWeight: "700" }}
+                            textStyle={{ color: diff.color, fontSize: 10, fontWeight: "700", lineHeight: 14 }}
                             compact
                         >
                             {diff.label}
                         </Chip>
                         <Chip
                             style={[styles.chip, { backgroundColor: "#ede9fe" }]}
-                            textStyle={{ color: "#4f46e5", fontSize: 10, fontWeight: "700" }}
+                            textStyle={{ color: "#4f46e5", fontSize: 10, fontWeight: "700", lineHeight: 14 }}
                             compact
                         >
                             {type.label}
                         </Chip>
-                        
                         {item.duration_minutes > 0 && (
                             <View style={styles.durationRow}>
                                 <Icon source="clock-outline" size={12} color="#94a3b8" />
@@ -316,7 +310,6 @@ const ManageMaterialScreen = () => {
                         )}
                     </View>
 
-                    {/* Display API Tags if they exist */}
                     {hasTags && (
                         <View style={[styles.chipRow, { marginTop: 4 }]}>
                             {item.tags.map(tag => (
@@ -326,6 +319,7 @@ const ManageMaterialScreen = () => {
                     )}
                 </View>
 
+                {/* Actions */}
                 <View style={styles.actions}>
                     <TouchableOpacity style={styles.editBtn} onPress={() => openEdit(item)}>
                         <Icon source="pencil-outline" size={18} color="#4f46e5" />
@@ -338,7 +332,7 @@ const ManageMaterialScreen = () => {
         );
     };
 
-    // ── Render Modal Form ──────────────────────────────────
+    // ── Modal Form ─────────────────────────────────────────
     const renderModal = () => (
         <Portal>
             <Modal
@@ -380,10 +374,7 @@ const ManageMaterialScreen = () => {
                             {MATERIAL_TYPES.map((t) => (
                                 <TouchableOpacity
                                     key={t.value}
-                                    style={[
-                                        styles.segment,
-                                        form.material_type === t.value && styles.segmentActive,
-                                    ]}
+                                    style={[styles.segment, form.material_type === t.value && styles.segmentActive]}
                                     onPress={() => setForm((prev) => ({ ...prev, material_type: t.value }))}
                                 >
                                     <Icon source={t.icon} size={16} color={form.material_type === t.value ? "#fff" : "#64748b"} />
@@ -399,10 +390,7 @@ const ManageMaterialScreen = () => {
                             {DIFFICULTIES.map((d) => (
                                 <TouchableOpacity
                                     key={d.value}
-                                    style={[
-                                        styles.segment,
-                                        form.difficulty === d.value && { backgroundColor: d.color, borderColor: d.color },
-                                    ]}
+                                    style={[styles.segment, form.difficulty === d.value && { backgroundColor: d.color, borderColor: d.color }]}
                                     onPress={() => setForm((prev) => ({ ...prev, difficulty: d.value }))}
                                 >
                                     <Text style={[styles.segmentText, form.difficulty === d.value && styles.segmentTextActive]}>
@@ -439,10 +427,10 @@ const ManageMaterialScreen = () => {
                         <Text style={styles.fieldLabel}>Ảnh bìa (Tùy chọn)</Text>
                         <TouchableOpacity style={styles.thumbPicker} onPress={pickThumbnail} activeOpacity={0.8}>
                             {form.thumbnail || form.existingThumb ? (
-                                <Image 
-                                    source={{ uri: form.thumbnail?.uri || form.existingThumb }} 
-                                    style={styles.thumbPreview} 
-                                    resizeMode="cover" 
+                                <Image
+                                    source={{ uri: form.thumbnail?.uri || form.existingThumb }}
+                                    style={styles.thumbPreview}
+                                    resizeMode="cover"
                                 />
                             ) : (
                                 <View style={styles.thumbEmpty}>
@@ -452,7 +440,7 @@ const ManageMaterialScreen = () => {
                             )}
                         </TouchableOpacity>
 
-                        {/* Document File Picker */}
+                        {/* File Picker */}
                         <Text style={styles.fieldLabel}>File tài liệu *</Text>
                         <TouchableOpacity style={styles.filePicker} onPress={pickFile}>
                             <Icon
@@ -543,7 +531,7 @@ const styles = StyleSheet.create({
     screen: { flex: 1, backgroundColor: "#f8fafc" },
     list:   { padding: 16, paddingBottom: 100 },
     hint:   { fontSize: 13, color: "#94a3b8", marginBottom: 12, fontWeight: "500" },
-    
+
     searchContainer: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 4 },
     searchbar: { backgroundColor: "#fff", borderRadius: 12, height: 46 },
 
@@ -561,24 +549,24 @@ const styles = StyleSheet.create({
     orderText: { fontSize: 12, fontWeight: "700", color: "#64748b" },
     typeIcon: {
         width: 50, height: 50, borderRadius: 12, backgroundColor: "#ede9fe",
-        justifyContent: "center", alignItems: "center", overflow: "hidden"
+        justifyContent: "center", alignItems: "center", overflow: "hidden",
     },
     thumbnailImg: { width: "100%", height: "100%" },
-    
+
     cardBody:      { flex: 1, gap: 6 },
     materialTitle: { fontSize: 14, fontWeight: "700", color: "#0f172a", lineHeight: 20 },
-    chipRow:       { flexDirection: "row", flexWrap: "wrap", gap: 6, alignItems: "center" },
-    chip:          { borderRadius: 6, height: 22 },
-    durationRow:   { flexDirection: "row", alignItems: "center", gap: 3 },
-    durationText:  { fontSize: 11, color: "#94a3b8" },
-    tagText:       { fontSize: 10, color: "#4f46e5", fontWeight: "600", backgroundColor: "#e0e7ff", paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
-    
-    // Actions
-    actions: { flexDirection: "column", gap: 6 },
-    editBtn: { width: 32, height: 32, borderRadius: 8, backgroundColor: "#ede9fe", justifyContent: "center", alignItems: "center" },
+
+    // FIX: bỏ height cứng trên chip, thêm alignItems
+    chipRow:      { flexDirection: "row", flexWrap: "wrap", gap: 6, alignItems: "center" },
+    chip:         { borderRadius: 6 },
+    durationRow:  { flexDirection: "row", alignItems: "center", gap: 3 },
+    durationText: { fontSize: 11, color: "#94a3b8" },
+    tagText:      { fontSize: 10, color: "#4f46e5", fontWeight: "600", backgroundColor: "#e0e7ff", paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
+
+    actions:   { flexDirection: "column", gap: 6 },
+    editBtn:   { width: 32, height: 32, borderRadius: 8, backgroundColor: "#ede9fe", justifyContent: "center", alignItems: "center" },
     deleteBtn: { width: 32, height: 32, borderRadius: 8, backgroundColor: "#fee2e2", justifyContent: "center", alignItems: "center" },
 
-    // FAB
     fab: {
         position: "absolute", bottom: 24, right: 24,
         width: 56, height: 56, borderRadius: 28, backgroundColor: "#4f46e5",
@@ -587,32 +575,28 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.35, shadowRadius: 8,
     },
 
-    // Empty State
     empty:        { alignItems: "center", marginTop: 80, gap: 10 },
     emptyText:    { fontSize: 16, color: "#94a3b8", fontWeight: "600" },
     emptySubText: { fontSize: 13, color: "#cbd5e1" },
 
-    // Modal
     modal: { margin: 16, backgroundColor: "#fff", borderRadius: 20, padding: 20, maxHeight: "90%" },
     modalTitle:  { fontSize: 17, fontWeight: "800", color: "#0f172a", marginBottom: 12 },
     fieldLabel:  { fontSize: 13, fontWeight: "600", color: "#475569", marginTop: 12, marginBottom: 6 },
     input:       { backgroundColor: "#fff", marginBottom: 8 },
     row2:        { flexDirection: "row", gap: 10 },
-    
-    segmentRow:  { flexDirection: "row", gap: 8, marginBottom: 4 },
+
+    segmentRow: { flexDirection: "row", gap: 8, marginBottom: 4 },
     segment: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 4, paddingVertical: 8, borderRadius: 10, borderWidth: 1.5, borderColor: "#e2e8f0", backgroundColor: "#f8fafc" },
     segmentActive:     { backgroundColor: "#4f46e5", borderColor: "#4f46e5" },
     segmentText:       { fontSize: 12, fontWeight: "600", color: "#64748b" },
     segmentTextActive: { color: "#fff" },
 
-    // Thumbnail Picker
-    thumbPicker: { width: "100%", height: 100, borderRadius: 12, overflow: "hidden", backgroundColor: "#f5f3ff", borderWidth: 1.5, borderColor: "#ddd6fe", borderStyle: "dashed", justifyContent: "center", alignItems: "center", marginBottom: 8 },
+    thumbPicker:  { width: "100%", height: 100, borderRadius: 12, overflow: "hidden", backgroundColor: "#f5f3ff", borderWidth: 1.5, borderColor: "#ddd6fe", borderStyle: "dashed", justifyContent: "center", alignItems: "center", marginBottom: 8 },
     thumbPreview: { width: "100%", height: "100%" },
-    thumbEmpty: { alignItems: "center", justifyContent: "center" },
-    thumbHint: { fontSize: 12, color: "#4f46e5", fontWeight: "600", marginTop: 4 },
+    thumbEmpty:   { alignItems: "center", justifyContent: "center" },
+    thumbHint:    { fontSize: 12, color: "#4f46e5", fontWeight: "600", marginTop: 4 },
 
-    // File Picker
-    filePicker: { flexDirection: "row", alignItems: "center", gap: 10, borderWidth: 1.5, borderColor: "#4f46e5", borderStyle: "dashed", borderRadius: 12, padding: 14, marginTop: 4, backgroundColor: "#fafafa" },
+    filePicker:     { flexDirection: "row", alignItems: "center", gap: 10, borderWidth: 1.5, borderColor: "#4f46e5", borderStyle: "dashed", borderRadius: 12, padding: 14, marginTop: 4, backgroundColor: "#fafafa" },
     filePickerText: { fontSize: 13, color: "#4f46e5", fontWeight: "600", flex: 1 },
 
     modalBtns:  { flexDirection: "row", gap: 10, marginTop: 24 },

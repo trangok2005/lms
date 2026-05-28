@@ -41,8 +41,9 @@ class TestResult(BaseModel):
     submitted_answers = models.JSONField(null=True, blank=True)
 
     # AI để sau cùng đi
-    strength_analysis = models.TextField(null=True, blank=True)
-    weakness_analysis = models.TextField(null=True, blank=True)
 
+    strength_analysis = models.TextField(blank=True, default="")
+    weakness_analysis = models.TextField(blank=True, default="")
+    ai_summary = models.TextField(blank=True, null=True)
     def __str__(self):
         return f"{self.user.username} - {self.quiz.title} - {self.score} điểm"

@@ -65,7 +65,7 @@ export const TeacherTabs = () => (
     <Tab.Screen
       name="TeacherTab"
       component={TeacherStack}
-      options={{ title: "Quản lý", tabBarIcon: icon("teach") }}
+      options={{ title: "Quản lý", tabBarIcon: icon("school") }}
     />
     <Tab.Screen
       name="ProfileTab"

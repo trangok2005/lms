@@ -63,7 +63,7 @@ class TestResultSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'quiz', 'score', 'percentage', 'is_passed',
             'submitted_answers', 'strength_analysis', 'weakness_analysis',
-            'created_date'
+            'created_date','ai_summary'
         ]
 
 
@@ -131,15 +131,17 @@ class TeacherTestResultSerializer(serializers.ModelSerializer):
 
     def get_student_name(self, obj):
         return obj.user.get_full_name() or obj.user.username
+
+
 class TeacherStudentSerializer(serializers.ModelSerializer):
-    full_name          = serializers.SerializerMethodField()
+    full_name = serializers.SerializerMethodField()
     total_quizzes_done = serializers.SerializerMethodField()
-    avg_score          = serializers.SerializerMethodField()
-    pass_rate          = serializers.SerializerMethodField()
-    enrolled_courses   = serializers.SerializerMethodField()
+    avg_score = serializers.SerializerMethodField()
+    pass_rate = serializers.SerializerMethodField()
+    enrolled_courses = serializers.SerializerMethodField()
 
     class Meta:
-        model  = get_user_model()
+        model = get_user_model()
         fields = [
             'id', 'full_name', 'email',
             'enrolled_courses',
@@ -147,7 +149,6 @@ class TeacherStudentSerializer(serializers.ModelSerializer):
         ]
 
     def _get_results(self, obj):
-        """Lấy results theo quiz_id nếu có, không thì lấy tất cả"""
         quiz_id = self.context.get('quiz_id')
         qs = obj.test_results.all()
         if quiz_id:
@@ -162,7 +163,10 @@ class TeacherStudentSerializer(serializers.ModelSerializer):
         qs = obj.enrollments.all()
         if request and not request.user.is_staff:
             qs = qs.filter(course__teacher=request.user)
-        return [e.course.title for e in qs]
+
+        # ĐÃ SỬA LỖI Ở ĐÂY:
+        # Lấy thuộc tính 'subject', nếu không có thì thử lấy 'name', nếu vẫn không có thì hiện 'Khóa học'
+        return [getattr(e.course, 'subject', getattr(e.course, 'name', 'Khóa học')) for e in qs]
 
     def get_total_quizzes_done(self, obj):
         return len(self._get_results(obj))

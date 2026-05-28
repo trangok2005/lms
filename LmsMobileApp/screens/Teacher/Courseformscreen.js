@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
     View, StyleSheet, ScrollView, TouchableOpacity,
-    Image, Alert, KeyboardAvoidingView, Platform,
+    Image, Alert, KeyboardAvoidingView, Platform,Switch,
 } from "react-native";
 import {
     Text, Icon, ActivityIndicator, TextInput,
@@ -11,56 +11,77 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
 import { authApis, endpoints } from "../../configs/Apis";
-
-// Lưu ý: Backend dùng ForeignKey cho Category, nên dữ liệu gửi lên phải là ID (số nguyên)
-// Bạn nên fetch danh sách này từ CategoryViewSet thay vì hardcode. Dưới đây là giá trị ID giả định:
-const CATEGORIES = [
-    { value: 1, label: "Lập trình" },
-    { value: 2, label: "Thiết kế" },
-    { value: 3, label: "Kinh doanh" },
-    { value: 4, label: "Marketing" },
-    { value: 5, label: "Ngoại ngữ" },
-    { value: 6, label: "Khác" },
-];
-
+import CKEditor from "../../components/common/CKEditor";
 const LEVELS = [
     { value: "beginner",     label: "Cơ bản" },
     { value: "intermediate", label: "Trung cấp" },
     { value: "advanced",     label: "Nâng cao" },
 ];
+import { Header } from "../../components/common";
 
-// Cập nhật cấu trúc ban đầu: dùng "subject" thay vì "title"
+// Initial form state mapping to backend fields (using 'subject' instead of 'title')
 const INIT_FORM = {
     subject: "", description: "", price: "",
-    category: "", level: "beginner", status: "draft",
+    category: "", level: "beginner", is_active: true,
     image: null, 
 };
 
 const CourseFormScreen = () => {
     const navigation = useNavigation();
     const route      = useRoute();
+    
     const editCourse = route.params?.course ?? null; 
     const isEdit     = !!editCourse;
 
+    // Form states
     const [form,    setForm]    = useState(INIT_FORM);
     const [errors,  setErrors]  = useState({});
     const [saving,  setSaving]  = useState(false);
     const [imgNew,  setImgNew]  = useState(false); 
 
+    // Dynamic categories state
+    const [categories, setCategories] = useState([]);
+    const [loadingCategories, setLoadingCategories] = useState(true);
+
     useEffect(() => {
+        // Fetch categories from API
+        const fetchCategories = async () => {
+            try {
+                setLoadingCategories(true);
+                const res = await authApis().get(endpoints["categories"]);
+                const list = res.data.results ?? res.data;
+                
+                const formattedCategories = (Array.isArray(list) ? list : []).map(item => ({
+                    value: item.id,
+                    label: item.name // Ensure your Category serializer uses 'name'
+                }));
+                
+                setCategories(formattedCategories);
+            } catch (error) {
+                console.error("Fetch categories error:", error);
+                Alert.alert("Lỗi", "Không thể tải danh sách danh mục.");
+            } finally {
+                setLoadingCategories(false);
+            }
+        };
+
+        fetchCategories();
+
+        // Populate form if in edit mode
         if (isEdit) {
             setForm({
                 subject:     editCourse.subject ?? "",
                 description: editCourse.description ?? "",
                 price:       String(editCourse.price ?? "0"),
-                category:    editCourse.category?.id ?? editCourse.category ?? "", // Lấy ID của category
+                category:    editCourse.category?.id ?? editCourse.category ?? "",
                 level:       editCourse.level ?? "beginner",
-                status:      editCourse.status ?? "draft",
+                is_active:   editCourse.is_active ?? true,
                 image:       editCourse.image ?? null,
             });
         }
-    }, []);
+    }, [isEdit]); // Added dependency array to prevent warnings
 
+    // Helper function to update form state and clear errors
     const set = (field, value) => {
         setForm(prev => ({ ...prev, [field]: value }));
         if (errors[field]) setErrors(prev => ({ ...prev, [field]: null }));
@@ -83,7 +104,7 @@ const CourseFormScreen = () => {
         }
     };
 
-    // ── Validate ──────────────────────────────────────────
+    // ── Validation ──────────────────────────────────────────
     const validate = () => {
         const e = {};
         if (!form.subject.trim())     e.subject = "Tiêu đề không được để trống";
@@ -91,26 +112,28 @@ const CourseFormScreen = () => {
         if (!form.category)           e.category = "Vui lòng chọn danh mục";
         const p = Number(form.price);
         if (isNaN(p) || p < 0)        e.price = "Giá không hợp lệ";
+        
         setErrors(e);
         return Object.keys(e).length === 0;
     };
 
-    // ── Submit ────────────────────────────────────────────
+    // ── Submit handler ──────────────────────────────────────
     const handleSave = async () => {
         if (!validate()) return;
         setSaving(true);
+        
         try {
             const token    = await AsyncStorage.getItem("token");
             const formData = new FormData();
             
-            // Map sang đúng tham số Backend yêu cầu (subject)
             formData.append("subject",     form.subject.trim());
             formData.append("description", form.description.trim());
             formData.append("price",       form.price || "0");
-            formData.append("category",    form.category); // Đảm bảo đây là category ID
+            formData.append("category",    form.category);
             formData.append("level",       form.level);
-            formData.append("status",      form.status);
+            formData.append("is_active", form.is_active ? "True" : "False");;
 
+            // Process new image upload
             if (imgNew && form.image) {
                 const filename  = form.image.split("/").pop();
                 const extension = filename.split(".").pop()?.toLowerCase() ?? "jpg";
@@ -131,6 +154,7 @@ const CourseFormScreen = () => {
                     { headers: { "Content-Type": "multipart/form-data" } }
                 );
             }
+            
             Alert.alert(
                 "Thành công",
                 isEdit ? "Cập nhật khóa học thành công!" : "Tạo khóa học thành công!",
@@ -146,7 +170,7 @@ const CourseFormScreen = () => {
         }
     };
 
-    // ── Field component ───────────────────────────────────
+    // ── Reusable Field component ────────────────────────────
     const Field = ({ label, field, multiline, keyboardType, placeholder }) => (
         <View style={styles.fieldWrap}>
             <Text style={styles.fieldLabel}>{label}</Text>
@@ -220,31 +244,47 @@ const CourseFormScreen = () => {
                     {/* Title & Description */}
                     <Field label="Tiêu đề khóa học *" field="subject"
                         placeholder="Nhập tiêu đề khóa học..." />
-                    <Field label="Mô tả *" field="description"
-                        placeholder="Giới thiệu chi tiết về khóa học..." multiline />
+                 <Field label="Tiêu đề khóa học *" field="subject"
+                        placeholder="Nhập tiêu đề khóa học..." />
+                        
+                    {/* Official CKEditor for Description */}
+                    <View style={styles.fieldWrap}>
+                        <Text style={styles.fieldLabel}>Mô tả chi tiết *</Text>
+                        
+                        <CKEditor 
+                            value={form.description}
+                            onChange={(text) => set("description", text)}
+                            height={280}
+                        />
 
+                        {errors.description && <HelperText type="error" style={{ marginLeft: -10 }}>{errors.description}</HelperText>}
+                    </View>
                     {/* Price */}
                     <Field label="Học phí (₫)" field="price"
                         placeholder="0 = Miễn phí" keyboardType="numeric" />
 
-                    {/* Category */}
+                    {/* Category Selection */}
                     <Text style={styles.sectionLabel}>Danh mục</Text>
-                    <View style={styles.optionGrid}>
-                        {CATEGORIES.map(c => (
-                            <TouchableOpacity
-                                key={c.value}
-                                style={[styles.optionChip, form.category === c.value && styles.optionChipActive]}
-                                onPress={() => set("category", c.value)}
-                            >
-                                <Text style={[styles.optionTxt, form.category === c.value && styles.optionTxtActive]}>
-                                    {c.label}
-                                </Text>
-                            </TouchableOpacity>
-                        ))}
-                    </View>
+                    {loadingCategories ? (
+                        <ActivityIndicator color="#4f46e5" size="small" style={{ alignSelf: "flex-start", marginBottom: 20 }} />
+                    ) : (
+                        <View style={styles.optionGrid}>
+                            {categories.map(c => (
+                                <TouchableOpacity
+                                    key={c.value}
+                                    style={[styles.optionChip, form.category === c.value && styles.optionChipActive]}
+                                    onPress={() => set("category", c.value)}
+                                >
+                                    <Text style={[styles.optionTxt, form.category === c.value && styles.optionTxtActive]}>
+                                        {c.label}
+                                    </Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+                    )}
                     {errors.category && <HelperText type="error" style={{marginTop: -16, marginBottom: 10}}>{errors.category}</HelperText>}
 
-                    {/* Level */}
+                    {/* Level Selection */}
                     <Text style={styles.sectionLabel}>Cấp độ</Text>
                     <SegmentedButtons
                         value={form.level}
@@ -253,20 +293,28 @@ const CourseFormScreen = () => {
                         style={styles.segmented}
                     />
 
-                    {/* Status */}
-                    <Text style={styles.sectionLabel}>Trạng thái</Text>
-                    <SegmentedButtons
-                        value={form.status}
-                        onValueChange={v => set("status", v)}
-                        buttons={[
-                            { value: "draft",     label: "Nháp" },
-                            { value: "published", label: "Xuất bản" },
-                            { value: "archived",  label: "Lưu trữ" },
-                        ]}
-                        style={styles.segmented}
-                    />
+                    {/* Status Selection */}
+                   <Text style={styles.sectionLabel}>Trạng thái hoạt động</Text>
+                    <View style={styles.switchRow}>
+                        
+                        <View style={{ flex: 1 }}>
+                            <Text style={styles.switchLabel}>Hiển thị khóa học</Text>
+                            <Text style={styles.switchSubLabel}>
+                                {form.is_active 
+                                    ? "Học viên có thể nhìn thấy và đăng ký học" 
+                                    : "Khóa học đang bị ẩn (Nháp)"}
+                            </Text>
+                              <Switch
+                            value={form.is_active}
+                            onValueChange={v => set("is_active", v)}
+                            color="#4f46e5"
+                        />
+                           
+                        </View>
+                       
+                    </View>
 
-                    {/* Save button (bottom) */}
+                    {/* Submit Button */}
                     <TouchableOpacity
                         style={[styles.submitBtn, saving && styles.submitBtnDisabled]}
                         onPress={handleSave}
@@ -316,7 +364,7 @@ const styles = StyleSheet.create({
         marginBottom: 10, marginTop: 8, textTransform: "uppercase", letterSpacing: 0.5,
     },
 
-    // Thumbnail
+    // Thumbnail Styles
     thumbPicker: {
         width: "100%", height: 180, borderRadius: 16,
         overflow: "hidden", marginBottom: 20,
@@ -340,14 +388,14 @@ const styles = StyleSheet.create({
         justifyContent: "center", alignItems: "center",
     },
 
-    // Text input
+    // Text Input Styles
     fieldWrap:    { marginBottom: 16 },
     fieldLabel:   { fontSize: 13, fontWeight: "700", color: "#475569", marginBottom: 6 },
     input:        { backgroundColor: "#fff", fontSize: 14 },
     inputMulti:   { height: 120 },
     inputOutline: { borderRadius: 12 },
 
-    // Category chips
+    // Category Chip Styles
     optionGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 20 },
     optionChip: {
         paddingHorizontal: 14, paddingVertical: 8,
@@ -358,10 +406,10 @@ const styles = StyleSheet.create({
     optionTxt:        { fontSize: 13, color: "#475569", fontWeight: "600" },
     optionTxtActive:  { color: "#fff" },
 
-    // Segmented
+    // Segmented Control
     segmented: { marginBottom: 20 },
 
-    // Submit
+    // Submit Button Styles
     submitBtn: {
         flexDirection: "row", alignItems: "center", justifyContent: "center",
         gap: 10, backgroundColor: "#4f46e5", borderRadius: 16,
@@ -371,4 +419,17 @@ const styles = StyleSheet.create({
     },
     submitBtnDisabled: { backgroundColor: "#a5b4fc" },
     submitBtnTxt: { color: "#fff", fontWeight: "800", fontSize: 15 },
+    switchRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        backgroundColor: "#fff",
+        padding: 16,
+        borderRadius: 14,
+        borderWidth: 1.5,
+        borderColor: "#e2e8f0",
+        marginBottom: 20,
+    },
+    switchLabel:    { fontSize: 14, fontWeight: "700", color: "#0f172a" },
+    switchSubLabel: { fontSize: 12, color: "#64748b", marginTop: 4, paddingRight: 10 },
 });

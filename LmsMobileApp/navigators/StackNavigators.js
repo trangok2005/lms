@@ -161,7 +161,7 @@ export const TeacherStack = () => (
     <Stack.Screen name="ManageCourse"     component={ManageCourseScreen} />
     <Stack.Screen name="ManageMaterial"   component={ManageMaterialScreen} />
     <Stack.Screen name="ManageQuiz"       component={ManageQuizScreen} />
-    <Stack.Screen name="StudentProgress"  component={StudentProgressScreen} />
+    <Stack.Screen name="ManageStudents"  component={StudentProgressScreen} />
     <Stack.Screen name="CourseForm"       component={CourseFormScreen} />
   </Stack.Navigator>
 );

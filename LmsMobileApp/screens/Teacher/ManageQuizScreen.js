@@ -371,7 +371,7 @@ const ManageQuizScreen = () => {
     );
 
     // ── Render: Quiz Form Modal ────────────────────────────
-    const renderQuizModal = () => (
+  const renderQuizModal = () => (
         <Portal>
             <Modal visible={quizModal} onDismiss={closeQuizModal} contentContainerStyle={styles.modal}>
                 <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined}>
@@ -381,26 +381,40 @@ const ManageQuizScreen = () => {
                         </Text>
                         <Divider style={{ marginBottom: 16 }} />
 
-                     <TextInput
-    label="Thời gian (phút) *"
-    value={quizForm.time_limit}                                               // ✅
-    onChangeText={(v) => setQuizForm((f) => ({ ...f, time_limit: v }))}       // ✅
-    keyboardType="numeric"
-    mode="outlined"
-    style={[styles.input, { flex: 1 }]}
-    outlineColor="#e2e8f0"
-    activeOutlineColor="#4f46e5"
-/>
-<TextInput
-    label="Điểm đạt (%) *"
-    value={quizForm.passing_score}                                            // ✅
-    onChangeText={(v) => setQuizForm((f) => ({ ...f, passing_score: v }))}    // ✅
-    keyboardType="numeric"
-    mode="outlined"
-    style={[styles.input, { flex: 1 }]}
-    outlineColor="#e2e8f0"
-    activeOutlineColor="#4f46e5"
-/>
+                        {/* Missing Title Input Restored */}
+                        <TextInput
+                            label="Tiêu đề bài kiểm tra *"
+                            value={quizForm.title}
+                            onChangeText={(v) => setQuizForm((f) => ({ ...f, title: v }))}
+                            mode="outlined"
+                            style={styles.input}
+                            outlineColor="#e2e8f0"
+                            activeOutlineColor="#4f46e5"
+                        />
+
+                        {/* Grouped Time Limit and Passing Score into a Row */}
+                        <View style={styles.row2}>
+                            <TextInput
+                                label="Thời gian (phút) *"
+                                value={quizForm.time_limit}
+                                onChangeText={(v) => setQuizForm((f) => ({ ...f, time_limit: v }))}
+                                keyboardType="numeric"
+                                mode="outlined"
+                                style={[styles.input, { flex: 1 }]}
+                                outlineColor="#e2e8f0"
+                                activeOutlineColor="#4f46e5"
+                            />
+                            <TextInput
+                                label="Điểm đạt (%) *"
+                                value={quizForm.passing_score}
+                                onChangeText={(v) => setQuizForm((f) => ({ ...f, passing_score: v }))}
+                                keyboardType="numeric"
+                                mode="outlined"
+                                style={[styles.input, { flex: 1 }]}
+                                outlineColor="#e2e8f0"
+                                activeOutlineColor="#4f46e5"
+                            />
+                        </View>
 
                         <View style={styles.switchRow}>
                             <View>
@@ -612,7 +626,7 @@ const styles = StyleSheet.create({
     metaRow:    { flexDirection: "row", flexWrap: "wrap", gap: 12 },
     metaItem:   { flexDirection: "row", alignItems: "center", gap: 4 },
     metaText:   { fontSize: 12, color: "#64748b", fontWeight: "500" },
-    chip:       { borderRadius: 6, height: 22 },
+    chip:       { borderRadius: 6 },
     actions:    { flexDirection: "column", gap: 6, paddingRight: 6 },
     actionBtn:  { width: 30, height: 30, borderRadius: 8, justifyContent: "center", alignItems: "center" },
 

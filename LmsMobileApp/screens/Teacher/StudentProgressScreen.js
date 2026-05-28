@@ -26,43 +26,84 @@ const ManageStudentsScreen = () => {
     const [selectedQuiz, setSelectedQuiz] = useState(null);
     const [filterModal, setFilterModal]   = useState(false);
 
-    // ── Fetch quizzes của course này để filter ─────────────
-   const fetchQuizzes = async () => {
-    try {
-        const token = await AsyncStorage.getItem("token");
-        // ✅ Dùng đúng endpoint + filter theo course
-        const res  = await authApis(token).get(`${endpoints["teacher-quiz-list"]()}?course=${courseId}`);
-        const list = res.data.results ?? res.data;
-        setQuizzes(Array.isArray(list) ? list : []);
-    } catch (ex) {
-        console.error("Fetch quizzes error:", ex);
-    }
-};
+    // Fetch quizzes for this specific course to populate the filter modal
+    const fetchQuizzes = async () => {
+        try {
+            const token = await AsyncStorage.getItem("token");
+            const url = endpoints["teacher-quiz-by-course"](courseId);
+            const res = await authApis(token).get(url);
+            
+            const list = res.data.results ?? res.data;
+            setQuizzes(Array.isArray(list) ? list : []);
+        } catch (ex) {
+            console.error("Fetch quizzes error:", ex);
+        }
+    };
 
-const fetchStudents = async (quizId = null) => {
-    try {
-        setLoading(true);
-        const token = await AsyncStorage.getItem("token");
+    // Fetch students, optionally filtering by quiz ID
+    const fetchStudents = async (quizId = null) => {
+        try {
+            setLoading(true);
+            const token = await AsyncStorage.getItem("token");
+            const url = endpoints["teacher-student-list"]();
 
-        // ✅ Dùng đúng endpoint từ config, filter course + quiz
-        const params = new URLSearchParams();
-        if (courseId) params.append("course", courseId);
-        if (quizId)   params.append("quiz", quizId);
+            // Using axios params for safer query string generation
+            const res = await authApis(token).get(url, {
+                params: {
+                    course: courseId,
+                    quiz: quizId
+                }
+            });
 
-        const url = `/teacher/students/?${params.toString()}`;
-        const res  = await authApis(token).get(url);
-        const list = res.data.results ?? res.data;
-        const data = Array.isArray(list) ? list : [];
-        setStudents(data);
-        setFiltered(data);
-        setSearch("");
-    } catch (ex) {
-        console.error("Fetch students error:", ex);
-    } finally {
-        setLoading(false);
-    }
-};
+            const list = res.data.results ?? res.data;
+            const data = Array.isArray(list) ? list : [];
+            
+            setStudents(data);
+            setFiltered(data);
+            setSearch("");
+        } catch (ex) {
+            console.error("Fetch students error:", ex);
+        } finally {
+            setLoading(false);
+        }
+    };
 
+    // Trigger initial data fetch when the screen comes into focus
+    useFocusEffect(
+        useCallback(() => {
+            if (courseId) {
+                fetchQuizzes();
+                fetchStudents();
+            } else {
+                setLoading(false);
+                console.warn("Missing courseId in navigation params");
+            }
+        }, [courseId])
+    );
+
+    // Search filter handler
+    const handleSearch = (text) => {
+        setSearch(text);
+        if (!text.trim()) {
+            setFiltered(students);
+            return;
+        }
+        const lowerText = text.toLowerCase();
+        const result = students.filter(
+            (s) => s.full_name?.toLowerCase().includes(lowerText) || 
+                   s.email?.toLowerCase().includes(lowerText)
+        );
+        setFiltered(result);
+    };
+
+    // Quiz filter handler
+    const applyQuizFilter = (quiz) => {
+        setSelectedQuiz(quiz);
+        setFilterModal(false);
+        fetchStudents(quiz ? quiz.id : null);
+    };
+
+    // Calculate dynamic stats based on current students
     const stats = React.useMemo(() => {
         if (!students.length) return null;
         const total    = students.length;
@@ -71,7 +112,7 @@ const fetchStudents = async (quizId = null) => {
         return { total, avgScore, active };
     }, [students]);
 
-    // ── Render Stats ───────────────────────────────────────
+    // Render Stats Header
     const renderStats = () => {
         if (!stats) return null;
         return (
@@ -94,7 +135,7 @@ const fetchStudents = async (quizId = null) => {
         );
     };
 
-    // ── Render Filter Modal ────────────────────────────────
+    // Render Filter Modal
     const renderFilterModal = () => (
         <Modal
             visible={filterModal}
@@ -146,7 +187,7 @@ const fetchStudents = async (quizId = null) => {
         </Modal>
     );
 
-    // ── Render Student Card ────────────────────────────────
+    // Render Student Card List Item
     const renderItem = ({ item }) => {
         const color = getScoreColor(item.avg_score ?? 0);
         return (
@@ -253,7 +294,6 @@ const fetchStudents = async (quizId = null) => {
     );
 };
 
-// ── Styles ────────────────────────────────────────────────
 const styles = StyleSheet.create({
     screen: { flex: 1, backgroundColor: "#f8fafc" },
     list:   { padding: 16, paddingBottom: 40 },

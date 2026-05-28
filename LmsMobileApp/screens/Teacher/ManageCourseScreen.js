@@ -4,7 +4,7 @@ import {
     TouchableOpacity, Alert, RefreshControl,
 } from "react-native";
 import {
-    Text, Icon, Searchbar, Chip, Menu, Divider, Avatar,
+    Text, Icon, Searchbar, Menu, Divider, Avatar,
 } from "react-native-paper";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -12,30 +12,16 @@ import { authApis, endpoints } from "../../configs/Apis";
 import { Header, Loading } from "../../components/common";
 
 // ── Helpers & Meta Configuration ──────────────────────────
-const STATUS_META = {
-    published: { label: "Xuất bản", color: "#16a34a", bg: "#dcfce7" },
-    draft:     { label: "Nháp",     color: "#ca8a04", bg: "#fef9c3" },
-    archived:  { label: "Lưu trữ",  color: "#64748b", bg: "#f1f5f9" },
-};
-
 const LEVEL_META = {
     beginner:     { label: "Cơ bản",    icon: "signal-cellular-1" },
     intermediate: { label: "Trung cấp", icon: "signal-cellular-2" },
     advanced:     { label: "Nâng cao",  icon: "signal-cellular-3" },
 };
 
-const FILTER_OPTIONS = [
-    { value: "all",       label: "Tất cả"   },
-    { value: "published", label: "Xuất bản" },
-    { value: "draft",     label: "Nháp"     },
-    { value: "archived",  label: "Lưu trữ"  },
-];
-
 // ── Course Card Component ─────────────────────────────────
 const CourseCard = ({ course, onEdit, onDelete, onManageMaterial, onManageQuiz, onManageStudents }) => {
     const [menuVisible, setMenuVisible] = useState(false);
-    const status = STATUS_META[course.status] ?? STATUS_META.draft;
-    const level  = LEVEL_META[course.level]   ?? LEVEL_META.beginner;
+    const level = LEVEL_META[course.level] ?? LEVEL_META.beginner;
 
     return (
         <View style={styles.card}>
@@ -86,7 +72,7 @@ const CourseCard = ({ course, onEdit, onDelete, onManageMaterial, onManageQuiz, 
                             title="Quản lý Quiz"
                             titleStyle={styles.menuItemTxt}
                         />
-                        {/* ✅ Thêm mới */}
+                        {/* Student Management Action */}
                         <Menu.Item
                             leadingIcon="account-group-outline"
                             onPress={() => { setMenuVisible(false); onManageStudents(course); }}
@@ -105,9 +91,6 @@ const CourseCard = ({ course, onEdit, onDelete, onManageMaterial, onManageQuiz, 
 
                 {/* Badges row */}
                 <View style={styles.tagsRow}>
-                    <View style={[styles.statusBadge, { backgroundColor: status.bg }]}>
-                        <Text style={[styles.statusTxt, { color: status.color }]}>{status.label}</Text>
-                    </View>
                     <View style={styles.levelBadge}>
                         <Icon source={level.icon} size={12} color="#6366f1" />
                         <Text style={styles.levelTxt}>{level.label}</Text>
@@ -136,7 +119,6 @@ const CourseCard = ({ course, onEdit, onDelete, onManageMaterial, onManageQuiz, 
                         <Icon source="clipboard-check-outline" size={14} color="#ca8a04" />
                         <Text style={[styles.qaBtnTxt, { color: "#ca8a04" }]}>Quiz</Text>
                     </TouchableOpacity>
-                    {/* ✅ Thêm mới */}
                     <TouchableOpacity style={[styles.qaBtn, styles.qaBtnBlue]} onPress={() => onManageStudents(course)}>
                         <Icon source="account-group-outline" size={14} color="#0284c7" />
                         <Text style={[styles.qaBtnTxt, { color: "#0284c7" }]}>Học sinh</Text>
@@ -155,8 +137,8 @@ const ManageCourseScreen = () => {
     const [loading,    setLoading]    = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [search,     setSearch]     = useState("");
-    const [filter,     setFilter]     = useState("all");
 
+    // Fetch courses from API
     const fetchCourses = async () => {
         try {
             const token = await AsyncStorage.getItem("token");
@@ -173,8 +155,10 @@ const ManageCourseScreen = () => {
     };
 
     useFocusEffect(useCallback(() => { setLoading(true); fetchCourses(); }, []));
+    
     const onRefresh = () => { setRefreshing(true); fetchCourses(); };
 
+    // Delete course handler
     const handleDelete = (course) => {
         Alert.alert(
             "Xóa khóa học",
@@ -198,7 +182,8 @@ const ManageCourseScreen = () => {
         );
     };
 
-    const handleEdit           = (course) => navigation.navigate("CourseForm", { course });
+    // Navigation handlers
+    const handleEdit = (course) => navigation.navigate("CourseForm", { course });
 
     const handleManageMaterial = (course) => navigation.navigate("ManageMaterial", {
         courseId:    course.id,
@@ -210,34 +195,34 @@ const ManageCourseScreen = () => {
         courseTitle: course.subject ?? course.title ?? course.name ?? "Quiz",
     });
 
-    // ✅ Thêm mới
     const handleManageStudents = (course) => navigation.navigate("ManageStudents", {
         courseId:    course.id,
         courseTitle: course.subject ?? course.title ?? course.name ?? "Học sinh",
     });
 
+    // Filter courses based on search query
     const filtered = courses.filter(c => {
-        const matchFilter = filter === "all" || c.status === filter;
         const q = search.trim().toLowerCase();
         const courseName = (c.subject ?? c.title ?? c.name ?? "").toLowerCase();
         const courseDesc = (c.description ?? "").toLowerCase();
-        return matchFilter && (courseName.includes(q) || courseDesc.includes(q));
+        return courseName.includes(q) || courseDesc.includes(q);
     });
 
+    // Render empty state
     const EmptyState = () => (
         <View style={styles.emptyWrap}>
             <View style={styles.emptyIconWrap}>
                 <Icon source="book-plus-outline" size={48} color="#a5b4fc" />
             </View>
             <Text style={styles.emptyTitle}>
-                {search || filter !== "all" ? "Không tìm thấy kết quả" : "Chưa có khóa học nào"}
+                {search ? "Không tìm thấy kết quả" : "Chưa có khóa học nào"}
             </Text>
             <Text style={styles.emptySub}>
-                {search || filter !== "all"
-                    ? "Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm"
+                {search
+                    ? "Thử thay đổi từ khóa tìm kiếm"
                     : "Bắt đầu tạo khóa học đầu tiên của bạn ngay!"}
             </Text>
-            {!search && filter === "all" && (
+            {!search && (
                 <TouchableOpacity style={styles.emptyBtn} onPress={() => navigation.navigate("CourseForm", {})}>
                     <Icon source="plus" size={18} color="#fff" />
                     <Text style={styles.emptyBtnTxt}>Tạo khóa học</Text>
@@ -274,19 +259,6 @@ const ManageCourseScreen = () => {
                     style={styles.searchBar} inputStyle={styles.searchInput}
                     iconColor="#4f46e5" clearIcon="close-circle" elevation={0}
                 />
-            </View>
-
-            <View style={styles.filterRow}>
-                {FILTER_OPTIONS.map(opt => (
-                    <Chip
-                        key={opt.value} selected={filter === opt.value} onPress={() => setFilter(opt.value)}
-                        style={[styles.chip, filter === opt.value && styles.chipActive]}
-                        textStyle={[styles.chipTxt, filter === opt.value && styles.chipTxtActive]}
-                        compact
-                    >
-                        {opt.label}
-                    </Chip>
-                ))}
             </View>
 
             {filtered.length > 0 && (
@@ -331,14 +303,9 @@ export default ManageCourseScreen;
 // ── Styles ────────────────────────────────────────────────
 const styles = StyleSheet.create({
     screen:       { flex: 1, backgroundColor: "#f8fafc" },
-    searchWrap:   { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 4 },
+    searchWrap:   { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 10 },
     searchBar:    { backgroundColor: "#fff", borderRadius: 14, borderWidth: 1, borderColor: "#e2e8f0", height: 48 },
     searchInput:  { fontSize: 14, color: "#0f172a" },
-    filterRow:    { flexDirection: "row", paddingHorizontal: 16, paddingVertical: 10, gap: 8 },
-    chip:         { backgroundColor: "#fff", borderWidth: 1.5, borderColor: "#e2e8f0", height: 34 },
-    chipActive:   { backgroundColor: "#4f46e5", borderColor: "#4f46e5" },
-    chipTxt:      { fontSize: 12, color: "#475569", fontWeight: "600" },
-    chipTxtActive:{ color: "#fff" },
     countBar:     { paddingHorizontal: 20, paddingBottom: 6 },
     countTxt:     { fontSize: 12, color: "#94a3b8", fontStyle: "italic" },
     list:         { padding: 16, paddingBottom: 100 },
@@ -354,8 +321,6 @@ const styles = StyleSheet.create({
     menuItemTxt:      { fontSize: 14, color: "#0f172a" },
 
     tagsRow:     { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 6 },
-    statusBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 20 },
-    statusTxt:   { fontSize: 11, fontWeight: "700" },
     levelBadge:  { flexDirection: "row", alignItems: "center", gap: 3, paddingHorizontal: 8, paddingVertical: 2, backgroundColor: "#f1f5f9", borderRadius: 20 },
     levelTxt:    { fontSize: 11, color: "#6366f1", fontWeight: "600" },
 
@@ -367,7 +332,7 @@ const styles = StyleSheet.create({
     qaBtn:        { flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8, backgroundColor: "#ede9fe" },
     qaBtnGreen:   { backgroundColor: "#dcfce7" },
     qaBtnAmber:   { backgroundColor: "#fef9c3" },
-    qaBtnBlue:    { backgroundColor: "#e0f2fe" }, // ✅ thêm mới
+    qaBtnBlue:    { backgroundColor: "#e0f2fe" }, 
     qaBtnTxt:     { fontSize: 11, fontWeight: "700", color: "#4f46e5" },
 
     emptyWrap:    { flex: 1, justifyContent: "center", alignItems: "center", paddingHorizontal: 32, paddingVertical: 60 },
