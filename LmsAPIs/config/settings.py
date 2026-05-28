@@ -52,7 +52,7 @@ INSTALLED_APPS = [
     'apps.quizzes',
     'oauth2_provider',
     'corsheaders',
-   
+
 ]
 # ckeditor
 CKEDITOR_UPLOAD_PATH = "images/ckeditors/"
@@ -65,7 +65,6 @@ CKEDITOR_CONFIGS = {
 }
 
 import cloudinary
-
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024  # 50MB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024
@@ -82,11 +81,11 @@ cloudinary.config(
     secure=True
 )
 
+GITHUB_TOKEN = config("GITHUB_TOKEN")
+
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
-
-OAUTH2_PROVIDER = { 'OAUTH2_BACKEND_CLASS': 'oauth2_provider.oauth2_backends.JSONOAuthLibCore' }
-
+OAUTH2_PROVIDER = {'OAUTH2_BACKEND_CLASS': 'oauth2_provider.oauth2_backends.JSONOAuthLibCore'}
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -94,9 +93,15 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 5,
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.ScopedRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'ai_generation': '5/day', #span api :0
+    }
 }
 
-#real-time:0
+# real-time:0
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels.layers.InMemoryChannelLayer",

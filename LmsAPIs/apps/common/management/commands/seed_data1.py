@@ -4,26 +4,14 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils import timezone
 
-# --- Import models ---
+# ─── Import models ───────────────────────────────────────────────
 from apps.users.models import User, StudentProfile
 from apps.courses.models import Category, Tag, Course, Enrollment, ForumTopic, ForumReply
 from apps.materials.models import Material, MaterialProgress, Comment, Note
 from apps.payments.models import Transaction
 from apps.quizzes.models import Quiz, Question, Answer, TestResult
-from cloudinary import CloudinaryImage, CloudinaryVideo
 
-# --- Tai nguyen Cloudinary thuc ---
-_PDF_SLIDE = CloudinaryImage("Báo_cáo_BTL_ML_vzhyex")
-_PDF_DOC   = CloudinaryImage("f6gncfvzlavdytlgkgje")
-_VIDEO     = CloudinaryVideo("fvnabor2dtejimjrzl5h")
-
-def _file_for(mtype: str):
-    if mtype == "video": return _VIDEO
-    if mtype == "slide": return _PDF_SLIDE
-    return _PDF_DOC
-
-
-# --- Du lieu tieng Viet ---
+# ─── Dữ liệu tiếng Việt ──────────────────────────────────────────
 
 CATEGORIES = [
     ("Lập trình Web", "Các khoá học thiết kế và phát triển website từ cơ bản đến nâng cao."),
@@ -35,86 +23,109 @@ TAGS = [
     "Python", "Django", "React Native", "JavaScript", "HTML/CSS",
 ]
 
+# 5 khoá miễn phí, 5 khoá có phí
 COURSES = [
-    ("Python Cơ Bản cho Người Mới Bắt Đầu", 0, "beginner",  0,      "Khoá học Python từ số không, phù hợp cho mọi đối tượng muốn học lập trình."),
-    ("HTML & CSS Nhập Môn",                  0, "beginner",  0,      "Xây dựng trang web tĩnh đẹp mắt với HTML5 và CSS3 hiện đại."),
-    ("Git & GitHub Cơ Bản",                  0, "beginner",  0,      "Quản lý mã nguồn chuyên nghiệp với Git và làm việc nhóm qua GitHub."),
-    ("Nhập Môn Khoa Học Dữ Liệu",            1, "beginner",  0,      "Giới thiệu tổng quan về Data Science, thống kê và phân tích dữ liệu cơ bản."),
-    ("Thiết Kế UI/UX Cơ Bản với Figma",      2, "beginner",  0,      "Học cách tạo wireframe, prototype và thiết kế giao diện người dùng trực quan."),
-    ("Django REST Framework Nâng Cao",        0, "advanced",  499000, "Xây dựng API RESTful mạnh mẽ, xác thực JWT và triển khai với Docker."),
-    ("Machine Learning với Scikit-Learn",     1, "intermediate", 699000, "Thuật toán ML thực tiễn: hồi quy, phân loại, clustering và đánh giá mô hình."),
-    ("React Native – Xây Dựng App Di Động",  0, "intermediate", 799000, "Phát triển ứng dụng iOS & Android bằng React Native và Expo từ A–Z."),
-    ("Deep Learning & TensorFlow",            1, "advanced",  999000, "Mạng nơ-ron sâu, CNN, RNN và ứng dụng xử lý ảnh, văn bản với TensorFlow 2."),
-    ("UI/UX Design Nâng Cao – Portfolio Pro", 2, "advanced",  599000, "Thiết kế portfolio chuyên nghiệp, nghiên cứu người dùng và kiểm tra khả năng dùng."),
+    # (subject, category_idx, level, price, description)
+    ("Python Cơ Bản cho Người Mới Bắt Đầu", 0, "beginner", 0,
+     "Khoá học Python từ số không, phù hợp cho mọi đối tượng muốn học lập trình."),
+    ("HTML & CSS Nhập Môn", 0, "beginner", 0, "Xây dựng trang web tĩnh đẹp mắt với HTML5 và CSS3 hiện đại."),
+    ("Git & GitHub Cơ Bản", 0, "beginner", 0, "Quản lý mã nguồn chuyên nghiệp với Git và làm việc nhóm qua GitHub."),
+    ("Nhập Môn Khoa Học Dữ Liệu", 1, "beginner", 0,
+     "Giới thiệu tổng quan về Data Science, thống kê và phân tích dữ liệu cơ bản."),
+    ("Thiết Kế UI/UX Cơ Bản với Figma", 2, "beginner", 0,
+     "Học cách tạo wireframe, prototype và thiết kế giao diện người dùng trực quan."),
+    ("Django REST Framework Nâng Cao", 0, "advanced", 499000,
+     "Xây dựng API RESTful mạnh mẽ, xác thực JWT và triển khai với Docker."),
+    ("Machine Learning với Scikit-Learn", 1, "intermediate", 699000,
+     "Thuật toán ML thực tiễn: hồi quy, phân loại, clustering và đánh giá mô hình."),
+    ("React Native – Xây Dựng App Di Động", 0, "intermediate", 799000,
+     "Phát triển ứng dụng iOS & Android bằng React Native và Expo từ A–Z."),
+    ("Deep Learning & TensorFlow", 1, "advanced", 999000,
+     "Mạng nơ-ron sâu, CNN, RNN và ứng dụng xử lý ảnh, văn bản với TensorFlow 2."),
+    ("UI/UX Design Nâng Cao – Portfolio Pro", 2, "advanced", 599000,
+     "Thiết kế portfolio chuyên nghiệp, nghiên cứu người dùng và kiểm tra khả năng dùng."),
 ]
 
+# Mỗi khoá có danh sách riêng (title, type, difficulty, duration_minutes)
+# Index tương ứng với COURSES bên trên
 MATERIALS_PER_COURSE = [
+    # 0 – Python Cơ Bản (4 bài)
     [
-        ("Giới thiệu Python & cài đặt Anaconda",         "video", "easy",   18),
-        ("Kiểu dữ liệu, biến và toán tử cơ bản",         "video", "easy",   22),
-        ("Tài liệu tham khảo – Cú pháp Python cơ bản",   "pdf",   "easy",   10),
-        ("Bài tập thực hành: vòng lặp & hàm",            "pdf",   "medium", 12),
+        ("Giới thiệu Python & cài đặt Anaconda", "video", "easy", 18),
+        ("Kiểu dữ liệu, biến và toán tử cơ bản", "video", "easy", 22),
+        ("Tài liệu tham khảo – Cú pháp Python cơ bản", "pdf", "easy", 10),
+        ("Bài tập thực hành: vòng lặp & hàm", "pdf", "medium", 12),
     ],
+    # 1 – HTML & CSS (5 bài)
     [
-        ("HTML5 – Cấu trúc trang web chuẩn",             "video", "easy",   20),
-        ("CSS3 – Box model & Flexbox",                    "video", "medium", 25),
-        ("Slide tổng hợp: Selectors & Specificity",       "slide", "easy",   10),
-        ("Thực hành: Dựng layout trang chủ",              "pdf",   "medium", 15),
-        ("Responsive Design với Media Queries",            "video", "medium", 22),
+        ("HTML5 – Cấu trúc trang web chuẩn", "video", "easy", 20),
+        ("CSS3 – Box model & Flexbox", "video", "medium", 25),
+        ("Slide tổng hợp: Selectors & Specificity", "slide", "easy", 10),
+        ("Thực hành: Dựng layout trang chủ", "pdf", "medium", 15),
+        ("Responsive Design với Media Queries", "video", "medium", 22),
     ],
+    # 2 – Git & GitHub (3 bài)
     [
-        ("Git cơ bản – init, add, commit, log",           "video", "easy",   20),
-        ("Làm việc với nhánh – branch, merge, rebase",    "video", "medium", 28),
-        ("Cheat sheet lệnh Git thường dùng",              "pdf",   "easy",    8),
+        ("Git cơ bản – init, add, commit, log", "video", "easy", 20),
+        ("Làm việc với nhánh – branch, merge, rebase", "video", "medium", 28),
+        ("Cheat sheet lệnh Git thường dùng", "pdf", "easy", 8),
     ],
+    # 3 – Khoa Học Dữ Liệu (5 bài)
     [
-        ("Giới thiệu Data Science & hệ sinh thái Python", "video", "easy",   20),
-        ("Phân tích dữ liệu với Pandas",                  "video", "medium", 30),
-        ("Slide: Thống kê mô tả cơ bản",                  "slide", "easy",   12),
-        ("Trực quan hoá dữ liệu với Matplotlib",          "video", "medium", 25),
-        ("Bài tập: Làm sạch dataset thực tế",             "pdf",   "hard",   15),
+        ("Giới thiệu Data Science & hệ sinh thái Python", "video", "easy", 20),
+        ("Phân tích dữ liệu với Pandas", "video", "medium", 30),
+        ("Slide: Thống kê mô tả cơ bản", "slide", "easy", 12),
+        ("Trực quan hoá dữ liệu với Matplotlib", "video", "medium", 25),
+        ("Bài tập: Làm sạch dataset thực tế", "pdf", "hard", 15),
     ],
+    # 4 – UI/UX Figma cơ bản (4 bài)
     [
-        ("Giới thiệu Figma & giao diện làm việc",         "video", "easy",   15),
-        ("Tạo Wireframe cho ứng dụng di động",             "video", "medium", 25),
-        ("Slide: Nguyên tắc thiết kế UI hiệu quả",        "slide", "medium", 10),
-        ("Thực hành: Prototype màn hình Login",            "pdf",   "medium", 18),
+        ("Giới thiệu Figma & giao diện làm việc", "video", "easy", 15),
+        ("Tạo Wireframe cho ứng dụng di động", "video", "medium", 25),
+        ("Slide: Nguyên tắc thiết kế UI hiệu quả", "slide", "medium", 10),
+        ("Thực hành: Prototype màn hình Login", "pdf", "medium", 18),
     ],
+    # 5 – Django REST Framework (5 bài)
     [
-        ("Ôn nhanh Django ORM & serializer",               "video", "medium", 25),
-        ("Xây dựng API CRUD chuẩn RESTful",                "video", "hard",   35),
-        ("JWT Authentication – AccessToken & Refresh",     "video", "hard",   30),
-        ("Tài liệu: Cấu hình CORS & Permissions",          "pdf",   "medium", 12),
-        ("Deploy API lên VPS với Docker & Nginx",          "slide", "hard",   20),
+        ("Ôn nhanh Django ORM & serializer", "video", "medium", 25),
+        ("Xây dựng API CRUD chuẩn RESTful", "video", "hard", 35),
+        ("JWT Authentication – AccessToken & Refresh", "video", "hard", 30),
+        ("Tài liệu: Cấu hình CORS & Permissions", "pdf", "medium", 12),
+        ("Deploy API lên VPS với Docker & Nginx", "slide", "hard", 20),
     ],
+    # 6 – Machine Learning (5 bài)
     [
-        ("Tổng quan Machine Learning & workflow",          "video", "easy",   20),
-        ("Hồi quy tuyến tính & logistic",                  "video", "medium", 30),
-        ("Slide: Các thuật toán phân loại phổ biến",       "slide", "medium", 15),
-        ("Đánh giá mô hình: Precision, Recall, F1",        "video", "hard",   25),
-        ("Bài tập: Pipeline dự đoán giá nhà",              "pdf",   "hard",   20),
+        ("Tổng quan Machine Learning & workflow", "video", "easy", 20),
+        ("Hồi quy tuyến tính & logistic", "video", "medium", 30),
+        ("Slide: Các thuật toán phân loại phổ biến", "slide", "medium", 15),
+        ("Đánh giá mô hình: Precision, Recall, F1", "video", "hard", 25),
+        ("Bài tập: Pipeline dự đoán giá nhà", "pdf", "hard", 20),
     ],
+    # 7 – React Native (4 bài)
     [
-        ("Cài đặt Expo & cấu trúc dự án React Native",    "video", "easy",   18),
-        ("Navigation với React Navigation v6",             "video", "medium", 28),
-        ("State Management: Context API vs Redux",         "video", "hard",   32),
-        ("Cheat sheet: Các component RN hay dùng",         "pdf",   "medium", 10),
+        ("Cài đặt Expo & cấu trúc dự án React Native", "video", "easy", 18),
+        ("Navigation với React Navigation v6", "video", "medium", 28),
+        ("State Management: Context API vs Redux", "video", "hard", 32),
+        ("Cheat sheet: Các component RN hay dùng", "pdf", "medium", 10),
     ],
+    # 8 – Deep Learning (5 bài)
     [
         ("Mạng nơ-ron nhân tạo – kiến trúc & huấn luyện", "video", "medium", 30),
-        ("CNN – Nhận diện hình ảnh với TensorFlow",        "video", "hard",   40),
-        ("RNN & LSTM – Xử lý chuỗi thời gian",             "video", "hard",   38),
-        ("Slide: Các kỹ thuật tối ưu hoá (Adam, SGD...)", "slide", "hard",   15),
-        ("Thực hành: Xây dựng chatbot đơn giản với LSTM",  "pdf",   "hard",   20),
+        ("CNN – Nhận diện hình ảnh với TensorFlow", "video", "hard", 40),
+        ("RNN & LSTM – Xử lý chuỗi thời gian", "video", "hard", 38),
+        ("Slide: Các kỹ thuật tối ưu hoá (Adam, SGD...)", "slide", "hard", 15),
+        ("Thực hành: Xây dựng chatbot đơn giản với LSTM", "pdf", "hard", 20),
     ],
+    # 9 – UI/UX Nâng Cao (3 bài)
     [
-        ("Nghiên cứu người dùng & phỏng vấn UX",          "video", "medium", 25),
-        ("Design System & Component Library",              "video", "hard",   30),
-        ("Slide: Portfolio chuẩn để apply vị trí Designer","slide", "medium", 12),
+        ("Nghiên cứu người dùng & phỏng vấn UX", "video", "medium", 25),
+        ("Design System & Component Library", "video", "hard", 30),
+        ("Slide: Portfolio chuẩn để apply vị trí Designer", "slide", "medium", 12),
     ],
 ]
 
 QUIZ_DATA = [
+    # (question_content, correct_answer, wrong_answers)
     (
         "Ngôn ngữ lập trình nào được dùng phổ biến nhất trong Data Science?",
         "Python",
@@ -166,13 +177,13 @@ FORUM_REPLIES = [
 ]
 
 STUDENT_NAMES = [
-    ("Nguyễn", "Văn An"),   ("Trần", "Thị Bình"),  ("Lê", "Hoàng Nam"),
-    ("Phạm", "Thị Lan"),    ("Hoàng", "Minh Tuấn"), ("Đặng", "Thị Hoa"),
-    ("Vũ", "Quốc Dũng"),    ("Bùi", "Thị Mai"),    ("Đỗ", "Văn Hùng"),
-    ("Ngô", "Thị Thảo"),    ("Lý", "Thanh Long"),   ("Dương", "Thị Ngọc"),
-    ("Đinh", "Văn Phúc"),   ("Hà", "Thị Thu"),      ("Tô", "Minh Khoa"),
-    ("Cao", "Thị Yến"),     ("Trịnh", "Văn Đức"),   ("Phan", "Thị Linh"),
-    ("Võ", "Văn Sơn"),      ("Nguyễn", "Thị Hằng"),
+    ("Nguyễn", "Văn An"), ("Trần", "Thị Bình"), ("Lê", "Hoàng Nam"),
+    ("Phạm", "Thị Lan"), ("Hoàng", "Minh Tuấn"), ("Đặng", "Thị Hoa"),
+    ("Vũ", "Quốc Dũng"), ("Bùi", "Thị Mai"), ("Đỗ", "Văn Hùng"),
+    ("Ngô", "Thị Thảo"), ("Lý", "Thanh Long"), ("Dương", "Thị Ngọc"),
+    ("Đinh", "Văn Phúc"), ("Hà", "Thị Thu"), ("Tô", "Minh Khoa"),
+    ("Cao", "Thị Yến"), ("Trịnh", "Văn Đức"), ("Phan", "Thị Linh"),
+    ("Võ", "Văn Sơn"), ("Nguyễn", "Thị Hằng"),
 ]
 
 TEACHER_NAMES = [
@@ -211,19 +222,19 @@ NOTES = [
 ]
 
 
-# --- Command ---
+# ─── Command ─────────────────────────────────────────────────────
 
 class Command(BaseCommand):
-    help = "Khoi tao du lieu mau tieng Viet cho he thong Quan ly Hoc lieu So"
+    help = "Tạo dữ liệu mẫu tiếng Việt đầy đủ cho hệ thống Quản lý Học liệu Số"
 
     @transaction.atomic
     def handle(self, *args, **kwargs):
         now = timezone.now()
 
-        self.stdout.write("Bat dau qua trinh seed du lieu...")
+        self.stdout.write(self.style.WARNING("🔄 Bắt đầu tạo dữ liệu mẫu..."))
 
-        # --- 1. ADMIN ---
-        self.stdout.write("Khoi tao tai khoan admin...")
+        # ── 1. ADMIN ──────────────────────────────────────────────
+        self.stdout.write("👤 Tạo tài khoản Admin...")
         admin, created = User.objects.get_or_create(
             username="admin",
             defaults={
@@ -238,10 +249,10 @@ class Command(BaseCommand):
         if created:
             admin.set_password("Admin@123")
             admin.save()
-            self.stdout.write(self.style.SUCCESS("Khoi tao admin thanh cong (admin / Admin@123)"))
+        self.stdout.write(self.style.SUCCESS(f"  ✅ Admin: admin / Admin@123"))
 
-        # --- 2. TEACHERS ---
-        self.stdout.write("Khoi tao tai khoan giang vien...")
+        # ── 2. TEACHERS ───────────────────────────────────────────
+        self.stdout.write("👩‍🏫 Tạo 5 giảng viên...")
         teachers = []
         for i, (last, first) in enumerate(TEACHER_NAMES):
             teacher, created = User.objects.get_or_create(
@@ -257,10 +268,10 @@ class Command(BaseCommand):
                 teacher.set_password("Teacher@123")
                 teacher.save()
             teachers.append(teacher)
-        self.stdout.write(self.style.SUCCESS(f"Da tao xong {len(teachers)} giang vien"))
+        self.stdout.write(self.style.SUCCESS(f"  ✅ teacher01–teacher05 / Teacher@123"))
 
-        # --- 3. STUDENTS ---
-        self.stdout.write("Khoi tao tai khoan sinh vien...")
+        # ── 3. STUDENTS ───────────────────────────────────────────
+        self.stdout.write("🎓 Tạo 20 sinh viên...")
         students = []
         for i, (last, first) in enumerate(STUDENT_NAMES):
             user, created = User.objects.get_or_create(
@@ -287,24 +298,24 @@ class Command(BaseCommand):
                 }
             )
             students.append(user)
-        self.stdout.write(self.style.SUCCESS(f"Da tao xong {len(students)} sinh vien"))
+        self.stdout.write(self.style.SUCCESS(f"  ✅ student01–student20 / Student@123"))
 
-        # --- 4. CATEGORIES ---
-        self.stdout.write("Khoi tao danh muc...")
+        # ── 4. CATEGORIES ─────────────────────────────────────────
+        self.stdout.write("📂 Tạo 3 danh mục...")
         category_objs = []
         for name, desc in CATEGORIES:
             cat, _ = Category.objects.get_or_create(name=name, defaults={"description": desc})
             category_objs.append(cat)
 
-        # --- 5. TAGS ---
-        self.stdout.write("Khoi tao the tag...")
+        # ── 5. TAGS ───────────────────────────────────────────────
+        self.stdout.write("🏷️ Tạo 5 thẻ tag...")
         tag_objs = []
         for tname in TAGS:
             tag, _ = Tag.objects.get_or_create(name=tname)
             tag_objs.append(tag)
 
-        # --- 6. COURSES ---
-        self.stdout.write("Khoi tao cac khoa hoc...")
+        # ── 6. COURSES ────────────────────────────────────────────
+        self.stdout.write("📚 Tạo 10 khoá học (5 miễn phí, 5 có phí)...")
         all_courses = []
 
         for idx, (subject, cat_idx, level, price, desc) in enumerate(COURSES):
@@ -324,10 +335,12 @@ class Command(BaseCommand):
 
         free_courses = [c for c in all_courses if c.price == 0]
         paid_courses = [c for c in all_courses if c.price > 0]
-        self.stdout.write(self.style.SUCCESS(f"Da tao xong {len(all_courses)} khoa hoc"))
+        self.stdout.write(self.style.SUCCESS(
+            f"  ✅ {len(free_courses)} khoá miễn phí | {len(paid_courses)} khoá có phí"
+        ))
 
-        # --- 7. MATERIALS ---
-        self.stdout.write("Khoi tao hoc lieu...")
+        # ── 7. MATERIALS ──────────────────────────────────────────
+        self.stdout.write("📄 Tạo học liệu cho mỗi khoá...")
         course_materials = {}
         for idx, course in enumerate(all_courses):
             mats = []
@@ -337,19 +350,18 @@ class Command(BaseCommand):
                     title=title,
                     course=course,
                     defaults={
-                        "content": f"<p>Nội dung bài <strong>{j+1}</strong> – khoá <em>{course.subject}</em>.</p>",
+                        "content": f"<p>Nội dung bài <strong>{j + 1}</strong> – khoá <em>{course.subject}</em>.</p>",
                         "material_type": mtype,
                         "difficulty": diff,
                         "duration_minutes": dur,
                         "order_index": j,
-                        "file": _file_for(mtype),
                     }
                 )
                 mats.append(mat)
             course_materials[course.id] = mats
 
-        # --- 8. QUIZ, QUESTIONS, ANSWERS ---
-        self.stdout.write("Khoi tao bai kiem tra va cau hoi...")
+        # ── 8. QUIZ, QUESTIONS, ANSWERS ───────────────────────────
+        self.stdout.write("📝 Tạo bài kiểm tra (5 câu/bài) cho mỗi khoá...")
         course_quizzes = {}
         for course in all_courses:
             quiz, _ = Quiz.objects.get_or_create(
@@ -373,17 +385,19 @@ class Command(BaseCommand):
                 questions.append(q)
             course_quizzes[course.id] = (quiz, questions)
 
-        # --- 9. ENROLLMENTS + TRANSACTIONS + PROGRESS ---
-        self.stdout.write("Khoi tao du lieu dang ky hoc, giao dich va tien do...")
+        # ── 9. ENROLLMENTS + TRANSACTIONS + PROGRESS ──────────────
+        self.stdout.write("📋 Đăng ký khoá học, thanh toán, tiến độ học tập...")
 
         for student in students:
+            # Mỗi sinh viên đăng ký 4-7 khoá ngẫu nhiên
             num_enroll = random.randint(4, 7)
             chosen = random.sample(all_courses, min(num_enroll, len(all_courses)))
 
             for course in chosen:
+                # ── Transaction ───────────────────────────────────
                 txn = None
                 if course.price > 0:
-                    txn_code = f"TXN{student.id:03d}{course.id:03d}{random.randint(1000,9999)}"
+                    txn_code = f"TXN{student.id:03d}{course.id:03d}{random.randint(1000, 9999)}"
                     txn, _ = Transaction.objects.get_or_create(
                         transaction_code=txn_code,
                         defaults={
@@ -400,9 +414,11 @@ class Command(BaseCommand):
                             }
                         }
                     )
+                    # Nếu giao dịch thất bại thì không enroll
                     if txn.status == "failed":
                         continue
                 else:
+                    # Khoá miễn phí – tạo transaction FREE
                     txn_code = f"FREE{student.id:03d}{course.id:03d}"
                     txn, _ = Transaction.objects.get_or_create(
                         transaction_code=txn_code,
@@ -415,6 +431,7 @@ class Command(BaseCommand):
                         }
                     )
 
+                # ── Enrollment ────────────────────────────────────
                 progress = round(random.uniform(0, 100), 1)
                 status = "completed" if progress == 100 else random.choice(["active", "active", "dropped"])
                 enroll, _ = Enrollment.objects.get_or_create(
@@ -429,6 +446,7 @@ class Command(BaseCommand):
                     }
                 )
 
+                # ── MaterialProgress ──────────────────────────────
                 mats = course_materials.get(course.id, [])
                 num_viewed = int(len(mats) * progress / 100)
                 for k, mat in enumerate(mats):
@@ -453,10 +471,12 @@ class Command(BaseCommand):
                             "progress_percent": mp_progress,
                             "watched_minutes": watched,
                             "last_position_sec": watched * 60,
-                            "completed_at": now - timedelta(days=random.randint(1, 20)) if mp_status == "completed" else None,
+                            "completed_at": now - timedelta(
+                                days=random.randint(1, 20)) if mp_status == "completed" else None,
                         }
                     )
 
+                    # Comment & Note ngẫu nhiên
                     if mp_status == "completed" and random.random() < 0.4:
                         Comment.objects.get_or_create(
                             user=student,
@@ -473,6 +493,7 @@ class Command(BaseCommand):
                             }
                         )
 
+                # ── TestResult ────────────────────────────────────
                 if progress >= 50 and course.id in course_quizzes:
                     quiz, questions = course_quizzes[course.id]
                     total_points = sum(q.points for q in questions)
@@ -498,13 +519,13 @@ class Command(BaseCommand):
                             "percentage": pct,
                             "is_passed": pct >= quiz.passing_score,
                             "submitted_answers": submitted,
-                            "strength_analysis": "Nắm tốt kiến thức nền tảng và khái niệm cơ bản.",
+                            "strength_analysis": "Nắm tốt kiến thức nền tảng và khái niệm cơ bản." if pct >= 70 else "Cần ôn lại các khái niệm cơ bản.",
                             "weakness_analysis": "Cần rèn luyện thêm phần thực hành và bài tập ứng dụng." if pct < 80 else "Tiếp tục duy trì và mở rộng kiến thức.",
                         }
                     )
 
-        # --- 10. FORUM ---
-        self.stdout.write("Khoi tao cac chu de thao luan...")
+        # ── 10. FORUM ─────────────────────────────────────────────
+        self.stdout.write("💬 Tạo diễn đàn thảo luận...")
         for course in all_courses:
             enrolled_students = list(
                 User.objects.filter(enrollments__course=course, role="student")
@@ -512,6 +533,7 @@ class Command(BaseCommand):
             if not enrolled_students:
                 continue
 
+            # 2-3 chủ đề cho mỗi khoá
             topics_for_course = random.sample(FORUM_TOPICS, min(3, len(FORUM_TOPICS)))
             for title, content in topics_for_course:
                 topic_author = random.choice(enrolled_students)
@@ -524,6 +546,7 @@ class Command(BaseCommand):
                     }
                 )
 
+                # 2-5 replies mỗi chủ đề
                 repliers = random.sample(
                     enrolled_students,
                     min(random.randint(2, 5), len(enrolled_students))
@@ -535,28 +558,33 @@ class Command(BaseCommand):
                         defaults={"content": random.choice(FORUM_REPLIES)}
                     )
 
+                # Giảng viên cũng reply
                 if random.random() < 0.6:
                     ForumReply.objects.get_or_create(
                         topic=topic,
                         user=course.teacher,
-                        defaults={"content": "Cảm ơn câu hỏi của bạn! Mình sẽ giải thích chi tiết hơn trong buổi học tiếp theo nhé."}
+                        defaults={
+                            "content": "Cảm ơn câu hỏi của bạn! Mình sẽ giải thích chi tiết hơn trong buổi học tiếp theo nhé."}
                     )
 
-        # --- SUMMARY ---
+        # ── SUMMARY ───────────────────────────────────────────────
         self.stdout.write("")
-        self.stdout.write(self.style.SUCCESS("=== SEEDING COMPLETED ==="))
-        self.stdout.write(f"Admin: 1 (admin / Admin@123)")
-        self.stdout.write(f"Giang vien: {User.objects.filter(role='teacher').count()}")
-        self.stdout.write(f"Sinh vien: {User.objects.filter(role='student').count()}")
-        self.stdout.write(f"Danh muc: {Category.objects.count()}")
-        self.stdout.write(f"Tag: {Tag.objects.count()}")
-        self.stdout.write(f"Khoa hoc: {Course.objects.count()} ({len(free_courses)} mien phi | {len(paid_courses)} co phi)")
-        self.stdout.write(f"Hoc lieu: {Material.objects.count()}")
-        self.stdout.write(f"Dang ky: {Enrollment.objects.count()}")
-        self.stdout.write(f"Giao dich: {Transaction.objects.count()}")
-        self.stdout.write(f"Tien do: {MaterialProgress.objects.count()}")
-        self.stdout.write(f"Bai kiem tra: {Quiz.objects.count()}")
-        self.stdout.write(f"Ket qua thi: {TestResult.objects.count()}")
-        self.stdout.write(f"Chu de forum: {ForumTopic.objects.count()}")
-        self.stdout.write(f"Tra loi forum: {ForumReply.objects.count()}")
-        self.stdout.write(self.style.SUCCESS("========================="))
+        self.stdout.write(self.style.SUCCESS("=" * 55))
+        self.stdout.write(self.style.SUCCESS("  ✅ SEEDING HOÀN TẤT!"))
+        self.stdout.write(self.style.SUCCESS("=" * 55))
+        self.stdout.write(f"  👤 Admin       : 1  (admin / Admin@123)")
+        self.stdout.write(f"  👩‍🏫 Giảng viên  : {User.objects.filter(role='teacher').count()}")
+        self.stdout.write(f"  🎓 Sinh viên   : {User.objects.filter(role='student').count()}")
+        self.stdout.write(f"  📂 Danh mục    : {Category.objects.count()}")
+        self.stdout.write(f"  🏷️  Tag         : {Tag.objects.count()}")
+        self.stdout.write(
+            f"  📚 Khoá học    : {Course.objects.count()} ({len(free_courses)} free | {len(paid_courses)} có phí)")
+        self.stdout.write(f"  📄 Học liệu    : {Material.objects.count()}")
+        self.stdout.write(f"  📋 Đăng ký     : {Enrollment.objects.count()}")
+        self.stdout.write(f"  💳 Giao dịch   : {Transaction.objects.count()}")
+        self.stdout.write(f"  📊 Tiến độ     : {MaterialProgress.objects.count()}")
+        self.stdout.write(f"  📝 Bài kiểm tra: {Quiz.objects.count()}")
+        self.stdout.write(f"  🏆 Kết quả thi : {TestResult.objects.count()}")
+        self.stdout.write(f"  💬 Chủ đề forum: {ForumTopic.objects.count()}")
+        self.stdout.write(f"  💬 Trả lời     : {ForumReply.objects.count()}")
+        self.stdout.write(self.style.SUCCESS("=" * 55))

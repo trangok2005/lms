@@ -37,6 +37,7 @@ schema_view = get_schema_view(
 )
 router = DefaultRouter()
 urlpatterns = [
+    path('', include('apps.ai_roadmap.urls')),
     path('', include('apps.users.urls')),
     path('', include('apps.courses.urls')),
     path('', include('apps.materials.urls')),

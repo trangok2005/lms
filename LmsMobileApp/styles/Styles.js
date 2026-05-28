@@ -59,7 +59,7 @@ export default StyleSheet.create({
     shadowRadius: 4,
   },
   headerTitle: {
-    color: colors.white,
+    color: colors.primary,
     fontSize: 18,
     fontWeight: "700",
     letterSpacing: 0.3,

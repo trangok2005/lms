@@ -36,6 +36,11 @@ class Course(BaseModel):
     tags = models.ManyToManyField(Tag, blank=True, related_name='courses')
     students = models.ManyToManyField('users.User', through='courses.Enrollment', related_name='joined_courses')
 
+    # ai
+    is_ai_generated = models.BooleanField(default=False)
+    student = models.ForeignKey( 'users.User',on_delete=models.CASCADE,null=True,blank=True,related_name='ai_courses')
+    ai_goal = models.CharField(max_length=255,null=True,blank=True)
+
     def __str__(self):
         return self.subject
 
@@ -55,13 +60,14 @@ class Enrollment(BaseModel):
     last_accessed = models.DateTimeField(null=True, blank=True)
 
     transaction = models.ForeignKey('payments.Transaction', on_delete=models.SET_NULL,
-                                    null=True, blank=True,related_name='enrollments')
+                                    null=True, blank=True, related_name='enrollments')
 
     class Meta:
         unique_together = ('user', 'course')
 
     def __str__(self):
         return f"{self.user.username} — {self.course.subject}"
+
 
 class ForumTopic(BaseModel):
     user = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='forum_topics')
