@@ -19,7 +19,7 @@ const Header = ({
   const theme = useTheme();
   const [user] = useContext(MyUserContext);
   
-  // 🔔 Tạo state nội bộ để quản lý số badge thông báo hiển thị trên Header
+
   const [badgeCount, setBadgeCount] = useState(0);
 
   useEffect(() => {
@@ -51,12 +51,12 @@ const Header = ({
     };
   }, [showNotif, navigation]);
 
-  // Xử lý mặc định khi click vào quả chuông nếu không truyền prop onNotif từ ngoài vào
+
   const handleNotifPress = () => {
     if (onNotif) {
       onNotif();
     } else {
-      // Mặc định dẫn sang màn hình Lịch sử thông báo tổng của app
+
       navigation.navigate("NotificationList"); 
     }
   };
@@ -118,7 +118,7 @@ const Header = ({
   );
 };
 
-// Cập nhật lại component con cơ bản (Bỏ prop notifCount dư thừa đi)
+
 export const HomeHeader = ({ title, onSearch, onNotif }) => {
   const navigation = useNavigation();
   const handleSearch = onSearch ?? (() => navigation.navigate("CourseSearch"));

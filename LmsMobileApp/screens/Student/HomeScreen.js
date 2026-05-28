@@ -62,7 +62,7 @@ const HomeScreen = () => {
             <Text style={styles.descriptionText}>
               Tạo ngay lộ trình học cá nhân hóa bằng AI để tiếp tục nâng cao kỹ năng.
             </Text>
-            <TouchableOpacity style={styles.aiButton} onPress={() => nav.navigate("LearningDashboard")}>
+            <TouchableOpacity style={styles.aiButton} onPress={() => nav.navigate("AILearningPath")}>
               <Text variant="bodyMedium" style={styles.aiButtonText}>Tạo lộ trình học AI</Text>
             </TouchableOpacity>
           </View>
@@ -107,7 +107,7 @@ const HomeScreen = () => {
   );
 };
 
-/** Component hiển thị trạng thái rỗng */
+
 const EmptyBox = ({ message }) => (
   <View style={styles.emptyContainer}>
     <Icon source="alert-circle-outline" color={colors.gray} size={30} />

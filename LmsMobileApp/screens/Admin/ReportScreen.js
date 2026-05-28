@@ -4,7 +4,7 @@ import { Text, Surface, Button, Divider } from "react-native-paper";
 import { useFocusEffect } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { BarChart, PieChart } from "react-native-chart-kit";
-// Import thư viện lịch chọn ngày tháng
+
 import DateTimePicker from "@react-native-community/datetimepicker";
 
 import { authApis, endpoints } from "../../configs/Apis";
@@ -14,19 +14,19 @@ import { Header } from "../../components/common";
 const screenWidth = Dimensions.get("window").width;
 
 const ReportScreen = () => {
-  // 1. QUẢN LÝ STATE NGÀY THÁNG (Lưu dạng Object Date)
+
   const [fromDate, setFromDate] = useState(null);
   const [toDate, setToDate] = useState(null);
 
-  // State ẩn/hiện hộp thoại chọn lịch
+
   const [showFromPicker, setShowFromPicker] = useState(false);
   const [showToPicker, setShowToPicker] = useState(false);
 
-  // State lưu trữ dữ liệu API và trạng thái xoay loading
+
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // 💡 HÀM HELPER: Chuyển đổi đối tượng Date thành chuỗi YYYY-MM-DD để gửi lên Backend
+
   const formatDateString = (date) => {
     if (!date) return "";
     const year = date.getFullYear();
@@ -35,7 +35,7 @@ const ReportScreen = () => {
     return `${year}-${month}-${day}`;
   };
 
-  // 🔄 HÀM GỌI API: Lấy dữ liệu thống kê và dữ liệu vẽ biểu đồ từ Backend
+
   const fetchStats = async () => {
     try {
       setLoading(true);
@@ -55,18 +55,18 @@ const ReportScreen = () => {
     }
   };
 
-  // Tự động nạp lại dữ liệu khi Admin đổi ngày hoặc màn hình được Focus lại
+
   useFocusEffect(
     useCallback(() => {
       fetchStats();
     }, [fromDate, toDate])
   );
 
-  // 📅 HÀM XỬ LÝ SỰ KIỆN MỚI CHO BỘ CHỌN NGÀY (Sửa lỗi an toàn tuyệt đối cho Android và iOS)
+
   const onFromValueChange = (event, selectedDate) => {
     setShowFromPicker(false); // Đóng lịch ngay để tránh lặp sự kiện trùng lặp
     
-    // Trích xuất ngày an toàn từ tham số hoặc từ nativeEvent nếu chạy trên Android
+
     const actualDate = selectedDate || (event?.nativeEvent?.timestamp ? new Date(event.nativeEvent.timestamp) : null);
     
     if (actualDate) {
@@ -77,7 +77,7 @@ const ReportScreen = () => {
   const onToValueChange = (event, selectedDate) => {
     setShowToPicker(false); // Đóng lịch ngay
     
-    // Trích xuất ngày an toàn từ tham số hoặc từ nativeEvent nếu chạy trên Android
+
     const actualDate = selectedDate || (event?.nativeEvent?.timestamp ? new Date(event.nativeEvent.timestamp) : null);
     
     if (actualDate) {
@@ -85,11 +85,11 @@ const ReportScreen = () => {
     }
   };
 
-  // ❌ HÀM ĐÓNG LỊCH KHI BẤM CANCEL HOẶC BẤM RA NGOÀI (onDismiss)
+
   const dismissFromPicker = () => setShowFromPicker(false);
   const dismissToPicker = () => setShowToPicker(false);
 
-  // 📥 HÀM XUẤT FILE CSV VÀ CHIA SẺ LÊN HỆ THỐNG
+
   const exportCSV = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
@@ -110,7 +110,7 @@ const ReportScreen = () => {
     }
   };
 
-  // 📊 CẤU HÌNH THEME HIỂN THỊ CỦA BIỂU ĐỒ
+
   const chartConfig = {
     backgroundGradientFrom: "#ffffff",
     backgroundGradientTo: "#ffffff",
@@ -121,11 +121,11 @@ const ReportScreen = () => {
     barPercentage: 0.5,
   };
 
-  // 📈 HÀM RENDER BIỂU ĐỒ TRỰC QUAN
+
   const renderCharts = () => {
     if (!stats) return null;
 
-    // --- 1. Xử lý biểu đồ cột: Doanh thu theo cổng thanh toán ---
+
     const methodLabels = stats.by_method?.map(m => (m.payment_method || "N/A").toUpperCase()) || [];
     const methodData = stats.by_method?.map(m => Number(m.revenue || 0) / 1000) || []; // Đơn vị: nghìn đồng
 
@@ -134,7 +134,7 @@ const ReportScreen = () => {
       datasets: [{ data: methodData.length ? methodData : [0] }]
     };
 
-    // --- 2. Xử lý biểu đồ tròn: Tỷ lệ phân bổ trạng thái đơn hàng ---
+
     const statusColors = { success: colors.primary, pending: "#F59E0B", failed: colors.danger };
     const pieChartData = stats.by_status?.map(s => ({
       name: s.status === "success" ? "Thành công" : s.status === "pending" ? "Chờ xử lý" : "Thất bại",

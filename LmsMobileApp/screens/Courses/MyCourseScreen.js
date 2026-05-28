@@ -91,7 +91,7 @@ const MyCourseScreen = () => {
             <EnrollmentCard
               enrollment={item}
               onPress={() => 
-                nav.navigate("ProgressTab", { 
+                nav.navigate("HomeTab", { 
                   screen: "MaterialList", 
                   params: { courseId:  item.course?.id }
                 })
@@ -104,7 +104,7 @@ const MyCourseScreen = () => {
   );
 };
 
-// ── EnrollmentCard ──────────────────────────────────────
+
 const EnrollmentCard = ({ enrollment, onPress }) => {
   const st = STATUS_CONFIG[enrollment.status] ?? STATUS_CONFIG.active;
 

@@ -9,7 +9,7 @@ import { WebView } from "react-native-webview";
 const CKEditor = ({ value, onChange, height = 250 }) => {
     const webViewRef = useRef(null);
 
-    // Safely encode the initial HTML to prevent script breaking due to quotes/newlines
+
     const safeInitialContent = encodeURIComponent(value || "");
 
     const htmlContent = `
@@ -47,11 +47,11 @@ const CKEditor = ({ value, onChange, height = 250 }) => {
                         toolbar: ['heading', '|', 'bold', 'italic', 'bulletedList', 'numberedList', 'blockQuote', 'undo', 'redo']
                     })
                     .then(editor => {
-                        // Decode and set initial data
+
                         const initialData = decodeURIComponent('${safeInitialContent}');
                         editor.setData(initialData);
 
-                        // Listen for content changes and send to React Native
+
                         editor.model.document.on('change:data', () => {
                             const data = editor.getData();
                             window.ReactNativeWebView.postMessage(data);
@@ -72,7 +72,7 @@ const CKEditor = ({ value, onChange, height = 250 }) => {
                 originWhitelist={['*']}
                 source={{ html: htmlContent }}
                 onMessage={(event) => {
-                    // Receive data from the WebView script
+
                     if (onChange) {
                         onChange(event.nativeEvent.data);
                     }

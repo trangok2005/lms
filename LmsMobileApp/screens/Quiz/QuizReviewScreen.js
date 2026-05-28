@@ -18,7 +18,7 @@ const QuizReviewScreen = () => {
     const fetchReviewData = async () => {
       try {
         const token = await AsyncStorage.getItem("token");
-        // Backend API needs to return TestResult details including Question list and is_correct flags
+
         const res = await authApis(token).get(
           endpoints["result-detail"](resultId),
         );
@@ -33,7 +33,7 @@ const QuizReviewScreen = () => {
     fetchReviewData();
   }, [resultId]);
 
-  // Helper: Determine the background and border color for an answer option
+
   const getAnswerStyle = (questionId, answer) => {
     const submittedAnswerId =
       reviewData?.submitted_answers?.[String(questionId)];
@@ -53,7 +53,7 @@ const QuizReviewScreen = () => {
     return styles.neutralAnswer; // Default option
   };
 
-  // Helper: Determine the icon to display next to the answer
+
   const getAnswerIcon = (questionId, answer) => {
     const submittedAnswerId =
       reviewData?.submitted_answers?.[String(questionId)];
@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
   centerContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
   content: { padding: 16, paddingBottom: 40 },
 
-  // AI Analysis Styles
+
   aiCard: {
     marginBottom: 24,
     backgroundColor: "#e0e7ff",
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
 
-  // Question Styles
+
   questionCard: {
     marginBottom: 16,
     backgroundColor: "#ffffff",
@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
   },
   divider: { marginBottom: 12, backgroundColor: "#f1f5f9" },
 
-  // Answer Styles
+
   answerRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
   },
   answerText: { flex: 1, marginLeft: 12, fontSize: 15, lineHeight: 22 },
 
-  // Color Codes
+
   correctSelected: { backgroundColor: "#dcfce7", borderColor: "#16a34a" },
   wrongSelected: { backgroundColor: "#fee2e2", borderColor: "#dc2626" },
   correctMissed: {

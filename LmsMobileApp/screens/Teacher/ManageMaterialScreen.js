@@ -16,7 +16,7 @@ import * as ImagePicker from "expo-image-picker";
 import { authApis, endpoints } from "../../configs/Apis";
 import { Header, Loading } from "../../components/common";
 
-// ── Constants ──────────────────────────────────────────────
+
 const MATERIAL_TYPES = [
     { value: "video", label: "Video",    icon: "play-circle-outline" },
     { value: "pdf",   label: "PDF",      icon: "file-pdf-box" },
@@ -41,11 +41,11 @@ const EMPTY_FORM = {
     existingThumb: null
 };
 
-// ── Helpers ───────────────────────────────────────────────
+
 const getTypeInfo = (v) => MATERIAL_TYPES.find((t) => t.value === v) ?? MATERIAL_TYPES[0];
 const getDiffInfo = (v) => DIFFICULTIES.find((d) => d.value === v) ?? DIFFICULTIES[1];
 
-// ── Main Component ───────────────────────────────────────
+
 const ManageMaterialScreen = () => {
     const navigation = useNavigation();
     const route = useRoute();
@@ -63,7 +63,7 @@ const ManageMaterialScreen = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [isSearching, setIsSearching] = useState(false);
 
-    // ── Fetch Data ─────────────────────────────────────────
+
     const fetchMaterials = async (query = "") => {
         try {
             const token = await AsyncStorage.getItem("token");
@@ -99,7 +99,7 @@ const ManageMaterialScreen = () => {
         fetchMaterials("");
     };
 
-    // ── Modal Handlers ─────────────────────────────────────
+
     const openCreate = () => {
         setEditTarget(null);
         setForm(EMPTY_FORM);
@@ -127,7 +127,7 @@ const ManageMaterialScreen = () => {
         setEditTarget(null);
     };
 
-    // ── File & Image Pickers ───────────────────────────────
+
     const pickFile = async () => {
         try {
             const result = await DocumentPicker.getDocumentAsync({
@@ -163,7 +163,7 @@ const ManageMaterialScreen = () => {
         }
     };
 
-    // ── Save ───────────────────────────────────────────────
+
     const handleSave = async () => {
         if (!form.title.trim()) {
             Alert.alert("Required", "Vui lòng nhập tiêu đề tài liệu.");
@@ -235,7 +235,7 @@ const ManageMaterialScreen = () => {
         }
     };
 
-    // ── Delete ─────────────────────────────────────────────
+
     const handleDelete = (item) => {
         Alert.alert(
             "Xóa tài liệu",
@@ -258,7 +258,7 @@ const ManageMaterialScreen = () => {
         );
     };
 
-    // ── Render Item ────────────────────────────────────────
+
     const renderItem = ({ item, index }) => {
         const type = getTypeInfo(item.material_type);
         const diff = getDiffInfo(item.difficulty);
@@ -312,8 +312,8 @@ const ManageMaterialScreen = () => {
 
                     {hasTags && (
                         <View style={[styles.chipRow, { marginTop: 4 }]}>
-                            {item.tags.map(tag => (
-                                <Text key={tag.id} style={styles.tagText}>#{tag.name}</Text>
+                            {item.tags?.filter(tag => tag)?.map(tag => (
+                                <Text key={tag.id} style={styles.tagText}>#{tag?.name}</Text>
                             ))}
                         </View>
                     )}
@@ -332,7 +332,7 @@ const ManageMaterialScreen = () => {
         );
     };
 
-    // ── Modal Form ─────────────────────────────────────────
+
     const renderModal = () => (
         <Portal>
             <Modal
@@ -471,7 +471,7 @@ const ManageMaterialScreen = () => {
         </Portal>
     );
 
-    // ── Main Render ─────────────────────────────────────────
+
     return (
         <View style={styles.screen}>
             <Header
@@ -526,7 +526,7 @@ const ManageMaterialScreen = () => {
     );
 };
 
-// ── Styles ────────────────────────────────────────────────
+
 const styles = StyleSheet.create({
     screen: { flex: 1, backgroundColor: "#f8fafc" },
     list:   { padding: 16, paddingBottom: 100 },
@@ -535,7 +535,7 @@ const styles = StyleSheet.create({
     searchContainer: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 4 },
     searchbar: { backgroundColor: "#fff", borderRadius: 12, height: 46 },
 
-    // Card
+
     card: {
         flexDirection: "row", alignItems: "center", backgroundColor: "#fff",
         borderRadius: 14, marginBottom: 10, padding: 12, gap: 10,
@@ -556,7 +556,7 @@ const styles = StyleSheet.create({
     cardBody:      { flex: 1, gap: 6 },
     materialTitle: { fontSize: 14, fontWeight: "700", color: "#0f172a", lineHeight: 20 },
 
-    // FIX: bỏ height cứng trên chip, thêm alignItems
+
     chipRow:      { flexDirection: "row", flexWrap: "wrap", gap: 6, alignItems: "center" },
     chip:         { borderRadius: 6 },
     durationRow:  { flexDirection: "row", alignItems: "center", gap: 3 },

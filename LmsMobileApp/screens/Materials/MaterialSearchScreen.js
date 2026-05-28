@@ -12,7 +12,7 @@ const MaterialSearchScreen = () => {
     const [materials, setMaterials] = useState([]);
     const [loading, setLoading] = useState(false);
 
-    // Debounce to prevent excessive API calls
+
     useEffect(() => {
         const delayDebounceFn = setTimeout(() => {
             if (searchQuery.trim().length > 0) handleSearch();

@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const MaterialSession = {
-    // Lưu ID bài học hiện tại
+
     saveId: async (id) => {
         try {
             await AsyncStorage.setItem("current_material_id", id.toString());

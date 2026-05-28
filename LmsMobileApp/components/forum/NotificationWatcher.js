@@ -6,7 +6,7 @@ const NotificationWatcher = () => {
   const [user] = useContext(MyUserContext);
 
   useEffect(() => {
-    // 🚪 TRƯỜNG HỢP 1: Chưa đăng nhập hoặc vừa ĐĂNG XUẤT (user null)
+
     if (!user?.id) {
       console.log("📴 Không có User hoặc đã Đăng xuất -> Không bật WebSocket Thông báo.");
       return; // Không làm gì cả, nếu có ws cũ đang chạy nó sẽ bị hàm return ở dưới đóng lại
@@ -46,7 +46,7 @@ const NotificationWatcher = () => {
         DeviceEventEmitter.emit("INCREMENT_BADGE_COUNT");
       }
 
-      // Không hiển thị Alert thông báo. Chỉ cập nhật badge count.
+
       console.log("📩 Thông báo mới đã được nhận, cập nhật badge.");
     };
 
@@ -58,8 +58,8 @@ const NotificationWatcher = () => {
       console.log("📴 [WS Notification] Đã đóng kết nối!", event.code, event.reason);
     };
 
-    // 🔥 ĐÂY CHÍNH LÀ NƠI ĐÓNG WEB KHI LOGOUT:
-    // Hàm này sẽ tự động chạy khi component bị hủy HOẶC khi user.id thay đổi (ví dụ từ id:5 thành null)
+
+
     return () => {
       console.log("🧹 Cleanup: Đóng kết nối WebSocket cũ...");
       wsNoti.close();

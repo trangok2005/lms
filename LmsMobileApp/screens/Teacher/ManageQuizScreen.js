@@ -13,7 +13,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { authApis, endpoints } from "../../configs/Apis";
 import { Header, Loading } from "../../components/common";
 
-// ── Constants ──────────────────────────────────────────────
+
 const EMPTY_QUIZ_FORM = {
     title: "",
     time_limit: "15",       
@@ -32,13 +32,13 @@ const EMPTY_QUESTION_FORM = {
     ],
 };
 
-// ── Main Component ────────────────────────────────────────
+
 const ManageQuizScreen = () => {
     const navigation = useNavigation();
     const route = useRoute();
     const { courseId, courseTitle } = route.params ?? {};
 
-    // Quiz list state
+
     const [quizzes, setQuizzes]       = useState([]);
     const [loading, setLoading]       = useState(true);
     const [saving, setSaving]         = useState(false);
@@ -46,7 +46,7 @@ const ManageQuizScreen = () => {
     const [editTarget, setEditTarget] = useState(null);
     const [quizForm, setQuizForm]     = useState(EMPTY_QUIZ_FORM);
 
-    // Question management state
+
     const [selectedQuiz, setSelectedQuiz]       = useState(null); // quiz whose questions we manage
     const [questions, setQuestions]             = useState([]);
     const [questionsLoading, setQuestionsLoading] = useState(false);
@@ -55,7 +55,7 @@ const ManageQuizScreen = () => {
     const [questionForm, setQuestionForm]       = useState(EMPTY_QUESTION_FORM);
     const [questionSaving, setQuestionSaving]   = useState(false);
 
-    // ── Fetch Quizzes ──────────────────────────────────────
+
     const fetchQuizzes = async () => {
         try {
             setLoading(true);
@@ -75,7 +75,7 @@ const ManageQuizScreen = () => {
         if (courseId) fetchQuizzes();
     }, [courseId]));
 
-    // ── Fetch Questions for a quiz ─────────────────────────
+
     const fetchQuestions = async (quizId) => {
         try {
             setQuestionsLoading(true);
@@ -100,7 +100,7 @@ const ManageQuizScreen = () => {
         setQuestions([]);
     };
 
-    // ── Quiz Modal ─────────────────────────────────────────
+
     const openCreateQuiz = () => {
         setEditTarget(null);
         setQuizForm(EMPTY_QUIZ_FORM);
@@ -177,7 +177,7 @@ const ManageQuizScreen = () => {
         );
     };
 
-    // ── Question Modal ─────────────────────────────────────
+
     const openCreateQuestion = () => {
         setEditQuestion(null);
         setQuestionForm(EMPTY_QUESTION_FORM);
@@ -246,7 +246,7 @@ const ManageQuizScreen = () => {
             }
             closeQuestionModal();
             fetchQuestions(selectedQuiz.id);
-            // Update question_count in quiz list
+
             setQuizzes((prev) =>
                 prev.map((q) =>
                     q.id === selectedQuiz.id
@@ -287,7 +287,7 @@ const ManageQuizScreen = () => {
         ]);
     };
 
-    // ── Render: Quiz Card ──────────────────────────────────
+
     const renderQuizItem = ({ item }) => (
         <TouchableOpacity
             style={styles.card}
@@ -338,7 +338,7 @@ const ManageQuizScreen = () => {
         </TouchableOpacity>
     );
 
-    // ── Render: Question Item ──────────────────────────────
+
     const renderQuestionItem = ({ item, index }) => (
         <View style={styles.questionCard}>
             <View style={styles.questionHeader}>
@@ -370,7 +370,7 @@ const ManageQuizScreen = () => {
         </View>
     );
 
-    // ── Render: Quiz Form Modal ────────────────────────────
+
   const renderQuizModal = () => (
         <Portal>
             <Modal visible={quizModal} onDismiss={closeQuizModal} contentContainerStyle={styles.modal}>
@@ -442,7 +442,7 @@ const ManageQuizScreen = () => {
         </Portal>
     );
 
-    // ── Render: Question Form Modal ────────────────────────
+
     const renderQuestionModal = () => (
         <Portal>
             <Modal visible={questionModal} onDismiss={closeQuestionModal} contentContainerStyle={styles.modal}>
@@ -515,7 +515,7 @@ const ManageQuizScreen = () => {
         </Portal>
     );
 
-    // ── QUESTION PANEL (inline, not a separate screen) ─────
+
     if (selectedQuiz) {
         return (
             <View style={styles.screen}>
@@ -556,7 +556,7 @@ const ManageQuizScreen = () => {
         );
     }
 
-    // ── QUIZ LIST ──────────────────────────────────────────
+
     return (
         <View style={styles.screen}>
             <Header title="Quản lý bài kiểm tra" subtitle={courseTitle ?? ""} showBack />
@@ -591,13 +591,13 @@ const ManageQuizScreen = () => {
     );
 };
 
-// ── Styles ────────────────────────────────────────────────
+
 const styles = StyleSheet.create({
     screen: { flex: 1, backgroundColor: "#f8fafc" },
     list:   { padding: 16, paddingBottom: 100 },
     hint:   { fontSize: 13, color: "#94a3b8", marginBottom: 12, fontWeight: "500" },
 
-    // Quiz Card
+
     card: {
         flexDirection: "row",
         backgroundColor: "#fff",
@@ -630,7 +630,7 @@ const styles = StyleSheet.create({
     actions:    { flexDirection: "column", gap: 6, paddingRight: 6 },
     actionBtn:  { width: 30, height: 30, borderRadius: 8, justifyContent: "center", alignItems: "center" },
 
-    // Question Card
+
     questionCard: {
         backgroundColor: "#fff",
         borderRadius: 14,
@@ -670,7 +670,7 @@ const styles = StyleSheet.create({
     choiceText:    { fontSize: 13, color: "#334155", flex: 1 },
     choiceTextCorrect: { color: "#16a34a", fontWeight: "600" },
 
-    // Question Form
+
     choiceInputRow: {
         flexDirection: "row",
         alignItems: "center",
@@ -679,7 +679,7 @@ const styles = StyleSheet.create({
     },
     radioBtn: { paddingTop: 4 },
 
-    // FAB
+
     fab: {
         position: "absolute", bottom: 24, right: 24,
         width: 56, height: 56, borderRadius: 28,
@@ -692,12 +692,12 @@ const styles = StyleSheet.create({
         shadowRadius: 8,
     },
 
-    // Empty
+
     empty:        { alignItems: "center", marginTop: 80, gap: 10 },
     emptyText:    { fontSize: 16, color: "#94a3b8", fontWeight: "600" },
     emptySubText: { fontSize: 13, color: "#cbd5e1" },
 
-    // Modal
+
     modal: {
         margin: 16,
         backgroundColor: "#fff",

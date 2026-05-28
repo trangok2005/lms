@@ -18,12 +18,12 @@ const ForumListScreen = () => {
   const [topics,  setTopics]  = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // ── Dùng ref thay vì state cho pagination nhằm tránh trùng key ──
+
   const pageRef     = useRef(1);
   const hasMoreRef = useRef(true);
   const fetchingRef = useRef(false); // Chặn gọi đồng thời khi lướt nhanh
 
-  // ── Core fetch dữ liệu từ Server ──────────────────────────────────────────
+
   const fetchTopics = useCallback(async (reset = false) => {
     if (!courseId) return;
 
@@ -45,7 +45,7 @@ const ForumListScreen = () => {
       );
       const results = res.data.results ?? res.data;
 
-      // Cập nhật mảng list bài đăng
+
       setTopics((prev) => {
         if (reset) return results;
         const existingIds = new Set(prev.map((t) => t.id));
@@ -53,7 +53,7 @@ const ForumListScreen = () => {
         return [...prev, ...fresh];
       });
 
-      // Cập nhật thông số trang đồng bộ
+
       hasMoreRef.current = !!res.data.next;
       pageRef.current    = currentPage + 1;
 
@@ -65,7 +65,7 @@ const ForumListScreen = () => {
     }
   }, [courseId]);
 
-  // ── Tự động làm mới danh sách mỗi khi quay lại màn hình này ──────────
+
   useFocusEffect(
     useCallback(() => {
       pageRef.current    = 1;
@@ -74,14 +74,14 @@ const ForumListScreen = () => {
     }, [fetchTopics])
   );
 
-  // ── Kéo xuống dưới cùng để tải thêm bài (Infinite Scroll) ─────────────────
+
   const handleEndReached = useCallback(() => {
     if (!loading && hasMoreRef.current) {
       fetchTopics(false);
     }
   }, [loading, fetchTopics]);
 
-  // ── Render Giao diện ───────────────────────────────────────────────
+
   const showInitialLoader = loading && topics.length === 0;
 
   return (

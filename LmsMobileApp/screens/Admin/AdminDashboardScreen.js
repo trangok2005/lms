@@ -12,7 +12,7 @@ const AdminDashboardScreen = () => {
   const [overview, setOverview] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Gọi API báo cáo tổng quan giao dịch
+
   const fetchOverview = async () => {
     try {
       setLoading(true);
@@ -93,7 +93,7 @@ const AdminDashboardScreen = () => {
   );
 };
 
-// ── Sub components ───────────────────────────────────────
+
 const StatCard = ({ icon, label, value, color }) => (
   <Surface style={styles.statCard} elevation={1}>
     <Icon source={icon} size={26} color={color} />

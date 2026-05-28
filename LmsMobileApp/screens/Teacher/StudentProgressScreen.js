@@ -26,7 +26,7 @@ const ManageStudentsScreen = () => {
     const [selectedQuiz, setSelectedQuiz] = useState(null);
     const [filterModal, setFilterModal]   = useState(false);
 
-    // Fetch quizzes for this specific course to populate the filter modal
+
     const fetchQuizzes = async () => {
         try {
             const token = await AsyncStorage.getItem("token");
@@ -40,14 +40,14 @@ const ManageStudentsScreen = () => {
         }
     };
 
-    // Fetch students, optionally filtering by quiz ID
+
     const fetchStudents = async (quizId = null) => {
         try {
             setLoading(true);
             const token = await AsyncStorage.getItem("token");
             const url = endpoints["teacher-student-list"]();
 
-            // Using axios params for safer query string generation
+
             const res = await authApis(token).get(url, {
                 params: {
                     course: courseId,
@@ -68,7 +68,7 @@ const ManageStudentsScreen = () => {
         }
     };
 
-    // Trigger initial data fetch when the screen comes into focus
+
     useFocusEffect(
         useCallback(() => {
             if (courseId) {
@@ -81,7 +81,7 @@ const ManageStudentsScreen = () => {
         }, [courseId])
     );
 
-    // Search filter handler
+
     const handleSearch = (text) => {
         setSearch(text);
         if (!text.trim()) {
@@ -96,14 +96,14 @@ const ManageStudentsScreen = () => {
         setFiltered(result);
     };
 
-    // Quiz filter handler
+
     const applyQuizFilter = (quiz) => {
         setSelectedQuiz(quiz);
         setFilterModal(false);
         fetchStudents(quiz ? quiz.id : null);
     };
 
-    // Calculate dynamic stats based on current students
+
     const stats = React.useMemo(() => {
         if (!students.length) return null;
         const total    = students.length;
@@ -112,7 +112,7 @@ const ManageStudentsScreen = () => {
         return { total, avgScore, active };
     }, [students]);
 
-    // Render Stats Header
+
     const renderStats = () => {
         if (!stats) return null;
         return (
@@ -135,7 +135,7 @@ const ManageStudentsScreen = () => {
         );
     };
 
-    // Render Filter Modal
+
     const renderFilterModal = () => (
         <Modal
             visible={filterModal}
@@ -187,7 +187,7 @@ const ManageStudentsScreen = () => {
         </Modal>
     );
 
-    // Render Student Card List Item
+
     const renderItem = ({ item }) => {
         const color = getScoreColor(item.avg_score ?? 0);
         return (

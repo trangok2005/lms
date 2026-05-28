@@ -43,7 +43,7 @@ const PaymentResultScreen = () => {
             style={styles.btn}
             contentStyle={{ paddingVertical: 4 }}
             onPress={() => 
-              nav.navigate("ProgressTab", { 
+              nav.navigate("HomeTab", { 
                 screen: "MaterialList", 
                 params: { courseId: courseId }
               })

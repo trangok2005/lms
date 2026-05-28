@@ -29,7 +29,7 @@ const CheckoutScreen = () => {
         payment_method: method,
       });
 
-      // Thanh toán xong → navigate vào khoá học
+
       nav.replace("PaymentResult", {
         success:    true,
         courseName: res.data.course_name,

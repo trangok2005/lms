@@ -45,7 +45,7 @@ const CourseDetailScreen = () => {
               : Promise.resolve({ data: [] }),
           ]);
 
-          //console.log(courseRes.data);
+
 
           setCourse(courseRes.data);
 
@@ -129,9 +129,9 @@ const CourseDetailScreen = () => {
           {/* Tags */}
           {course.tags?.length > 0 && (
             <View style={[Styles.row, styles.tags]}>
-              {course.tags.map((t) => (
+              {course.tags.filter(t => t).map((t) => (
                 <Chip key={t.id} compact style={styles.tag} textStyle={{ fontSize: 11, color: colors.secondary }}>
-                  #{t.name}
+                  #{t?.name}
                 </Chip>
               ))}
             </View>
@@ -141,8 +141,8 @@ const CourseDetailScreen = () => {
           <Surface style={styles.card} elevation={1}>
             <Text variant="titleSmall" style={styles.sectionTitle}>Thông tin khoá học</Text>
             <Divider style={Styles.mb10} />
-            <InfoRow icon="account-tie"    label="Giảng viên"  value=  {`${course.teacher.first_name} ${course.teacher.last_name}` ?? "Giảng viên"} />
-            <InfoRow icon="shape"          label="Danh mục"    value={course.category.name ?? "—"} />
+            <InfoRow icon="account-tie"    label="Giảng viên"  value={course.teacher ? `${course.teacher.first_name ?? ""} ${course.teacher.last_name ?? ""}` : "Giảng viên"} />
+            <InfoRow icon="shape"          label="Danh mục"    value={course.category?.name ?? "—"} />
             <InfoRow icon="signal"         label="Cấp độ"      value={LEVEL_LABEL[course.level] ?? "—"} />
             <InfoRow icon="book-multiple"  label="Học liệu"    value={`${course.material_count ?? 0} bài`} />
             <InfoRow icon="account-group" label="Học viên"    value={`${course.student_count ?? 0} người`} />
@@ -167,7 +167,7 @@ const CourseDetailScreen = () => {
               style={[styles.btn, { backgroundColor: colors.primary }]}
               contentStyle={styles.btnContent}
               onPress={() => 
-                nav.navigate("ProgressTab", { 
+                nav.navigate("HomeTab", { 
                   screen: "MaterialList", 
                   params: { courseId: course?.id }
                 })

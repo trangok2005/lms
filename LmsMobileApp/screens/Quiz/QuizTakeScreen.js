@@ -13,20 +13,20 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { authApis, endpoints } from "../../configs/Apis";
 import { Header, Loading } from "../../components/common";
 
-// ================================
-// TIMER HOOK — tách riêng cho gọn
-// ================================
+
+
+
 const useTimer = (totalSeconds, onTimeUp) => {
     const [timeLeft, setTimeLeft] = useState(totalSeconds);
     const intervalRef = useRef(null);
     const onTimeUpRef = useRef(onTimeUp);
 
-    // Update callback ref
+
     useEffect(() => {
         onTimeUpRef.current = onTimeUp;
     }, [onTimeUp]);
 
-    // FIX: Update timeLeft when API successfully fetches totalSeconds
+
     useEffect(() => {
         if (totalSeconds !== null) {
             setTimeLeft(totalSeconds);
@@ -38,7 +38,7 @@ const useTimer = (totalSeconds, onTimeUp) => {
 
         intervalRef.current = setInterval(() => {
             setTimeLeft(prev => {
-                // Safety check to prevent JS type coercion bugs
+
                 if (prev === null) return prev; 
 
                 if (prev <= 1) {
@@ -65,9 +65,9 @@ const useTimer = (totalSeconds, onTimeUp) => {
     return { timeLeft, formatTime, stop };
 };
 
-// ================================
-// MAIN SCREEN
-// ================================
+
+
+
 const QuizTakeScreen = () => {
     const navigation = useNavigation();
     const route = useRoute();
@@ -77,12 +77,12 @@ const QuizTakeScreen = () => {
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
 
-    // { "questionId": answerId } — key là string để match backend
+
     const [selectedAnswers, setSelectedAnswers] = useState({});
 
-    // ================================
-    // FETCH QUIZ
-    // ================================
+
+
+
     useEffect(() => {
         const fetchQuiz = async () => {
             try {
@@ -103,9 +103,9 @@ const QuizTakeScreen = () => {
         fetchQuiz();
     }, [quizId]);
 
-    // ================================
-    // TIMER
-    // ================================
+
+
+
     const totalSeconds = quiz?.time_limit ? quiz.time_limit * 60 : null;
 
     const handleTimeUp = useCallback(() => {
@@ -118,9 +118,9 @@ const QuizTakeScreen = () => {
 
     const { timeLeft, formatTime, stop } = useTimer(totalSeconds, handleTimeUp);
 
-    // ================================
-    // CHẶN BACK KHI ĐANG LÀM BÀI
-    // ================================
+
+
+
     useFocusEffect(
         useCallback(() => {
             const onBackPress = () => {
@@ -140,9 +140,9 @@ const QuizTakeScreen = () => {
         }, [])
     );
 
-    // ================================
-    // CHỌN ĐÁP ÁN
-    // ================================
+
+
+
     const handleSelectAnswer = (questionId, answerId) => {
         setSelectedAnswers(prev => ({
             ...prev,
@@ -150,9 +150,9 @@ const QuizTakeScreen = () => {
         }));
     };
 
-    // ================================
-    // NỘP BÀI
-    // ================================
+
+
+
     const submitQuiz = async (isAutoSubmit = false) => {
         if (submitting) return;
 
@@ -160,7 +160,7 @@ const QuizTakeScreen = () => {
             q => !selectedAnswers[String(q.id)]
         ).length;
 
-        // Nếu bấm nộp tay và còn câu chưa trả lời → cảnh báo
+
         if (!isAutoSubmit && unansweredCount > 0) {
             Alert.alert(
                 "Còn câu chưa trả lời",
@@ -187,7 +187,7 @@ const QuizTakeScreen = () => {
                 { submitted_answers: selectedAnswers }
             );
 
-            // Navigate sang màn hình kết quả, không cho back lại
+
             navigation.replace("QuizResult", { resultData: res.data
                 
              });
@@ -199,9 +199,9 @@ const QuizTakeScreen = () => {
         }
     };
 
-    // ================================
-    // RENDER
-    // ================================
+
+
+
     if (loading) return <Loading text="Đang tải bài kiểm tra..." />;
 
     if (!quiz) return null;
@@ -306,7 +306,7 @@ const QuizTakeScreen = () => {
                     );
                 }}
 
-                // Nút nộp bài ở cuối list
+
                 ListFooterComponent={
                     <Button
                         mode="contained"
@@ -329,7 +329,7 @@ const QuizTakeScreen = () => {
 const styles = StyleSheet.create({
     screen: { flex: 1, backgroundColor: "#f8fafc" },
 
-    // Header
+
     header: {
         flexDirection: "row",
         alignItems: "center",
@@ -368,7 +368,7 @@ const styles = StyleSheet.create({
         color: "#dc2626",
     },
 
-    // Progress
+
     progressContainer: {
         paddingHorizontal: 16,
         paddingVertical: 10,
@@ -387,10 +387,10 @@ const styles = StyleSheet.create({
         backgroundColor: "#e2e8f0",
     },
 
-    // List
+
     list: { padding: 16, paddingBottom: 32 },
 
-    // Question Card
+
     questionCard: {
         marginBottom: 16,
         backgroundColor: "#ffffff",
@@ -425,7 +425,7 @@ const styles = StyleSheet.create({
         lineHeight: 24,
     },
 
-    // Answers
+
     answersContainer: { gap: 8 },
     answerOption: {
         borderRadius: 10,
@@ -458,7 +458,7 @@ const styles = StyleSheet.create({
         fontWeight: "600",
     },
 
-    // Submit
+
     submitBtn: {
         marginTop: 8,
         borderRadius: 12,

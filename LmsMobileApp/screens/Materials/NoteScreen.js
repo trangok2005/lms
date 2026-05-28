@@ -17,7 +17,7 @@ const NoteScreen = () => {
     const [loading, setLoading] = useState(true);
     const [newNote, setNewNote] = useState("");
 
-    // Helper: Chuyển đổi giây thành định dạng MM:SS (ví dụ: 75s -> 01:15)
+
     const formatVideoTime = (seconds) => {
         if (seconds === null || seconds === undefined) return null;
         const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
@@ -25,7 +25,7 @@ const NoteScreen = () => {
         return `${mins}:${secs}`;
     };
 
-    // Khôi phục materialId nếu bị mất khi reload
+
     useEffect(() => {
         const restoreId = async () => {
             if (!materialId) {

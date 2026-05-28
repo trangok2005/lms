@@ -19,7 +19,7 @@ const LEVELS = [
 ];
 import { Header } from "../../components/common";
 
-// Initial form state mapping to backend fields (using 'subject' instead of 'title')
+
 const INIT_FORM = {
     subject: "", description: "", price: "",
     category: "", level: "beginner", is_active: true,
@@ -33,28 +33,30 @@ const CourseFormScreen = () => {
     const editCourse = route.params?.course ?? null; 
     const isEdit     = !!editCourse;
 
-    // Form states
+
     const [form,    setForm]    = useState(INIT_FORM);
     const [errors,  setErrors]  = useState({});
     const [saving,  setSaving]  = useState(false);
     const [imgNew,  setImgNew]  = useState(false); 
 
-    // Dynamic categories state
+
     const [categories, setCategories] = useState([]);
     const [loadingCategories, setLoadingCategories] = useState(true);
 
     useEffect(() => {
-        // Fetch categories from API
+
         const fetchCategories = async () => {
             try {
                 setLoadingCategories(true);
                 const res = await authApis().get(endpoints["categories"]);
                 const list = res.data.results ?? res.data;
                 
-                const formattedCategories = (Array.isArray(list) ? list : []).map(item => ({
-                    value: item.id,
-                    label: item.name // Ensure your Category serializer uses 'name'
-                }));
+                const formattedCategories = (Array.isArray(list) ? list : [])
+                    .filter(item => item)
+                    .map(item => ({
+                        value: item.id,
+                        label: item?.name ?? "Danh mục"
+                    }));
                 
                 setCategories(formattedCategories);
             } catch (error) {
@@ -67,7 +69,7 @@ const CourseFormScreen = () => {
 
         fetchCategories();
 
-        // Populate form if in edit mode
+
         if (isEdit) {
             setForm({
                 subject:     editCourse.subject ?? "",
@@ -81,13 +83,13 @@ const CourseFormScreen = () => {
         }
     }, [isEdit]); // Added dependency array to prevent warnings
 
-    // Helper function to update form state and clear errors
+
     const set = (field, value) => {
         setForm(prev => ({ ...prev, [field]: value }));
         if (errors[field]) setErrors(prev => ({ ...prev, [field]: null }));
     };
 
-    // ── Image picker ──────────────────────────────────────
+
     const pickImage = async () => {
         const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (!perm.granted) {
@@ -104,7 +106,7 @@ const CourseFormScreen = () => {
         }
     };
 
-    // ── Validation ──────────────────────────────────────────
+
     const validate = () => {
         const e = {};
         if (!form.subject.trim())     e.subject = "Tiêu đề không được để trống";
@@ -117,7 +119,7 @@ const CourseFormScreen = () => {
         return Object.keys(e).length === 0;
     };
 
-    // ── Submit handler ──────────────────────────────────────
+
     const handleSave = async () => {
         if (!validate()) return;
         setSaving(true);
@@ -133,7 +135,7 @@ const CourseFormScreen = () => {
             formData.append("level",       form.level);
             formData.append("is_active", form.is_active ? "True" : "False");;
 
-            // Process new image upload
+
             if (imgNew && form.image) {
                 const filename  = form.image.split("/").pop();
                 const extension = filename.split(".").pop()?.toLowerCase() ?? "jpg";
@@ -170,7 +172,7 @@ const CourseFormScreen = () => {
         }
     };
 
-    // ── Reusable Field component ────────────────────────────
+
     const Field = ({ label, field, multiline, keyboardType, placeholder }) => (
         <View style={styles.fieldWrap}>
             <Text style={styles.fieldLabel}>{label}</Text>
@@ -364,7 +366,7 @@ const styles = StyleSheet.create({
         marginBottom: 10, marginTop: 8, textTransform: "uppercase", letterSpacing: 0.5,
     },
 
-    // Thumbnail Styles
+
     thumbPicker: {
         width: "100%", height: 180, borderRadius: 16,
         overflow: "hidden", marginBottom: 20,
@@ -388,14 +390,14 @@ const styles = StyleSheet.create({
         justifyContent: "center", alignItems: "center",
     },
 
-    // Text Input Styles
+
     fieldWrap:    { marginBottom: 16 },
     fieldLabel:   { fontSize: 13, fontWeight: "700", color: "#475569", marginBottom: 6 },
     input:        { backgroundColor: "#fff", fontSize: 14 },
     inputMulti:   { height: 120 },
     inputOutline: { borderRadius: 12 },
 
-    // Category Chip Styles
+
     optionGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 20 },
     optionChip: {
         paddingHorizontal: 14, paddingVertical: 8,
@@ -406,10 +408,10 @@ const styles = StyleSheet.create({
     optionTxt:        { fontSize: 13, color: "#475569", fontWeight: "600" },
     optionTxtActive:  { color: "#fff" },
 
-    // Segmented Control
+
     segmented: { marginBottom: 20 },
 
-    // Submit Button Styles
+
     submitBtn: {
         flexDirection: "row", alignItems: "center", justifyContent: "center",
         gap: 10, backgroundColor: "#4f46e5", borderRadius: 16,

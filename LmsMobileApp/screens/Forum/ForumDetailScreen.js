@@ -23,7 +23,7 @@ const ForumDetailScreen = () => {
   const [sending, setSending] = useState(false);
   const inputRef = useRef(null);
 
-  // ── GỘP CHUNG LUỒNG TẢI DỮ LIỆU VÀO 1 USEFOCUSEFFECT DUY NHẤT ──────────────────
+
   useFocusEffect(
     useCallback(() => {
       const fetchData = async () => {
@@ -38,20 +38,20 @@ const ForumDetailScreen = () => {
           const token = await AsyncStorage.getItem("token");
           let currentTopic = topic;
 
-          // 1. Nếu đi từ Notification (chưa có sẵn data bài viết) -> Tiến hành gọi API chi tiết bài viết
+
           if (!currentTopic) {
             const topicRes = await authApis(token).get(endpoints["forum-topic-detail"](topicId));
             currentTopic = topicRes.data;
           }
 
-          // 2. Tiếp tục gọi API lấy danh sách bình luận (Replies) cho bài viết
+
           const repliesRes = await authApis(token)
             .get(endpoints["forum-reply"](topicId))
             .catch(() => ({ data: [] }));
 
           const replies = repliesRes.data.results ?? repliesRes.data ?? [];
           
-          // 3. Cập nhật gộp chung toàn bộ dữ liệu vào State
+
           setTopic({ ...currentTopic, replies });
         } catch (ex) {
           console.debug("Lỗi khi tải dữ liệu diễn đàn:", ex);
@@ -64,7 +64,7 @@ const ForumDetailScreen = () => {
     }, [topicId]) // Chạy lại khi ID thay đổi
   );
 
-  // ── LẮNG NGHE REAL-TIME QUA WEBSOCKET ──────────────────────────────────────────
+
   useEffect(() => {
     if (!topicId) return;
 
@@ -114,7 +114,7 @@ const ForumDetailScreen = () => {
     return () => ws.close();
   }, [topicId, nav]);
 
-  // ── GỬI BÌNH LUẬN MỚI ──────────────────────────────────────────
+
   const sendReply = async () => {
     if (!reply.trim()) return;
     try {
@@ -135,7 +135,7 @@ const ForumDetailScreen = () => {
     }
   };
 
-  // ── XÓA BÌNH LUẬN ──────────────────────────────────────────────
+
   const deleteReply = async (replyId) => {
     try {
       const token = await AsyncStorage.getItem("token");
@@ -146,7 +146,7 @@ const ForumDetailScreen = () => {
     }
   };
 
-  // ── XÓA CHỦ ĐỀ (TOPIC) ──────────────────────────────────────────
+
   const deleteTopic = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
@@ -168,7 +168,7 @@ const ForumDetailScreen = () => {
     );
   };
 
-  // Các câu lệnh kiểm tra giao diện đưa xuống cuối cùng hợp lệ theo quy tắc React Hook
+
   if (loading) return <Loading text="Đang tải dữ liệu..." />;
   if (!topic)  return <Loading text="Không tìm thấy chủ đề." />;
 

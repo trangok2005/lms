@@ -52,7 +52,7 @@ INSTALLED_APPS = [
     'apps.quizzes',
     'oauth2_provider',
     'corsheaders',
-   
+    'apps.ai_roadmap',
 ]
 # ckeditor
 CKEDITOR_UPLOAD_PATH = "images/ckeditors/"
@@ -87,6 +87,12 @@ DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 OAUTH2_PROVIDER = { 'OAUTH2_BACKEND_CLASS': 'oauth2_provider.oauth2_backends.JSONOAuthLibCore' }
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': BASE_DIR / '.cache',
+    }
+}
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -94,6 +100,12 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 5,
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.ScopedRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'ai_generation': '5/day', #span api :0
+    }
 }
 
 #real-time:0
@@ -195,3 +207,4 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 
 GEMINI_API_KEY =config("GEMINI_API_KEY")
+GITHUB_TOKEN = config("GITHUB_TOKEN")

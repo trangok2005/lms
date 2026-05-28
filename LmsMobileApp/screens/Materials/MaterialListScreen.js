@@ -49,7 +49,7 @@ const MaterialListScreen = () => {
             <Header 
                 title="Tài liệu" 
                 showBack={true} 
-                showSearch={true}
+                showSearch={false}
                 onSearch={() => nav.navigate("material-search")}
                 rightComponent={
                     <Appbar.Action

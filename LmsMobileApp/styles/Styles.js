@@ -15,7 +15,7 @@ export const colors = {
 };
 
 export default StyleSheet.create({
-  // LAYOUT TOÀN CỤC
+
   container: { flex: 1, backgroundColor: colors.bg, padding: 15 },
   row: { flexDirection: "row", alignItems: "center" },
   between: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
@@ -37,7 +37,7 @@ export default StyleSheet.create({
   avatar: { width: 80, height: 80, borderRadius: 40, alignSelf: 'center' },
   thumbnail: { width: "100%", height: 180, borderRadius: 10 },
 
-  // ROW LIST
+
   rowItem: {
     paddingVertical: 12, 
     borderBottomWidth: 1,
@@ -50,7 +50,7 @@ export default StyleSheet.create({
     textAlign: "right",
   },
 
-  // header──
+
   appbar: {
     elevation: 4,
     shadowColor: "#000",
@@ -59,7 +59,7 @@ export default StyleSheet.create({
     shadowRadius: 4,
   },
   headerTitle: {
-    color: colors.white,
+    color: colors.red,
     fontSize: 18,
     fontWeight: "700",
     letterSpacing: 0.3,

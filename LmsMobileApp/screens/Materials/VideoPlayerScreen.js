@@ -37,9 +37,9 @@ const VideoPlayerScreen = ({ route }) => {
     const [positionSec, setPositionSec] = useState(0);
     const [durationSec, setDurationSec] = useState(0);
 
-    // ======================
-    // PLAYER
-    // ======================
+
+
+
     const player = useVideoPlayer(
         typeof videoUrl === "string" ? { uri: videoUrl } : videoUrl,
         (p) => {
@@ -47,9 +47,9 @@ const VideoPlayerScreen = ({ route }) => {
         }
     );
 
-    // ======================
-    // FIX: Thay useEvent bằng addListener (tương thích expo mới)
-    // ======================
+
+
+
     const [isPlaying, setIsPlaying] = useState(player?.playing ?? false);
     const [status, setStatus] = useState(player?.status ?? "idle");
 
@@ -73,9 +73,9 @@ const VideoPlayerScreen = ({ route }) => {
     const isReady = status === "readyToPlay";
     const isBuffering = status === "loading";
 
-    // ======================
-    // CLEANUP (CRITICAL)
-    // ======================
+
+
+
     useEffect(() => {
         return () => {
             mountedRef.current = false;
@@ -86,9 +86,9 @@ const VideoPlayerScreen = ({ route }) => {
         };
     }, []);
 
-    // ======================
-    // AUTO PLAY SAFE
-    // ======================
+
+
+
     useEffect(() => {
         if (!isReady || hasStartedRef.current || !player) return;
 
@@ -104,9 +104,9 @@ const VideoPlayerScreen = ({ route }) => {
         }
     }, [isReady]);
 
-    // ======================
-    // SAVE PROGRESS SAFE (throttle 15 giây)
-    // ======================
+
+
+
     const saveProgress = async (force = false) => {
         try {
             if (!mountedRef.current || !player || !materialId) return;
@@ -142,9 +142,9 @@ const VideoPlayerScreen = ({ route }) => {
         }
     };
 
-    // ======================
-    // INTERVAL SAFE
-    // ======================
+
+
+
     useEffect(() => {
         if (!isPlaying || isSliding) return;
 
@@ -154,11 +154,11 @@ const VideoPlayerScreen = ({ route }) => {
             const current = Number(player.currentTime ?? 0);
             const duration = Number(player.duration ?? 0);
 
-            // Cập nhật UI mỗi giây
+
             setPositionSec(current);
             setDurationSec(duration);
 
-            // Save API — throttle 15 giây trong saveProgress tự xử lý
+
             saveProgress();
         }, 1000);
 
@@ -170,9 +170,9 @@ const VideoPlayerScreen = ({ route }) => {
         };
     }, [isPlaying, isSliding]);
 
-    // ======================
-    // CONTROLS
-    // ======================
+
+
+
     const handleScreenTap = () => {
         if (!player) return;
 
@@ -183,9 +183,9 @@ const VideoPlayerScreen = ({ route }) => {
         }
     };
 
-    // ======================
-    // SEEK SAFE (FIX CRASH)
-    // ======================
+
+
+
     const handleSlidingComplete = (value) => {
         const seekTime = Number(value);
 

@@ -78,7 +78,7 @@ const loadMoreComments = async () => {
             return <Avatar.Image size={40} source={{ uri: user.avatar }} style={styles.avatar} />;
         }
         
-        // Fallback: Use the first letter of the username
+
         const initial = user?.username ? user.username.charAt(0).toUpperCase() : "?";
         return (
             <Avatar.Text 

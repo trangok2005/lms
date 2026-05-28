@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Apis, { authApis } from "../configs/Apis";
 
-// Simple pagination hook compatible with existing screens
-// usePagination(endpoint, params = {}, auto = true)
+
+
 export default function usePagination(endpoint, params = {}, auto = true) {
   const [page, setPage] = useState(1);
   const [data, setData] = useState([]);

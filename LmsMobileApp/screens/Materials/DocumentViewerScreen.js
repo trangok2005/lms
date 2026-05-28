@@ -55,7 +55,7 @@ const DocumentViewerScreen = ({ route }) => {
                 }
             );
         } catch (err) {
-            // silent fail
+
         }
     }, [materialId]);
 

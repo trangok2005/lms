@@ -11,14 +11,14 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { authApis, endpoints } from "../../configs/Apis";
 import { Header, Loading } from "../../components/common";
 
-// ── Helpers & Meta Configuration ──────────────────────────
+
 const LEVEL_META = {
     beginner:     { label: "Cơ bản",    icon: "signal-cellular-1" },
     intermediate: { label: "Trung cấp", icon: "signal-cellular-2" },
     advanced:     { label: "Nâng cao",  icon: "signal-cellular-3" },
 };
 
-// ── Course Card Component ─────────────────────────────────
+
 const CourseCard = ({ course, onEdit, onDelete, onManageMaterial, onManageQuiz, onManageStudents }) => {
     const [menuVisible, setMenuVisible] = useState(false);
     const level = LEVEL_META[course.level] ?? LEVEL_META.beginner;
@@ -129,7 +129,7 @@ const CourseCard = ({ course, onEdit, onDelete, onManageMaterial, onManageQuiz, 
     );
 };
 
-// ── Main Screen ───────────────────────────────────────────
+
 const ManageCourseScreen = () => {
     const navigation = useNavigation();
 
@@ -138,7 +138,7 @@ const ManageCourseScreen = () => {
     const [refreshing, setRefreshing] = useState(false);
     const [search,     setSearch]     = useState("");
 
-    // Fetch courses from API
+
     const fetchCourses = async () => {
         try {
             const token = await AsyncStorage.getItem("token");
@@ -158,7 +158,7 @@ const ManageCourseScreen = () => {
     
     const onRefresh = () => { setRefreshing(true); fetchCourses(); };
 
-    // Delete course handler
+
     const handleDelete = (course) => {
         Alert.alert(
             "Xóa khóa học",
@@ -182,7 +182,7 @@ const ManageCourseScreen = () => {
         );
     };
 
-    // Navigation handlers
+
     const handleEdit = (course) => navigation.navigate("CourseForm", { course });
 
     const handleManageMaterial = (course) => navigation.navigate("ManageMaterial", {
@@ -200,7 +200,7 @@ const ManageCourseScreen = () => {
         courseTitle: course.subject ?? course.title ?? course.name ?? "Học sinh",
     });
 
-    // Filter courses based on search query
+
     const filtered = courses.filter(c => {
         const q = search.trim().toLowerCase();
         const courseName = (c.subject ?? c.title ?? c.name ?? "").toLowerCase();
@@ -208,7 +208,7 @@ const ManageCourseScreen = () => {
         return courseName.includes(q) || courseDesc.includes(q);
     });
 
-    // Render empty state
+
     const EmptyState = () => (
         <View style={styles.emptyWrap}>
             <View style={styles.emptyIconWrap}>
@@ -300,7 +300,7 @@ const ManageCourseScreen = () => {
 
 export default ManageCourseScreen;
 
-// ── Styles ────────────────────────────────────────────────
+
 const styles = StyleSheet.create({
     screen:       { flex: 1, backgroundColor: "#f8fafc" },
     searchWrap:   { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 10 },

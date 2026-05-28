@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
     infoContainer: { flex: 1, marginLeft: 12, justifyContent: "space-between" },
     title: { fontWeight: "bold", color: "#1e293b", marginBottom: 6 },
 
-    // FIX: bỏ height cứng, dùng paddingVertical để chip không bị cắt
+
     badgeRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: 4, alignItems: "center" },
     typeChip: { backgroundColor: "#e0e7ff" },
     diffChip: {},

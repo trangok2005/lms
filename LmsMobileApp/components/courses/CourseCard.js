@@ -20,7 +20,7 @@ const CourseCard = ({ course, onPress }) => {
   const isFree = !course.price || parseFloat(course.price) === 0;
 
   return (
-    // console.log("CourseCard data:", course),
+
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.85}>
       {/* Thumbnail */}
       {course.image ? (
@@ -41,7 +41,7 @@ const CourseCard = ({ course, onPress }) => {
         <View style={[Styles.row, Styles.mb10]}> 
           <Icon source="account-tie" size={14} color={colors.gray} />
           <Text variant="bodySmall" style={styles.teacher} numberOfLines={1}>
-            {`${course.teacher.first_name} ${course.teacher.last_name}` ?? "Giảng viên"}
+            {course.teacher ? `${course.teacher.first_name ?? ""} ${course.teacher.last_name ?? ""}` : "Giảng viên"}
           </Text>
         </View>
 

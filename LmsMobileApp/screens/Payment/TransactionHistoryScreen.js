@@ -7,7 +7,7 @@ import { authApis, endpoints } from "../../configs/Apis";
 import Styles, { colors } from "../../styles/Styles";
 import { Header, Loading } from "../../components/common";
 
-// ── Config hiển thị ──────────────────────────────────────
+
 const STATUS_CONFIG = {
   success: { label: "Thành công", color: colors.primary,   bg: "#E8F5F0", icon: "check-circle"   },
   pending: { label: "Đang xử lý", color: "#F59E0B",        bg: "#FFFBEB", icon: "clock-outline"  },
@@ -56,7 +56,7 @@ const TransactionHistoryScreen = () => {
     }, [statusFilter])
   );
 
-  // ── Tổng tiền đã chi ────────────────────────────────────
+
   const totalPaid = (transactions ?? [])
     .filter((t) => t.status === "success" && t.payment_method !== "free")
     .reduce((sum, t) => sum + parseFloat(t.amount ?? 0), 0);
@@ -92,7 +92,7 @@ const TransactionHistoryScreen = () => {
           showsVerticalScrollIndicator={false}
           ListHeaderComponent={
             transactions.length > 0 ? (
-              // Tổng tiền
+
               <Surface style={styles.summaryCard} elevation={1}>
                 <View style={Styles.between}>
                   <Text variant="bodyMedium" style={{ color: colors.gray }}>
@@ -120,7 +120,7 @@ const TransactionHistoryScreen = () => {
   );
 };
 
-// ── TransactionCard ──────────────────────────────────────
+
 const TransactionCard = ({ transaction }) => {
   const st = STATUS_CONFIG[transaction.status]  ?? STATUS_CONFIG.pending;
   const mt = METHOD_CONFIG[transaction.payment_method] ?? METHOD_CONFIG.free;

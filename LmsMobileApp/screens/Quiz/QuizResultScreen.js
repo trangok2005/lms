@@ -3,17 +3,17 @@ import { View, StyleSheet, ScrollView, Alert } from "react-native";
 import { Text, Card, Icon } from "react-native-paper";
 import { useRoute, useNavigation } from "@react-navigation/native";
 
-// Tận dụng triệt để bộ components dùng chung mà bạn đã cung cấp
+
 import { Header, InfoRow, ActionRow } from "../../components/common";
 
 const QuizResultScreen = () => {
     const route = useRoute();
     const navigation = useNavigation();
 
-    // Lấy dữ liệu trả về từ API submit_quiz ở màn hình trước
+
     const { resultData ,courseId} = route.params || {};
   
-    // Fallback UI nếu không có dữ liệu
+
     if (!resultData) {
         return (
             <View style={styles.screen}>

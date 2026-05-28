@@ -26,10 +26,10 @@ const CourseSearchScreen = () => {
   const [courses,       setCourses]       = useState([]);
   const [loading,       setLoading]       = useState(false);
 
-  // ── Pattern thầy ──────────────────────────────────────
+
   const [page, setPage] = useState(1);
 
-  // ── Load meta 1 lần ───────────────────────────────────
+
   useEffect(() => {
     const fetchMeta = async () => {
       try {
@@ -46,7 +46,7 @@ const CourseSearchScreen = () => {
     fetchMeta();
   }, []);
 
-  // ── Load courses — pattern thầy ───────────────────────
+
   const loadCourses = async () => {
     if (page === 0) return;
     try {
@@ -60,7 +60,7 @@ const CourseSearchScreen = () => {
 
       const res = await Apis.get(url);
 
-      // Hết trang → set page = 0
+
       if (res.data.next === null) setPage(0);
 
       if (page === 1)
@@ -75,7 +75,7 @@ const CourseSearchScreen = () => {
     }
   };
 
-  // Debounce — chạy khi page thay đổi
+
   useEffect(() => {
     const timer = setTimeout(() => {
       if (page > 0) loadCourses();
@@ -83,7 +83,7 @@ const CourseSearchScreen = () => {
     return () => clearTimeout(timer);
   }, [keyword, selectedCate, selectedLevel, selectedTag, page]);
 
-  // Reset page về 1 khi filter thay đổi
+
   useEffect(() => {
     setPage(1);
   }, [keyword, selectedCate, selectedLevel, selectedTag]);
@@ -117,13 +117,13 @@ const CourseSearchScreen = () => {
             theme={{ colors: { primary: colors.primary } }}>
             Tất cả
           </Chip>
-          {categories.map((c) => (
+          {categories.filter(c => c).map((c) => (
             <Chip key={c.id}
               selected={selectedCate?.id === c.id}
               onPress={() => setSelectedCate(selectedCate?.id === c.id ? null : c)}
               style={styles.chip} selectedColor={colors.white} showSelectedOverlay
               theme={{ colors: { primary: colors.primary } }}>
-              {c.name}
+              {c?.name}
             </Chip>
           ))}
         </ScrollView>
@@ -148,13 +148,13 @@ const CourseSearchScreen = () => {
             theme={{ colors: { primary: colors.primary } }}>
             Tất cả
           </Chip>
-          {tags.map((t) => (
+          {tags.filter(t => t).map((t) => (
             <Chip key={t.id}
               selected={selectedTag?.id === t.id}
               onPress={() => setSelectedTag(selectedTag?.id === t.id ? null : t)}
               style={styles.chip} selectedColor={colors.white} showSelectedOverlay
               theme={{ colors: { primary: colors.primary } }}>
-              {t.name}
+              {t?.name}
             </Chip>
           ))}
         </ScrollView>
@@ -168,7 +168,7 @@ const CourseSearchScreen = () => {
         showsVerticalScrollIndicator={false}
         onEndReached={loadMore}
         onEndReachedThreshold={0.3}
-        // ✅ Pattern thầy: ActivityIndicator thay vì nút "Xem thêm"
+
         ListFooterComponent={
           loading
             ? <ActivityIndicator color={colors.primary} style={{ marginVertical: 12 }} />

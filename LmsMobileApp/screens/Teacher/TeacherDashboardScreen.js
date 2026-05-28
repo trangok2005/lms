@@ -11,7 +11,7 @@ import { Header, ActionRow } from "../../components/common";
 const TeacherDashboardScreen = () => {
     const navigation = useNavigation();
     
-    // Extract user from context
+
     const [user] = useContext(MyUserContext);
 
     const [loading, setLoading] = useState(true);
@@ -21,7 +21,7 @@ const TeacherDashboardScreen = () => {
         totalStudents: 0,
     });
 
-    // Fetch Dashboard Data
+
     const fetchDashboardStats = async (isRefresh = false) => {
         try {
             if (isRefresh) setRefreshing(true);
@@ -48,14 +48,14 @@ const TeacherDashboardScreen = () => {
         useCallback(() => { fetchDashboardStats(); }, [])
     );
 
-    // Format user display name based on Django AbstractUser fields
+
     const getDisplayName = () => {
         if (!user) return "Giảng viên";
         const fullName = `${user.last_name || ""} ${user.first_name || ""}`.trim();
         return fullName || user.username || "Giảng viên";
     };
 
-    // Render Helpers
+
     const renderStatCard = (title, value, icon, bgColor, iconColor) => (
         <View style={styles.statCard}>
             <View style={[styles.statIconWrapper, { backgroundColor: bgColor }]}>
@@ -66,7 +66,7 @@ const TeacherDashboardScreen = () => {
         </View>
     );
 
-    // Main Render
+
     if (loading && !refreshing) {
         return (
             <View style={styles.centerContainer}>
@@ -116,7 +116,7 @@ const TeacherDashboardScreen = () => {
     );
 };
 
-// Styles
+
 const styles = StyleSheet.create({
     screen:          { flex: 1, backgroundColor: "#f8fafc" },
     centerContainer: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#f8fafc" },

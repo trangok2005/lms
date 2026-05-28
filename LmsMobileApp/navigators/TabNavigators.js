@@ -11,10 +11,10 @@ import { CommonActions } from "@react-navigation/native";
 
 const Tab = createBottomTabNavigator();
 
-// Helper tạo tabBarIcon gọn — tránh lặp arrow function 3 dòng
+
 const icon = (src) => ({ color, size }) => <Icon source={src} size={size} color={color} />;
 
-// Options mặc định dùng chung
+
 const tabScreenOptions = (activeTintColor) => ({
   headerShown: false,
   tabBarActiveTintColor: activeTintColor,
@@ -57,9 +57,9 @@ export const StudentTabs = () => (
 );
 
 
-// ══════════════════════════════════════════════════════════
-// TEACHER TABS  (4 tab)
-// ══════════════════════════════════════════════════════════
+
+
+
 export const TeacherTabs = () => (
   <Tab.Navigator screenOptions={tabScreenOptions("#4CAF50")}>
     <Tab.Screen
@@ -75,9 +75,9 @@ export const TeacherTabs = () => (
   </Tab.Navigator>
 );
 
-// ══════════════════════════════════════════════════════════
-// ADMIN TABS  (2 tab)
-// ══════════════════════════════════════════════════════════
+
+
+
 export const AdminTabs = () => (
   <Tab.Navigator screenOptions={tabScreenOptions("#F44336")}>
     <Tab.Screen

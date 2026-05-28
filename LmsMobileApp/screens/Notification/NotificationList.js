@@ -8,7 +8,7 @@ import usePagination from "../../hooks/usePagination";
 import Styles, { colors } from "../../styles/Styles";
 import { Header } from "../../components/common";
 
-// Khớp NotificationType của model
+
 const TYPE_CONFIG = {
   NEW_REPLY: {
     icon:  "comment-text",
@@ -47,7 +47,7 @@ const NotificationListScreen = () => {
   });
 }, [notifications]);
 
-// Tách emit badge ra useEffect riêng
+
 useEffect(() => {
   DeviceEventEmitter.emit(
     "UPDATE_BADGE_COUNT",
@@ -57,7 +57,7 @@ useEffect(() => {
 
   const unreadCount = localNotifications.filter((n) => !n.is_read).length;
 
-  // ── Đánh dấu đã đọc + navigate ───────────────────────
+
   const handlePress = async (item) => {
     setLocalNotifications((prev) => {
       const next = prev.map((n) => (n.id === item.id ? { ...n, is_read: true } : n));
@@ -85,7 +85,7 @@ useEffect(() => {
     }
   };
 
-  // ── Đánh dấu tất cả đã đọc ───────────────────────────
+
   const markAllRead = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
@@ -150,7 +150,7 @@ useEffect(() => {
   );
 };
 
-// ── NotificationItem ─────────────────────────────────────
+
 const NotificationItem = ({ item, onPress }) => {
   const cfg = TYPE_CONFIG[item.notification_type] ?? {
     icon: "bell", color: colors.gray, bg: colors.bg, label: "Thông báo",

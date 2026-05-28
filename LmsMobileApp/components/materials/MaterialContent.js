@@ -1,4 +1,4 @@
-// components/materials/MaterialContent.js
+
 import React from "react";
 import { useWindowDimensions } from "react-native";
 const MaterialContent = ({ htmlContent }) => {

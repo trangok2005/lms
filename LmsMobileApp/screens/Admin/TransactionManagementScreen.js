@@ -51,10 +51,10 @@ const TransactionManagementScreen = () => {
       if (statusF) params.status = statusF;
       if (methodF) params.method = methodF;
 
-      // Gọi API: GET /admin/transactions/
+
       const res = await authApis(token).get(endpoints["admin-transactions"], { params });
 
-      // Kiểm tra phân trang từ Django REST Framework
+
       if ((res.data.next ?? null) === null) {
         setPage(0);
       }
@@ -63,7 +63,7 @@ const TransactionManagementScreen = () => {
       if (page === 1) {
         setTransactions(items);
       } else {
-        // Khử trùng lặp bản ghi khi đắp thêm trang mới
+
         setTransactions(prev => {
           const uniqueItems = items.filter(newItem => !prev.some(oldItem => oldItem.id === newItem.id));
           return [...prev, ...uniqueItems];
@@ -76,12 +76,12 @@ const TransactionManagementScreen = () => {
     }
   };
 
-  // Kích hoạt nạp lại khi thay đổi bộ lọc hoặc chuyển trang
+
   useEffect(() => {
     loadTransactions();
   }, [page, statusF, methodF]);
 
-  // Reset về trang 1 khi bấm đổi bộ lọc
+
   useEffect(() => { 
     setPage(1); 
   }, [statusF, methodF]);
@@ -96,7 +96,7 @@ const TransactionManagementScreen = () => {
     if (page > 0 && !loading) setPage(prev => prev + 1); 
   };
 
-  // Tính toán doanh thu nhanh của danh sách hiển thị
+
   const totalRevenue = transactions
     .filter((t) => t.status === "success" && (t.method ?? t.payment_method) !== "free")
     .reduce((sum, t) => sum + parseFloat(t.amount ?? t.total ?? 0), 0);
@@ -107,7 +107,7 @@ const TransactionManagementScreen = () => {
       { text: "Xóa dữ liệu", style: "destructive", onPress: async () => {
         try {
           const token = await AsyncStorage.getItem("token");
-          // Gọi API: DELETE /admin/transactions/{id}/
+
           await authApis(token).delete(endpoints["admin-transaction-detail"](id));
           setPage(1); // Tải lại danh sách
         } catch (ex) { 

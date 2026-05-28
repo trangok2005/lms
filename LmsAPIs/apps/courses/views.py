@@ -93,6 +93,7 @@ class CourseViewSet(viewsets.ViewSet,
     # ── API 6: /api/courses/my-courses/ ──
     @action(methods=['get'], url_path='my-courses', detail=False)
     def my_courses(self, request):
+
         user = request.user
         sta = request.query_params.get('status')
 

@@ -16,13 +16,13 @@ const MaterialDetailScreen = ({ route, navigation }) => {
     const [progress, setProgress] = useState(null); // State lưu tiến độ học tập
     const [loading, setLoading] = useState(true);
 
-    // Fetch dữ liệu bài học và tiến độ
+
     const loadData = async () => {
         try {
             setLoading(true);
             const token = await AsyncStorage.getItem("token");
             
-            // 1. Fetch chi tiết Material
+
             const resMat = await authApis(token).get(endpoints["material-detail"](materialId));
             setMaterial(resMat.data);
             try {
@@ -46,7 +46,7 @@ const MaterialDetailScreen = ({ route, navigation }) => {
         }
     };
 
-    // Load lại data mỗi khi màn hình được focus (để cập nhật % tiến độ mới nhất)
+
     useFocusEffect(
         useCallback(() => {
             loadData();
@@ -60,7 +60,7 @@ const MaterialDetailScreen = ({ route, navigation }) => {
         }
         
         const { material_type, file, title } = material;
-        // Lấy vị trí đang xem dở (nếu có)
+
         const lastPosition = progress?.last_position_sec || 0; 
 
         if (material_type === 'video') {
@@ -217,9 +217,9 @@ const MaterialDetailScreen = ({ route, navigation }) => {
                     {/* Hiển thị Tags khóa học nếu có */}
                     {material.tags && material.tags.length > 0 && (
                         <View style={styles.tagsContainer}>
-                            {material.tags.map(tag => (
+                            {material.tags.filter(tag => tag).map(tag => (
                                 <View key={tag.id} style={styles.smallTag}>
-                                    <Text style={styles.smallTagText}>#{tag.name}</Text>
+                                    <Text style={styles.smallTagText}>#{tag?.name}</Text>
                                 </View>
                             ))}
                         </View>
