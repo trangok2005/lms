@@ -32,8 +32,8 @@ export const endpoints = {
      
     "teacher-quiz-list":           ()   => `/teacher/quizzes/`,
     "teacher-quiz-detail":         (id) => `/teacher/quizzes/${id}/`,
-    "teacher-question-list":       (quizId) => `/teacher/quizzes/${quizId}/questions/`,
-    "teacher-question-detail":     (id) => `/teacher/questions/${id}/`,
+   "teacher-question-list":   (quizId) => `/teacher/quizzes/${quizId}/questions/`,
+    "teacher-question-detail": (quizId, questionId) => `/teacher/quizzes/${quizId}/questions/${questionId}/`,
     "teacher-student-list":    () => `/teacher/students/`,
     "teacher-quiz-by-course":  (courseId) => `/teacher/quizzes/?course=${courseId}`,
     "teacher-student-list": () => `/teacher/students/`, 
