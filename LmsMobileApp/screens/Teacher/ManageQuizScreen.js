@@ -13,18 +13,18 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { authApis, endpoints } from "../../configs/Apis";
 import { Header, Loading } from "../../components/common";
 
-
+// ── Constants ──────────────────────────────────────────────
 const EMPTY_QUIZ_FORM = {
     title: "",
-    time_limit: "15",       
-    passing_score: "50",    
+    time_limit: "15",
+    passing_score: "50",
     is_active: true,
 };
 
 const EMPTY_QUESTION_FORM = {
     content: "",
     explanation: "",
-    choices: [
+    answers: [
         { text: "", is_correct: true },
         { text: "", is_correct: false },
         { text: "", is_correct: false },
@@ -32,13 +32,13 @@ const EMPTY_QUESTION_FORM = {
     ],
 };
 
-
+// ── Main Component ────────────────────────────────────────
 const ManageQuizScreen = () => {
     const navigation = useNavigation();
     const route = useRoute();
     const { courseId, courseTitle } = route.params ?? {};
 
-
+    // Quiz list state
     const [quizzes, setQuizzes]       = useState([]);
     const [loading, setLoading]       = useState(true);
     const [saving, setSaving]         = useState(false);
@@ -46,21 +46,21 @@ const ManageQuizScreen = () => {
     const [editTarget, setEditTarget] = useState(null);
     const [quizForm, setQuizForm]     = useState(EMPTY_QUIZ_FORM);
 
+    // Question management state
+    const [selectedQuiz, setSelectedQuiz]           = useState(null);
+    const [questions, setQuestions]                 = useState([]);
+    const [questionsLoading, setQuestionsLoading]   = useState(false);
+    const [questionModal, setQuestionModal]         = useState(false);
+    const [editQuestion, setEditQuestion]           = useState(null);
+    const [questionForm, setQuestionForm]           = useState(EMPTY_QUESTION_FORM);
+    const [questionSaving, setQuestionSaving]       = useState(false);
 
-    const [selectedQuiz, setSelectedQuiz]       = useState(null); // quiz whose questions we manage
-    const [questions, setQuestions]             = useState([]);
-    const [questionsLoading, setQuestionsLoading] = useState(false);
-    const [questionModal, setQuestionModal]     = useState(false);
-    const [editQuestion, setEditQuestion]       = useState(null);
-    const [questionForm, setQuestionForm]       = useState(EMPTY_QUESTION_FORM);
-    const [questionSaving, setQuestionSaving]   = useState(false);
-
-
+    // ── Fetch Quizzes ──────────────────────────────────────
     const fetchQuizzes = async () => {
         try {
             setLoading(true);
             const token = await AsyncStorage.getItem("token");
-            const res = await authApis(token).get(endpoints["teacher-quiz-list"](courseId));
+            const res = await authApis(token).get(endpoints["teacher-quiz-by-course"](courseId));
             const list = res.data.results ?? res.data;
             setQuizzes(Array.isArray(list) ? list : []);
         } catch (ex) {
@@ -75,7 +75,7 @@ const ManageQuizScreen = () => {
         if (courseId) fetchQuizzes();
     }, [courseId]));
 
-
+    // ── Fetch Questions ────────────────────────────────────
     const fetchQuestions = async (quizId) => {
         try {
             setQuestionsLoading(true);
@@ -100,7 +100,7 @@ const ManageQuizScreen = () => {
         setQuestions([]);
     };
 
-
+    // ── Quiz CRUD ──────────────────────────────────────────
     const openCreateQuiz = () => {
         setEditTarget(null);
         setQuizForm(EMPTY_QUIZ_FORM);
@@ -108,15 +108,15 @@ const ManageQuizScreen = () => {
     };
 
     const openEditQuiz = (item) => {
-    setEditTarget(item);
-    setQuizForm({
-        title:         item.title ?? "",
-        time_limit:    String(item.time_limit ?? "15"),       // ✅
-        passing_score: String(item.passing_score ?? "50"),    // ✅
-        is_active:     item.is_active ?? true,
-    });
-    setQuizModal(true);
-};
+        setEditTarget(item);
+        setQuizForm({
+            title:         item.title ?? "",
+            time_limit:    String(item.time_limit ?? "15"),
+            passing_score: String(item.passing_score ?? "50"),
+            is_active:     item.is_active ?? true,
+        });
+        setQuizModal(true);
+    };
 
     const closeQuizModal = () => { setQuizModal(false); setEditTarget(null); };
 
@@ -129,13 +129,13 @@ const ManageQuizScreen = () => {
             setSaving(true);
             const token = await AsyncStorage.getItem("token");
             const api = authApis(token);
-           const payload = {
-    title:         quizForm.title.trim(),
-    time_limit:    parseInt(quizForm.time_limit) || 15,       // ✅
-    passing_score: parseInt(quizForm.passing_score) || 50,    // ✅
-    is_active:     quizForm.is_active,
-    course:        courseId,
-};
+            const payload = {
+                title:         quizForm.title.trim(),
+                time_limit:    parseInt(quizForm.time_limit) || 15,
+                passing_score: parseInt(quizForm.passing_score) || 50,
+                is_active:     quizForm.is_active,
+                course:        courseId,
+            };
 
             if (editTarget) {
                 await api.patch(endpoints["teacher-quiz-detail"](editTarget.id), payload);
@@ -177,7 +177,7 @@ const ManageQuizScreen = () => {
         );
     };
 
-
+    // ── Question CRUD ──────────────────────────────────────
     const openCreateQuestion = () => {
         setEditQuestion(null);
         setQuestionForm(EMPTY_QUESTION_FORM);
@@ -189,41 +189,43 @@ const ManageQuizScreen = () => {
         setQuestionForm({
             content:     q.content ?? "",
             explanation: q.explanation ?? "",
-            choices: q.choices?.length
-                ? q.choices.map((c) => ({ text: c.text, is_correct: c.is_correct }))
-                : EMPTY_QUESTION_FORM.choices,
+            answers: q.answers?.length
+                ? q.answers.map((a) => ({ text: a.content, is_correct: a.is_correct }))
+                : EMPTY_QUESTION_FORM.answers,
         });
         setQuestionModal(true);
     };
 
     const closeQuestionModal = () => { setQuestionModal(false); setEditQuestion(null); };
 
-    const setChoiceText = (idx, text) => {
+    const setAnswerText = (idx, text) => {
         setQuestionForm((f) => {
-            const choices = [...f.choices];
-            choices[idx] = { ...choices[idx], text };
-            return { ...f, choices };
+            const answers = [...f.answers];
+            answers[idx] = { ...answers[idx], text };
+            return { ...f, answers };
         });
     };
 
-    const setCorrectChoice = (idx) => {
+    const setCorrectAnswer = (idx) => {
         setQuestionForm((f) => ({
             ...f,
-            choices: f.choices.map((c, i) => ({ ...c, is_correct: i === idx })),
+            answers: f.answers.map((a, i) => ({ ...a, is_correct: i === idx })),
         }));
     };
 
     const handleSaveQuestion = async () => {
+         
+    
         if (!questionForm.content.trim()) {
             Alert.alert("Thiếu thông tin", "Vui lòng nhập nội dung câu hỏi.");
             return;
         }
-        const filledChoices = questionForm.choices.filter((c) => c.text.trim());
-        if (filledChoices.length < 2) {
+        const filledAnswers = questionForm.answers.filter((a) => a.text.trim());
+        if (filledAnswers.length < 2) {
             Alert.alert("Thiếu đáp án", "Vui lòng nhập ít nhất 2 lựa chọn.");
             return;
         }
-        if (!filledChoices.some((c) => c.is_correct)) {
+        if (!filledAnswers.some((a) => a.is_correct)) {
             Alert.alert("Thiếu đáp án đúng", "Vui lòng chọn đáp án đúng.");
             return;
         }
@@ -236,17 +238,23 @@ const ManageQuizScreen = () => {
                 content:     questionForm.content.trim(),
                 explanation: questionForm.explanation.trim(),
                 quiz:        selectedQuiz.id,
-                choices:     filledChoices,
+                answers: filledAnswers.map((a) => ({
+                    content:    a.text,
+                    is_correct: a.is_correct,
+                })),
             };
 
             if (editQuestion) {
-                await api.patch(endpoints["teacher-question-detail"](editQuestion.id), payload);
+                await api.patch(
+                    endpoints["teacher-question-detail"](selectedQuiz.id, editQuestion.id),
+                    payload
+                );
             } else {
-                await api.post(endpoints["teacher-question-list"](selectedQuiz.id), payload);
+              
+              await api.post(endpoints["teacher-question-list"](selectedQuiz.id), payload);
             }
             closeQuestionModal();
             fetchQuestions(selectedQuiz.id);
-
             setQuizzes((prev) =>
                 prev.map((q) =>
                     q.id === selectedQuiz.id
@@ -263,14 +271,16 @@ const ManageQuizScreen = () => {
     };
 
     const handleDeleteQuestion = (q) => {
-        Alert.alert("Xoá câu hỏi", `Xoá câu hỏi này?`, [
+        Alert.alert("Xoá câu hỏi", "Xoá câu hỏi này?", [
             { text: "Huỷ", style: "cancel" },
             {
                 text: "Xoá", style: "destructive",
                 onPress: async () => {
                     try {
                         const token = await AsyncStorage.getItem("token");
-                        await authApis(token).delete(endpoints["teacher-question-detail"](q.id));
+                        await authApis(token).delete(
+                            endpoints["teacher-question-detail"](selectedQuiz.id, q.id)
+                        );
                         fetchQuestions(selectedQuiz.id);
                         setQuizzes((prev) =>
                             prev.map((quiz) =>
@@ -287,7 +297,7 @@ const ManageQuizScreen = () => {
         ]);
     };
 
-
+    // ── Render: Quiz Card ──────────────────────────────────
     const renderQuizItem = ({ item }) => (
         <TouchableOpacity
             style={styles.card}
@@ -298,13 +308,10 @@ const ManageQuizScreen = () => {
 
             <View style={styles.cardBody}>
                 <Text style={styles.quizTitle} numberOfLines={2}>{item.title}</Text>
-                {!!item.description && (
-                    <Text style={styles.quizDesc} numberOfLines={1}>{item.description}</Text>
-                )}
                 <View style={styles.metaRow}>
                     <View style={styles.metaItem}>
                         <Icon source="clock-outline" size={13} color="#64748b" />
-                        <Text style={styles.metaText}>{item.duration_minutes} phút</Text>
+                        <Text style={styles.metaText}>{item.time_limit} phút</Text>
                     </View>
                     <View style={styles.metaItem}>
                         <Icon source="help-circle-outline" size={13} color="#64748b" />
@@ -312,7 +319,7 @@ const ManageQuizScreen = () => {
                     </View>
                     <View style={styles.metaItem}>
                         <Icon source="check-decagram-outline" size={13} color="#64748b" />
-                        <Text style={styles.metaText}>{item.pass_mark}% đạt</Text>
+                        <Text style={styles.metaText}>{item.passing_score}% đạt</Text>
                     </View>
                 </View>
                 <Chip
@@ -338,7 +345,7 @@ const ManageQuizScreen = () => {
         </TouchableOpacity>
     );
 
-
+    // ── Render: Question Item ──────────────────────────────
     const renderQuestionItem = ({ item, index }) => (
         <View style={styles.questionCard}>
             <View style={styles.questionHeader}>
@@ -355,23 +362,23 @@ const ManageQuizScreen = () => {
                     </TouchableOpacity>
                 </View>
             </View>
-            {item.choices?.map((c, i) => (
-                <View key={i} style={[styles.choiceRow, c.is_correct && styles.choiceCorrect]}>
+            {item.answers?.map((a, i) => (
+                <View key={i} style={[styles.answerRow, a.is_correct && styles.answerCorrect]}>
                     <Icon
-                        source={c.is_correct ? "check-circle" : "circle-outline"}
+                        source={a.is_correct ? "check-circle" : "circle-outline"}
                         size={15}
-                        color={c.is_correct ? "#16a34a" : "#94a3b8"}
+                        color={a.is_correct ? "#16a34a" : "#94a3b8"}
                     />
-                    <Text style={[styles.choiceText, c.is_correct && styles.choiceTextCorrect]}>
-                        {c.text}
+                    <Text style={[styles.answerText, a.is_correct && styles.answerTextCorrect]}>
+                        {a.content}
                     </Text>
                 </View>
             ))}
         </View>
     );
 
-
-  const renderQuizModal = () => (
+    // ── Render: Quiz Form Modal ────────────────────────────
+    const renderQuizModal = () => (
         <Portal>
             <Modal visible={quizModal} onDismiss={closeQuizModal} contentContainerStyle={styles.modal}>
                 <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined}>
@@ -381,7 +388,6 @@ const ManageQuizScreen = () => {
                         </Text>
                         <Divider style={{ marginBottom: 16 }} />
 
-                        {/* Missing Title Input Restored */}
                         <TextInput
                             label="Tiêu đề bài kiểm tra *"
                             value={quizForm.title}
@@ -392,7 +398,6 @@ const ManageQuizScreen = () => {
                             activeOutlineColor="#4f46e5"
                         />
 
-                        {/* Grouped Time Limit and Passing Score into a Row */}
                         <View style={styles.row2}>
                             <TextInput
                                 label="Thời gian (phút) *"
@@ -442,7 +447,7 @@ const ManageQuizScreen = () => {
         </Portal>
     );
 
-
+    // ── Render: Question Form Modal ────────────────────────
     const renderQuestionModal = () => (
         <Portal>
             <Modal visible={questionModal} onDismiss={closeQuestionModal} contentContainerStyle={styles.modal}>
@@ -466,25 +471,22 @@ const ManageQuizScreen = () => {
                         />
 
                         <Text style={styles.fieldLabel}>Các lựa chọn (chọn đáp án đúng)</Text>
-                        {questionForm.choices.map((c, idx) => (
-                            <View key={idx} style={styles.choiceInputRow}>
-                                <TouchableOpacity
-                                    onPress={() => setCorrectChoice(idx)}
-                                    style={styles.radioBtn}
-                                >
+                        {questionForm.answers.map((a, idx) => (
+                            <View key={idx} style={styles.answerInputRow}>
+                                <TouchableOpacity onPress={() => setCorrectAnswer(idx)} style={styles.radioBtn}>
                                     <Icon
-                                        source={c.is_correct ? "radiobox-marked" : "radiobox-blank"}
+                                        source={a.is_correct ? "radiobox-marked" : "radiobox-blank"}
                                         size={22}
-                                        color={c.is_correct ? "#4f46e5" : "#94a3b8"}
+                                        color={a.is_correct ? "#4f46e5" : "#94a3b8"}
                                     />
                                 </TouchableOpacity>
                                 <TextInput
                                     placeholder={`Lựa chọn ${idx + 1}`}
-                                    value={c.text}
-                                    onChangeText={(v) => setChoiceText(idx, v)}
+                                    value={a.text}
+                                    onChangeText={(v) => setAnswerText(idx, v)}
                                     mode="outlined"
                                     style={[styles.input, { flex: 1, marginBottom: 0 }]}
-                                    outlineColor={c.is_correct ? "#4f46e5" : "#e2e8f0"}
+                                    outlineColor={a.is_correct ? "#4f46e5" : "#e2e8f0"}
                                     activeOutlineColor="#4f46e5"
                                     dense
                                 />
@@ -515,7 +517,7 @@ const ManageQuizScreen = () => {
         </Portal>
     );
 
-
+    // ── Question Panel ─────────────────────────────────────
     if (selectedQuiz) {
         return (
             <View style={styles.screen}>
@@ -556,7 +558,7 @@ const ManageQuizScreen = () => {
         );
     }
 
-
+    // ── Quiz List ──────────────────────────────────────────
     return (
         <View style={styles.screen}>
             <Header title="Quản lý bài kiểm tra" subtitle={courseTitle ?? ""} showBack />
@@ -591,12 +593,11 @@ const ManageQuizScreen = () => {
     );
 };
 
-
+// ── Styles ────────────────────────────────────────────────
 const styles = StyleSheet.create({
     screen: { flex: 1, backgroundColor: "#f8fafc" },
     list:   { padding: 16, paddingBottom: 100 },
     hint:   { fontSize: 13, color: "#94a3b8", marginBottom: 12, fontWeight: "500" },
-
 
     card: {
         flexDirection: "row",
@@ -620,16 +621,14 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 4,
         borderBottomRightRadius: 4,
     },
-    cardBody: { flex: 1, gap: 6, paddingVertical: 2 },
-    quizTitle:  { fontSize: 15, fontWeight: "700", color: "#0f172a", lineHeight: 22 },
-    quizDesc:   { fontSize: 12, color: "#64748b" },
-    metaRow:    { flexDirection: "row", flexWrap: "wrap", gap: 12 },
-    metaItem:   { flexDirection: "row", alignItems: "center", gap: 4 },
-    metaText:   { fontSize: 12, color: "#64748b", fontWeight: "500" },
-    chip:       { borderRadius: 6 },
-    actions:    { flexDirection: "column", gap: 6, paddingRight: 6 },
-    actionBtn:  { width: 30, height: 30, borderRadius: 8, justifyContent: "center", alignItems: "center" },
-
+    cardBody:  { flex: 1, gap: 6, paddingVertical: 2 },
+    quizTitle: { fontSize: 15, fontWeight: "700", color: "#0f172a", lineHeight: 22 },
+    metaRow:   { flexDirection: "row", flexWrap: "wrap", gap: 12 },
+    metaItem:  { flexDirection: "row", alignItems: "center", gap: 4 },
+    metaText:  { fontSize: 12, color: "#64748b", fontWeight: "500" },
+    chip:      { borderRadius: 6 },
+    actions:   { flexDirection: "column", gap: 6, paddingRight: 6 },
+    actionBtn: { width: 30, height: 30, borderRadius: 8, justifyContent: "center", alignItems: "center" },
 
     questionCard: {
         backgroundColor: "#fff",
@@ -643,11 +642,7 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
         gap: 8,
     },
-    questionHeader: {
-        flexDirection: "row",
-        alignItems: "flex-start",
-        gap: 10,
-    },
+    questionHeader:     { flexDirection: "row", alignItems: "flex-start", gap: 10 },
     questionIndexBadge: {
         width: 26, height: 26, borderRadius: 8,
         backgroundColor: "#ede9fe",
@@ -655,30 +650,20 @@ const styles = StyleSheet.create({
         marginTop: 1,
     },
     questionIndexText: { fontSize: 12, fontWeight: "700", color: "#4f46e5" },
-    questionContent: { flex: 1, fontSize: 14, fontWeight: "600", color: "#0f172a", lineHeight: 21 },
-    questionActions: { flexDirection: "row", gap: 6 },
-    choiceRow: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 8,
-        paddingVertical: 6,
-        paddingHorizontal: 8,
-        borderRadius: 8,
-        backgroundColor: "#f8fafc",
+    questionContent:   { flex: 1, fontSize: 14, fontWeight: "600", color: "#0f172a", lineHeight: 21 },
+    questionActions:   { flexDirection: "row", gap: 6 },
+
+    answerRow: {
+        flexDirection: "row", alignItems: "center", gap: 8,
+        paddingVertical: 6, paddingHorizontal: 8,
+        borderRadius: 8, backgroundColor: "#f8fafc",
     },
-    choiceCorrect: { backgroundColor: "#f0fdf4" },
-    choiceText:    { fontSize: 13, color: "#334155", flex: 1 },
-    choiceTextCorrect: { color: "#16a34a", fontWeight: "600" },
+    answerCorrect:     { backgroundColor: "#f0fdf4" },
+    answerText:        { fontSize: 13, color: "#334155", flex: 1 },
+    answerTextCorrect: { color: "#16a34a", fontWeight: "600" },
 
-
-    choiceInputRow: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 8,
-        marginBottom: 10,
-    },
-    radioBtn: { paddingTop: 4 },
-
+    answerInputRow: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 10 },
+    radioBtn:       { paddingTop: 4 },
 
     fab: {
         position: "absolute", bottom: 24, right: 24,
@@ -692,18 +677,13 @@ const styles = StyleSheet.create({
         shadowRadius: 8,
     },
 
-
     empty:        { alignItems: "center", marginTop: 80, gap: 10 },
     emptyText:    { fontSize: 16, color: "#94a3b8", fontWeight: "600" },
     emptySubText: { fontSize: 13, color: "#cbd5e1" },
 
-
     modal: {
-        margin: 16,
-        backgroundColor: "#fff",
-        borderRadius: 20,
-        padding: 20,
-        maxHeight: "92%",
+        margin: 16, backgroundColor: "#fff",
+        borderRadius: 20, padding: 20, maxHeight: "92%",
     },
     modalTitle:  { fontSize: 17, fontWeight: "800", color: "#0f172a", marginBottom: 12 },
     fieldLabel:  { fontSize: 13, fontWeight: "600", color: "#475569", marginBottom: 8 },
@@ -711,15 +691,9 @@ const styles = StyleSheet.create({
     row2:        { flexDirection: "row", gap: 10 },
 
     switchRow: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        backgroundColor: "#f8fafc",
-        padding: 12,
-        borderRadius: 10,
-        borderWidth: 1,
-        borderColor: "#e2e8f0",
-        marginTop: 4,
+        flexDirection: "row", justifyContent: "space-between", alignItems: "center",
+        backgroundColor: "#f8fafc", padding: 12, borderRadius: 10,
+        borderWidth: 1, borderColor: "#e2e8f0", marginTop: 4,
     },
     switchLabel:    { fontSize: 14, fontWeight: "600", color: "#0f172a" },
     switchSubLabel: { fontSize: 12, color: "#64748b", marginTop: 2 },
