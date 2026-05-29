@@ -79,30 +79,32 @@ class AnswerManageSerializer(serializers.ModelSerializer):
 
 
 class QuestionManageSerializer(serializers.ModelSerializer):
-    choices = AnswerManageSerializer(many=True, source='answers')
+
+    answers = AnswerManageSerializer(many=True)
 
     class Meta:
         model = Question
-        fields = ('id', 'content', 'points', 'quiz', 'choices')
+
+        fields = ('id', 'content', 'points', 'quiz', 'answers')
         read_only_fields = ('id',)
         extra_kwargs = {'quiz': {'required': False}}
 
     def create(self, validated_data):
-        choices_data = validated_data.pop('answers', [])
+        answers_data = validated_data.pop('answers', [])
         question = Question.objects.create(**validated_data)
-        for c in choices_data:
-            Answer.objects.create(question=question, **c)
+        for answer_data in answers_data:
+            Answer.objects.create(question=question, **answer_data)
         return question
 
     def update(self, instance, validated_data):
-        choices_data = validated_data.pop('answers', None)
+        answers_data = validated_data.pop('answers', None)
         for attr, val in validated_data.items():
             setattr(instance, attr, val)
         instance.save()
-        if choices_data is not None:
+        if answers_data is not None:
             instance.answers.all().delete()
-            for c in choices_data:
-                Answer.objects.create(question=instance, **c)
+            for answer_data in answers_data:
+                Answer.objects.create(question=instance, **answer_data)
         return instance
 
 
